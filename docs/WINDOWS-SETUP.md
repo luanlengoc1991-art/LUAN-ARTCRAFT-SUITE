@@ -62,9 +62,12 @@ powershell -ExecutionPolicy Bypass -File scripts\check-env.ps1   # phải in "En
 - **Đường dẫn dài / dấu cách:** thư mục dự án có dấu cách và tiếng Việt. Git đã bật
   `core.longpaths`. Nếu gặp lỗi đường dẫn quá dài khi build, đặt thư mục target ngắn:
   `$env:CARGO_TARGET_DIR = 'D:\ct\<app>'` (mỗi app một thư mục riêng).
-- **Dung lượng:** mỗi app build release tạo khoảng 2–6 GB trong `apps\<app>\target\`. Cả 13 app
-  cần khoảng 40–70 GB. Ổ D: hiện còn trống khoảng 488 GB.
-- **Thời gian:** lần build đầu mỗi app mất khoảng 5–20 phút tùy CPU (Cargo tải và biên dịch
-  toàn bộ dependency). Các lần sau nhanh hơn nhiều.
+- **Dung lượng (đo thực tế 2026-10-14):** mỗi app build release tạo 1,2–2,5 GB trong
+  `apps\<app>\target\`. 8 app tổng khoảng 15 GB. Có thể xóa `apps\<app>\target` để giải phóng
+  (chỉ là đầu ra build, build lại được).
+- **Thời gian (đo thực tế trên máy này):** lần build đầu mỗi app mất 2–6,5 phút (GridCraft 108 s,
+  VectorCraft 385 s). Cả 8 app khoảng 35 phút. Các lần sau nhanh hơn nhiều.
+- Sau khi cài Build Tools, trình cài khuyên khởi động lại máy. Trên máy này build vẫn chạy được
+  ngay mà chưa cần khởi động lại.
 - **Windows Defender** có thể làm build chậm. Có thể thêm `apps\*\target` và `%USERPROFILE%\.cargo`
   vào danh sách loại trừ (tùy bạn quyết định).

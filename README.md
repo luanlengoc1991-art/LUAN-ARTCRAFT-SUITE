@@ -74,6 +74,7 @@ chạy `powershell -ExecutionPolicy Bypass -File scripts\<script>.ps1 ...`.
 
 ## Tài liệu
 
+- [docs/STATUS.md](docs/STATUS.md): trạng thái build, MCP, đồng bộ (báo cáo mới nhất)
 - [docs/AUDIT.md](docs/AUDIT.md): kiểm tra mã nguồn 13 app, thư viện dùng chung, yêu cầu build
 - [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md): cài đặt môi trường Windows
 - [docs/BUILD.md](docs/BUILD.md): build từng app, đầu ra, lỗi thường gặp

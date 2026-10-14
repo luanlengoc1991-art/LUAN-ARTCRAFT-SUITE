@@ -18,7 +18,8 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # On main, queue instead of cancel: a docs-only push must not abort the test of an app upgrade.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   detect:
