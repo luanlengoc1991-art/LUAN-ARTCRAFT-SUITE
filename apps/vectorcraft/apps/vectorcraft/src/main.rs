@@ -690,9 +690,10 @@ fn main() -> std::process::ExitCode {
             None => logger.no_file(),
         }
     }
-    // After the log file, so the result is recorded; agents' runs never update the exe under them.
+    // After the log file, so the result is recorded; agents' test runs never update the exe under
+    // them. A person's own app with --control (driven over MCP) still updates.
     #[cfg(windows)]
-    self_update::spawn(control_port.is_some() || !prefs_enabled());
+    self_update::spawn(!prefs_enabled());
     // The roots confine the control channel: a bad one keeps the app from starting rather than
     // leaving agents unconfined. Without a control port there is nothing to confine.
     let roots = if control_port.is_none() {

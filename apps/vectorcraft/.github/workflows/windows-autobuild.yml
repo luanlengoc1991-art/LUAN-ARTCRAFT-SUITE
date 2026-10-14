@@ -1,6 +1,6 @@
-# Every push to `main` builds vectorcraft.exe (Windows x64, portable, unsigned) and publishes it as
-# the latest GitHub Release, tagged `build-<run number>`. Copies of the exe built here update
-# themselves from that release (apps/vectorcraft/src/self_update.rs). Download:
+# Every push to `main` builds vectorcraft.exe and vectorcraft-cli.exe (the MCP server), Windows x64,
+# portable and unsigned, and publishes them as the latest GitHub Release, tagged `build-<run number>`.
+# Copies of the app built here update themselves (and the CLI next to them) from that release (apps/vectorcraft/src/self_update.rs). Download:
 #   https://github.com/<owner>/<repo>/releases/latest/download/vectorcraft.exe
 name: Windows autobuild
 
@@ -51,11 +51,13 @@ jobs:
           CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
           CRAFT_FONTS_REQUIRED: "1"
         run: |
-          cargo build --release --locked -p vectorcraft --target x86_64-pc-windows-msvc
+          cargo build --release --locked -p vectorcraft -p vectorcraft-cli --target x86_64-pc-windows-msvc
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           New-Item -ItemType Directory -Force dist | Out-Null
-          Copy-Item target/x86_64-pc-windows-msvc/release/vectorcraft.exe dist/vectorcraft.exe
-          Get-Item dist/vectorcraft.exe | Format-Table Name, Length
+          Copy-Item target/x86_64-pc-windows-msvc/release/vectorcraft.exe, target/x86_64-pc-windows-msvc/release/vectorcraft-cli.exe dist/
+          dist/vectorcraft-cli.exe --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Item dist/*.exe | Format-Table Name, Length
       - name: Publish release
         shell: bash
         env:
@@ -64,7 +66,7 @@ jobs:
           TAG: build-${{ github.run_number }}
         run: |
           msg="$(git log -1 --format=%s "$GITHUB_SHA")"
-          gh release create "$TAG" dist/vectorcraft.exe \
+          gh release create "$TAG" dist/vectorcraft.exe dist/vectorcraft-cli.exe \
             --target "$GITHUB_SHA" --latest \
             --title "VectorCraft build ${{ github.run_number }}" \
             --notes "Built from \`${GITHUB_SHA::9}\`: ${msg}"

@@ -2,15 +2,17 @@
 //!
 //! `.github/workflows/windows-autobuild.yml` builds every push to `main` with
 //! `VECTORCRAFT_UPDATE_REPO` (owner/name) and `VECTORCRAFT_UPDATE_BUILD` (the run number) set, and
-//! publishes the exe as the latest release, tagged `build-<run number>`. A build made that way
-//! checks the latest release in the background at start-up and every [`CHECK_EVERY`] after; when it
-//! is newer, it downloads the exe next to the running one, checks its SHA-256 against the one GitHub
-//! reports, and swaps the files (Windows lets a running exe be renamed). A banner ([`banner`]) then
-//! offers to restart into it; otherwise the next start runs it.
+//! publishes `vectorcraft.exe` and `vectorcraft-cli.exe` (the MCP server) as the latest release,
+//! tagged `build-<run number>`. A build made that way checks the latest release in the background at
+//! start-up and every [`CHECK_EVERY`] after; when it is newer, it downloads both exes next to the
+//! running one, checks their SHA-256 against the ones GitHub reports, and swaps the files (Windows
+//! lets a running exe be renamed, the CLI serving an MCP client included). A banner ([`banner`])
+//! then offers to restart into it; otherwise the next start runs it.
 //!
 //! Builds without those variables (local `cargo build`, the signed release pipeline) never check.
-//! `VECTORCRAFT_NO_UPDATE=1` turns it off, and so do automation runs (`--control`). No new crates:
-//! the HTTP work is done by Windows PowerShell, hidden, in a thread that never blocks the window.
+//! `VECTORCRAFT_NO_UPDATE=1` turns it off, and so do runs without preferences (agents' test runs).
+//! No new crates: the HTTP work is done by Windows PowerShell, hidden, in a thread that never blocks
+//! the window.
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -22,6 +24,8 @@ const BUILD: Option<&str> = option_env!("VECTORCRAFT_UPDATE_BUILD");
 
 /// The release asset that replaces the running exe.
 const ASSET: &str = "vectorcraft.exe";
+/// Updated alongside it when the release has it, so the MCP server speaks the app's protocol.
+const CLI_ASSET: &str = "vectorcraft-cli.exe";
 
 /// How often a running app looks for a newer build.
 const CHECK_EVERY: Duration = Duration::from_secs(10 * 60);
@@ -35,8 +39,9 @@ static DISMISSED: AtomicBool = AtomicBool::new(false);
 /// "Restart now" was chosen: [`relaunch_if_requested`] starts the new build as this one exits.
 static RELAUNCH: AtomicBool = AtomicBool::new(false);
 
-/// Queries the latest release and downloads the exe when its build number is higher. Prints the new
-/// build number on success. Single quotes only: `powershell.exe -Command` drops double quotes.
+/// Queries the latest release and, when its build number is higher, downloads each asset named in
+/// `VC_ASSETS` it has to `<VC_DIR>\<name>.<VC_TAG>.new`. Prints the new build number on success.
+/// Single quotes only: `powershell.exe -Command` drops double quotes.
 const SCRIPT: &str = r"$ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $ProgressPreference = 'SilentlyContinue'
@@ -45,21 +50,24 @@ $r = Invoke-RestMethod -UseBasicParsing -Headers $h -Uri ('https://api.github.co
 if ($r.tag_name -notmatch '^build-(\d+)$') { exit 0 }
 $n = [int64]$Matches[1]
 if ($n -le [int64]$env:VC_BUILD) { exit 0 }
-$a = $r.assets | Where-Object { $_.name -eq $env:VC_ASSET } | Select-Object -First 1
-if (-not $a) { exit 0 }
-Invoke-WebRequest -UseBasicParsing -Headers @{ 'User-Agent' = 'vectorcraft-updater' } -Uri $a.browser_download_url -OutFile $env:VC_OUT
-if ($a.digest -match '^sha256:([0-9a-fA-F]{64})$') {
-  if ((Get-FileHash -Algorithm SHA256 -LiteralPath $env:VC_OUT).Hash -ne $Matches[1]) {
-    Remove-Item -Force -LiteralPath $env:VC_OUT
-    throw 'checksum mismatch'
+$names = $env:VC_ASSETS -split ';'
+if (-not ($r.assets | Where-Object { $_.name -eq $names[0] })) { exit 0 }
+foreach ($a in ($r.assets | Where-Object { $names -contains $_.name })) {
+  $out = Join-Path $env:VC_DIR ($a.name + '.' + $env:VC_TAG + '.new')
+  Invoke-WebRequest -UseBasicParsing -Headers @{ 'User-Agent' = 'vectorcraft-updater' } -Uri $a.browser_download_url -OutFile $out
+  if ($a.digest -match '^sha256:([0-9a-fA-F]{64})$') {
+    if ((Get-FileHash -Algorithm SHA256 -LiteralPath $out).Hash -ne $Matches[1]) {
+      Remove-Item -Force -LiteralPath $out
+      throw ('checksum mismatch: ' + $a.name)
+    }
   }
 }
 Write-Output $n";
 
 /// Starts the background checks, unless this build or run doesn't update itself.
-pub fn spawn(automation: bool) {
+pub fn spawn(test_run: bool) {
     let (Some(repo), Some(build)) = (REPO, BUILD) else { return };
-    if automation || std::env::var_os("VECTORCRAFT_NO_UPDATE").is_some_and(|v| !v.is_empty() && v != "0") {
+    if test_run || std::env::var_os("VECTORCRAFT_NO_UPDATE").is_some_and(|v| !v.is_empty() && v != "0") {
         return;
     }
     let spawned = std::thread::Builder::new().name("self-update".into()).spawn(move || {
@@ -119,13 +127,14 @@ pub fn banner(ctx: &egui::Context) {
         });
 }
 
-/// As the app exits: starts the new build if "Restart now" was chosen.
+/// As the app exits: starts the new build if "Restart now" was chosen, with this run's arguments
+/// (`--control <port>` among them, so an MCP client reaches the new build too).
 pub fn relaunch_if_requested() {
     if !RELAUNCH.load(Ordering::Relaxed) {
         return;
     }
     let Some(exe) = READY.lock().ok().and_then(|slot| slot.as_ref().map(|(_, exe)| exe.clone())) else { return };
-    if let Err(e) = std::process::Command::new(&exe).spawn() {
+    if let Err(e) = std::process::Command::new(&exe).args(std::env::args_os().skip(1)).spawn() {
         log::warn!("couldn't start the new build {}: {e}", exe.display());
     }
 }
@@ -135,47 +144,71 @@ fn run(repo: &str, build: &str) -> Result<Option<(String, PathBuf)>, String> {
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
     let exe = std::env::current_exe().map_err(|e| format!("current exe: {e}"))?;
-    let dir = exe.parent().ok_or("the exe has no folder")?;
+    let dir = exe.parent().ok_or("the exe has no folder")?.to_path_buf();
     let name = exe.file_name().ok_or("the exe has no name")?.to_string_lossy().into_owned();
-    remove_leftovers(dir, &name);
+    for file in [name.as_str(), ASSET, CLI_ASSET] {
+        remove_leftovers(&dir, file);
+    }
 
-    let pid = std::process::id();
-    let download = dir.join(format!("{name}.{pid}.new"));
+    let pid = std::process::id().to_string();
+    let downloads = [ASSET, CLI_ASSET].map(|asset| dir.join(format!("{asset}.{pid}.new")));
+    let discard = || {
+        for d in &downloads {
+            let _ = std::fs::remove_file(d);
+        }
+    };
     let out = std::process::Command::new("powershell.exe")
         .args(["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", SCRIPT])
         .env("VC_REPO", repo)
         .env("VC_BUILD", build)
-        .env("VC_ASSET", ASSET)
-        .env("VC_OUT", &download)
+        .env("VC_ASSETS", format!("{ASSET};{CLI_ASSET}"))
+        .env("VC_DIR", &dir)
+        .env("VC_TAG", &pid)
         .stdin(std::process::Stdio::null())
         .creation_flags(CREATE_NO_WINDOW)
         .output()
         .map_err(|e| format!("powershell: {e}"))?;
     if !out.status.success() {
-        let _ = std::fs::remove_file(&download);
+        discard();
         return Err(String::from_utf8_lossy(&out.stderr).trim().chars().take(500).collect());
     }
     let new = String::from_utf8_lossy(&out.stdout).trim().to_string();
     if new.is_empty() {
+        discard();
         return Ok(None);
     }
-    if let Err(e) = check_exe(&download) {
-        let _ = std::fs::remove_file(&download);
+    let [app_download, cli_download] = &downloads;
+    if let Err(e) = swap(app_download, &exe, &pid) {
+        discard();
         return Err(e);
     }
-    // Move the running exe aside, then put the new one in its place; undo the first step if the
-    // second fails, so the folder always has a working vectorcraft.exe.
-    let old = dir.join(format!("{name}.{pid}.old"));
-    std::fs::rename(&exe, &old).map_err(|e| {
-        let _ = std::fs::remove_file(&download);
-        format!("can't replace {} (put it in a folder you can write to): {e}", exe.display())
-    })?;
-    if let Err(e) = std::fs::rename(&download, &exe) {
-        let _ = std::fs::rename(&old, &exe);
-        let _ = std::fs::remove_file(&download);
-        return Err(format!("can't move the new exe into place: {e}"));
+    // The MCP server, when the release has it: a failure leaves the old one, not the app's update.
+    if cli_download.exists()
+        && let Err(e) = swap(cli_download, &dir.join(CLI_ASSET), &pid)
+    {
+        log::warn!("{CLI_ASSET} not updated: {e}");
+        discard();
     }
     Ok(Some((new, exe)))
+}
+
+/// Puts `download` in place of `target`, moving a `target` that is running aside first; undoes that
+/// if the second step fails, so the folder always keeps a working exe.
+fn swap(download: &std::path::Path, target: &std::path::Path, pid: &str) -> Result<(), String> {
+    check_exe(download)?;
+    let old = target.with_file_name(format!("{}.{pid}.old", target.file_name().unwrap_or_default().to_string_lossy()));
+    let had_target = target.exists();
+    if had_target {
+        std::fs::rename(target, &old)
+            .map_err(|e| format!("can't replace {} (put it in a folder you can write to): {e}", target.display()))?;
+    }
+    if let Err(e) = std::fs::rename(download, target) {
+        if had_target {
+            let _ = std::fs::rename(&old, target);
+        }
+        return Err(format!("can't move the new {} into place: {e}", target.display()));
+    }
+    Ok(())
 }
 
 /// A downloaded file is only swapped in when it is a plausible Windows executable.
