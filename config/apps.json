@@ -217,7 +217,7 @@
       "upstream": {
         "repo": "https://github.com/storytold/effectcraft.git",
         "branch": "main",
-        "importedCommit": "549e9d825132986d6167c1432cd3328efcbb0278",
+        "importedCommit": "05955c08b4fd025f1a09882df72e6dbff1a8148a",
         "importMethod": "git subtree --squash"
       },
       "license": "MIT OR Apache-2.0",
@@ -228,7 +228,7 @@
       ],
       "language": "Rust",
       "rustVersion": "1.95",
-      "version": "0.9.2",
+      "version": "0.10.0",
       "build": {
         "buildByDefault": true,
         "packages": [
