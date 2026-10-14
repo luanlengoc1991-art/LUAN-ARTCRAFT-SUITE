@@ -93,7 +93,7 @@ if ($overlap.Count -gt 0) {
 if ($DryRun) { Write-Host "`nDry run: no branch created, nothing merged."; exit 0 }
 
 Assert-CleanTree
-$stamp = Get-Date -Format 'yyyyMMdd-HHmm'
+$stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $branch = "upstream-sync/$($a.id)-$stamp"
 $tag = "pre-sync/$($a.id)-$stamp"
 Invoke-Git tag $tag | Out-Null
