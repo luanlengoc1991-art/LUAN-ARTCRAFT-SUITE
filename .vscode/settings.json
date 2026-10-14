@@ -1,0 +1,21 @@
+{
+  // rust-analyzer: there is no root Cargo workspace. scripts/focus-app.ps1 -App <id> sets the
+  // app(s) you are working on here; loading all 13 at once needs a lot of RAM.
+  "rust-analyzer.linkedProjects": [],
+  "rust-analyzer.cargo.targetDir": false,
+  "rust-analyzer.check.command": "check",
+  "files.watcherExclude": {
+    "**/target/**": true,
+    "builds/**": true
+  },
+  "search.exclude": {
+    "**/target": true,
+    "builds": true,
+    "**/Cargo.lock": true
+  },
+  "files.exclude": {
+    "**/target": true
+  },
+  "files.eol": "\n",
+  "files.insertFinalNewline": true
+}

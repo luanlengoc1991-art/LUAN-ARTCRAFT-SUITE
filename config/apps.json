@@ -1,0 +1,535 @@
+{
+  "$comment": "Source of truth for the 13 ArtCraft apps in this monorepo. upstream.importedCommit is updated by scripts/upstream-update.ps1. dependsOnApps: cross-app crates pulled by Cargo from GitHub at a pinned rev (NOT from apps/<other>/ on disk).",
+  "sharedUpstreamLibraries": {
+    "craft-libs": "https://github.com/storytold/craft-libs (pulled by Cargo as pinned git deps; not vendored)",
+    "craft-fonts": "https://github.com/storytold/craft-fonts"
+  },
+  "apps": [
+    {
+      "id": "photocraft",
+      "name": "PhotoCraft",
+      "path": "apps/photocraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/photocraft.git",
+        "branch": "main",
+        "importedCommit": "7250e6e29a9248ac17bc0cb20296e03e7cbed86a",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.95",
+      "version": "0.8.2",
+      "build": {
+        "packages": [
+          "photocraft",
+          "photocraft-cli"
+        ],
+        "features": [
+          "heif"
+        ],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "photocraft.exe",
+          "photocraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "photocraft-cli",
+        "mcp": "photocraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "vectorcraft",
+      "name": "VectorCraft",
+      "path": "apps/vectorcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/vectorcraft.git",
+        "branch": "main",
+        "importedCommit": "0a33cff3f6e2a1e9e672f4c3816f58cd8d3d032e",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.95",
+      "version": "0.11.0",
+      "build": {
+        "packages": [
+          "vectorcraft",
+          "vectorcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "vectorcraft.exe",
+          "vectorcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "vectorcraft-cli",
+        "mcp": "vectorcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "filmcraft",
+      "name": "FilmCraft",
+      "path": "apps/filmcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/filmcraft.git",
+        "branch": "main",
+        "importedCommit": "cee1feb185e675a108f78067f71ad86a640ace3d",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.95",
+      "version": "0.7.2",
+      "build": {
+        "packages": [
+          "filmcraft",
+          "filmcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "filmcraft.exe",
+          "filmcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "filmcraft-cli",
+        "mcp": "filmcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "lightcraft",
+      "name": "LightCraft",
+      "path": "apps/lightcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/lightcraft.git",
+        "branch": "main",
+        "importedCommit": "16dbb90499d3c63a6582fcbba1b2550a6e2da032",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.90",
+      "version": "0.8.0",
+      "build": {
+        "packages": [
+          "lightcraft",
+          "lightcraft-cli"
+        ],
+        "features": [
+          "lightcraft/heif",
+          "lightcraft-cli/heif"
+        ],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "lightcraft.exe",
+          "lightcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "lightcraft-cli",
+        "mcp": "lightcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "pdfcraft",
+      "name": "PdfCraft",
+      "path": "apps/pdfcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/pdfcraft.git",
+        "branch": "main",
+        "importedCommit": "9931329b9fae0b05373b4dc3ac7c58541f0891a4",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.95",
+      "version": "0.8.0",
+      "build": {
+        "packages": [
+          "pdfcraft",
+          "pdfcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "pdfcraft.exe",
+          "pdfcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "pdfcraft-cli",
+        "mcp": "pdfcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "effectcraft",
+      "name": "EffectCraft",
+      "path": "apps/effectcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/effectcraft.git",
+        "branch": "main",
+        "importedCommit": "549e9d825132986d6167c1432cd3328efcbb0278",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.95",
+      "version": "0.9.2",
+      "build": {
+        "packages": [
+          "effectcraft",
+          "effectcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "effectcraft.exe",
+          "effectcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "effectcraft-cli",
+        "mcp": "effectcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": [
+        {
+          "app": "filmcraft",
+          "via": "git",
+          "rev": "2c5ba7a726",
+          "crates": "filmcraft-codecs, -media, -frame, -color, -time, -h264enc, -prores, -aac, -isobmff, -opus, -vp9, -hevc, -av1, -interchange, -project, -geom"
+        }
+      ]
+    },
+    {
+      "id": "designcraft",
+      "name": "DesignCraft",
+      "path": "apps/designcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/designcraft.git",
+        "branch": "main",
+        "importedCommit": "11a51d5b665aec8d6e675bd107a8a01514f10d00",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.95",
+      "version": "0.8.0",
+      "build": {
+        "packages": [
+          "designcraft",
+          "designcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "designcraft.exe",
+          "designcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "designcraft-cli",
+        "mcp": "designcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": [
+        {
+          "app": "pdfcraft",
+          "via": "git",
+          "rev": "b5467d93a0",
+          "crates": "hayro, hayro-interpret, hayro-syntax, hayro-jbig2"
+        }
+      ]
+    },
+    {
+      "id": "figcraft",
+      "name": "FigCraft",
+      "path": "apps/figcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/figcraft.git",
+        "branch": "main",
+        "importedCommit": "833f0d2c27f0acbae5394848930ae531fc89c724",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.95",
+      "version": "0.6.0",
+      "build": {
+        "packages": [
+          "figcraft",
+          "figcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "figcraft.exe",
+          "figcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "figcraft-cli",
+        "mcp": "figcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "wordcraft",
+      "name": "WordCraft",
+      "path": "apps/wordcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/wordcraft.git",
+        "branch": "main",
+        "importedCommit": "fc41918814f62645b6746ed68e71e8c2c2e85d6f",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.90",
+      "version": "0.7.0",
+      "build": {
+        "packages": [
+          "wordcraft",
+          "wordcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "wordcraft.exe",
+          "wordcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "wordcraft-cli",
+        "mcp": "wordcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "soundcraft",
+      "name": "SoundCraft",
+      "path": "apps/soundcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/soundcraft.git",
+        "branch": "main",
+        "importedCommit": "3a28a657692c1b98b28c276d8f61df9471074f0f",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.90",
+      "version": "0.7.0",
+      "build": {
+        "packages": [
+          "soundcraft",
+          "soundcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "soundcraft.exe",
+          "soundcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "soundcraft-cli",
+        "mcp": "soundcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "deckcraft",
+      "name": "DeckCraft",
+      "path": "apps/deckcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/deckcraft.git",
+        "branch": "main",
+        "importedCommit": "d78e657e4cb1e490ceb5445785c052d9cf5ad963",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.90",
+      "version": "0.7.0",
+      "build": {
+        "packages": [
+          "deckcraft",
+          "deckcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "deckcraft.exe",
+          "deckcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "deckcraft-cli",
+        "mcp": "deckcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "cadcraft",
+      "name": "CADCraft",
+      "path": "apps/cadcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/cadcraft.git",
+        "branch": "main",
+        "importedCommit": "fc4e98315a8d771b5ab832f0ade0b5e7b106df7f",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.90",
+      "version": "0.7.0",
+      "build": {
+        "packages": [
+          "cadcraft",
+          "cadcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "cadcraft.exe",
+          "cadcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "cadcraft-cli",
+        "mcp": "cadcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    },
+    {
+      "id": "gridcraft",
+      "name": "GridCraft",
+      "path": "apps/gridcraft",
+      "upstream": {
+        "repo": "https://github.com/storytold/gridcraft.git",
+        "branch": "main",
+        "importedCommit": "d9d09f0baa912e88c5111107903fc8c640214b57",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.90",
+      "version": "0.7.0",
+      "build": {
+        "packages": [
+          "gridcraft",
+          "gridcraft-cli"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "gridcraft.exe",
+          "gridcraft-cli.exe"
+        ]
+      },
+      "automation": {
+        "cli": "gridcraft-cli",
+        "mcp": "gridcraft-cli mcp",
+        "mcpTransport": "stdio (JSON-RPC 2.0)",
+        "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
+      },
+      "dependsOnApps": []
+    }
+  ]
+}

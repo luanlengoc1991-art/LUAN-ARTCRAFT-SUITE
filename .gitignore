@@ -1,0 +1,50 @@
+# ---- LUAN-ARTCRAFT-SUITE root ignore ----
+# Each app under apps/<app>/ also keeps its own upstream .gitignore; those still apply.
+
+# Rust build output (per-app and any shared target dir)
+target/
+**/target/
+.cargo-target/
+
+# Local build outputs (scripts/build-app.ps1 writes here)
+builds/*
+!builds/.gitkeep
+!builds/README.md
+dist/
+**/dist/release/
+
+# Logs and temp
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key
+secrets/
+**/secrets/
+
+# OS / editor noise
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Claude Code local-only settings
+.claude/settings.local.json
+
+# Node tooling (scripts only; no app uses node)
+node_modules/

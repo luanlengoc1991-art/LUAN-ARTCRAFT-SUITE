@@ -1,0 +1,13 @@
+---
+description: LUAN-ARTCRAFT-SUITE monorepo rules (13 ArtCraft apps via git subtree)
+alwaysApply: true
+---
+
+Follow `CLAUDE.md` at the repo root. Essentials:
+
+- 13 independent Rust Cargo workspaces under `apps/<id>/`; there is no root workspace. Run cargo inside `apps/<id>/`.
+- Edit only the app(s) the user names. Before editing, read `apps/<id>/AGENTS.md` (and `apps/<id>/CLAUDE.md`).
+- Don't change original behaviour/UI unless asked; no dependency upgrades; never edit LICENSE-*/NOTICE/ATTRIBUTION.md.
+- Test with `scripts\test-app.ps1 -App <id>`; check impact with `scripts\affected.ps1`.
+- Never run `git reset --hard`, `git clean -fd`, force-push, or delete folders without explicit permission.
+- Upstream updates only via `scripts\upstream-update.ps1` (new branch, stops on conflicts).

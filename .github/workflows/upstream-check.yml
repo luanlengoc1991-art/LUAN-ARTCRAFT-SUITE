@@ -1,0 +1,53 @@
+# Daily: compare each app's upstream main with config/apps.json and keep ONE issue up to date.
+# Report only. It never pulls, merges or pushes code; syncing is done locally with
+# scripts/upstream-update.ps1 and reviewed by a human.
+name: Upstream check
+
+on:
+  schedule:
+    - cron: '17 2 * * *'   # 02:17 UTC = 09:17 Vietnam time
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compare with upstream
+        id: status
+        shell: pwsh
+        run: |
+          $rows = ./scripts/upstream-status.ps1 -Json | ConvertFrom-Json
+          $updates = @($rows | Where-Object { $_.state -ne 'up-to-date' })
+          $lines = @('| App | State | Imported | Upstream | Local commits |', '|---|---|---|---|---|')
+          foreach ($r in $rows) { $lines += "| $($r.app) | $($r.state) | ``$($r.imported)`` | ``$($r.upstream)`` | $($r.localCommits) |" }
+          $body = @"
+          Automatic daily check ($(Get-Date -Format 'yyyy-MM-dd HH:mm') UTC). Nothing was merged.
+
+          $($lines -join "`n")
+
+          To sync one app locally (creates a review branch, stops on conflicts):
+          ``````powershell
+          scripts\upstream-update.ps1 -App <id> -DryRun
+          scripts\upstream-update.ps1 -App <id>
+          ``````
+          See docs/UPSTREAM-SYNC.md.
+          "@
+          Set-Content -Path upstream-report.md -Value $body
+          "count=$($updates.Count)" >> $env:GITHUB_OUTPUT
+          Get-Content upstream-report.md
+      - name: Open or update issue
+        if: steps.status.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Upstream updates available"
+          num=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+          if [ -n "$num" ]; then gh issue edit "$num" --body-file upstream-report.md
+          else gh issue create --title "$title" --body-file upstream-report.md; fi

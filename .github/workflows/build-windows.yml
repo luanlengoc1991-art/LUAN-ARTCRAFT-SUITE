@@ -1,0 +1,68 @@
+# Manually build Windows x64 binaries (and optionally MSI) for one or more apps.
+name: Build Windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: 'Comma-separated app ids, or "all"'
+        required: true
+        default: pdfcraft
+      msi:
+        description: Also build the MSI + portable zip (WiX v5)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.p.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: p
+        shell: bash
+        run: |
+          if [ "${{ inputs.apps }}" = "all" ]; then apps=$(jq -c '[.apps[].id]' config/apps.json)
+          else apps=$(echo '${{ inputs.apps }}' | jq -R -c 'split(",") | map(gsub("^\\s+|\\s+$";""))'); fi
+          echo "apps=$apps" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.plan.outputs.apps) }}
+    runs-on: windows-latest
+    timeout-minutes: 150
+    steps:
+      - run: git config --global core.longpaths true
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/${{ matrix.app }}
+          key: release-${{ matrix.app }}
+      - name: Install WiX v5
+        if: inputs.msi
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+      - name: Build
+        shell: pwsh
+        run: |
+          $extra = @()
+          if ('${{ inputs.msi }}' -eq 'true') { $extra += '-Msi' }
+          ./scripts/build-app.ps1 -App ${{ matrix.app }} -Arch x64 @extra
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-windows-x64
+          path: builds/${{ matrix.app }}/
+          if-no-files-found: error

@@ -1,0 +1,3 @@
+# Keep upstream bytes exactly as imported so subtree pulls merge cleanly.
+* -text
+*.ps1 -text

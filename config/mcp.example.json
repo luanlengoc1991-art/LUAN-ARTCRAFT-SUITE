@@ -1,0 +1,101 @@
+{
+  "//": "EXAMPLE ONLY. Build the app first (scripts/build-app.ps1), fix the version in each path, keep only the apps you need, then copy to .mcp.json (Claude Code) or .cursor/mcp.json (Cursor). Headless mode; see docs/MCP-AUTOMATION.md for --connect/--bridge flags.",
+  "mcpServers": {
+    "photocraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/photocraft/0.8.2/windows-x64/photocraft-cli.exe",
+      "args": [
+        "mcp",
+        "--automation-read-root",
+        "D:/ArtCraftWork",
+        "--automation-write-root",
+        "D:/ArtCraftWork/out"
+      ]
+    },
+    "vectorcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/vectorcraft/0.11.0/windows-x64/vectorcraft-cli.exe",
+      "args": [
+        "mcp",
+        "--automation-read-root",
+        "D:/ArtCraftWork",
+        "--automation-write-root",
+        "D:/ArtCraftWork/out"
+      ]
+    },
+    "filmcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/filmcraft/0.7.2/windows-x64/filmcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    },
+    "lightcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/lightcraft/0.8.0/windows-x64/lightcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    },
+    "pdfcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/pdfcraft/0.8.0/windows-x64/pdfcraft-cli.exe",
+      "args": [
+        "mcp",
+        "--root",
+        "D:/ArtCraftWork"
+      ]
+    },
+    "effectcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/effectcraft/0.9.2/windows-x64/effectcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    },
+    "designcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/designcraft/0.8.0/windows-x64/designcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    },
+    "figcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/figcraft/0.6.0/windows-x64/figcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    },
+    "wordcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/wordcraft/0.7.0/windows-x64/wordcraft-cli.exe",
+      "args": [
+        "mcp",
+        "--automation-read-root",
+        "D:/ArtCraftWork",
+        "--automation-write-root",
+        "D:/ArtCraftWork/out"
+      ]
+    },
+    "soundcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/soundcraft/0.7.0/windows-x64/soundcraft-cli.exe",
+      "args": [
+        "mcp",
+        "--automation-read-root",
+        "D:/ArtCraftWork",
+        "--automation-write-root",
+        "D:/ArtCraftWork/out"
+      ]
+    },
+    "deckcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/deckcraft/0.7.0/windows-x64/deckcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    },
+    "cadcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/cadcraft/0.7.0/windows-x64/cadcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    },
+    "gridcraft": {
+      "command": "D:/CLAUDE CURSO WEBSITE LUAN/APP ADOBE  ARTCRAFT LUAN DESIGNER/LUAN-ARTCRAFT-SUITE/builds/gridcraft/0.7.0/windows-x64/gridcraft-cli.exe",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}
