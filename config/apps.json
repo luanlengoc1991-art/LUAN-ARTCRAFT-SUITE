@@ -12,7 +12,7 @@
       "upstream": {
         "repo": "https://github.com/storytold/photocraft.git",
         "branch": "main",
-        "importedCommit": "7250e6e29a9248ac17bc0cb20296e03e7cbed86a",
+        "importedCommit": "c699e3cda69f4852b43c0b191ab0091aaeff9d6a",
         "importMethod": "git subtree --squash"
       },
       "license": "MIT OR Apache-2.0",
@@ -23,7 +23,7 @@
       ],
       "language": "Rust",
       "rustVersion": "1.95",
-      "version": "0.8.2",
+      "version": "0.9.0",
       "build": {
         "buildByDefault": true,
         "packages": [
