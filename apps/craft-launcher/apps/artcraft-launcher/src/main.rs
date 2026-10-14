@@ -70,6 +70,22 @@ fn main() -> ExitCode {
             }
         }
     }
+    // LUAN-ARTCRAFT-SUITE: start at login by default, so updates keep arriving after a reboot. Done
+    // once (a marker file remembers it), so turning it off in Settings sticks. Not in portable mode.
+    #[cfg(windows)]
+    if artcraft_launcher_native::paths::portable_root().is_none()
+        && let Ok(paths) = artcraft_launcher_native::paths::Paths::new()
+    {
+        let marker = paths.data.join("login-default-applied");
+        if !marker.exists() {
+            match login::set_enabled(true) {
+                Ok(()) => log::info!("start at login: on (first run default)"),
+                Err(e) => log::warn!("start at login: {e}"),
+            }
+            let _ = std::fs::create_dir_all(&paths.data);
+            let _ = std::fs::write(&marker, b"1\n");
+        }
+    }
     let (tray_loop, woken) = sync_channel(1);
     let waker = Arc::new(Waker { window: Mutex::new(None), tray_loop, quit_pending: AtomicBool::new(false) });
     {

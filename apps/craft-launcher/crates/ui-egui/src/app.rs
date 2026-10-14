@@ -155,6 +155,8 @@ pub(crate) fn effective_lang(pref: &str) -> crate::i18n::Lang {
 /// How often to look again at what's installed, to notice apps installed or removed outside
 /// the launcher. A detection pass lists packages and reads a few files: cheap, but not free.
 const RESCAN_EVERY: i64 = 5 * 60;
+/// The end of the error an install returns when the app is open (`native::install`).
+const APP_RUNNING_SUFFIX: &str = " is running. Quit it, then try again.";
 /// Coming back to the window re-checks, but not more often than this.
 const RESCAN_ON_FOCUS_AFTER: i64 = 30;
 
@@ -391,6 +393,13 @@ impl LauncherUi {
                         self.toast(ctx, tl!("Install cancelled. The download is kept for the next try."), false);
                     }
                     Err(e) if e == INSTALL_CANCELLED => self.toast(ctx, tl!("Install cancelled"), false),
+                    // LUAN-ARTCRAFT-SUITE: an automatic update that found the app open waits quietly
+                    // and tries again at the next rescan (every few minutes), so closing the app is
+                    // enough. A manual update still says why it didn't run.
+                    Err(e) if e.ends_with(APP_RUNNING_SUFFIX) && self.auto_update_attempted.iter().any(|(id, _)| *id == app) => {
+                        log::info!("auto-update: {app} is open; trying again later");
+                        self.auto_update_attempted.retain(|(id, _)| *id != app);
+                    }
                     Err(e) => self.toast(ctx, e, true),
                 }
                 true
