@@ -23,7 +23,8 @@ use crate::time::parse_rfc3339;
 use crate::version;
 
 /// Where the feed lives.
-pub const FEED_URL: &str = "https://api.storyteller.ai/v1/craft_apps/release_info";
+/// LUAN-ARTCRAFT-SUITE: empty = no vendor feed. Releases come only from the owner's GitHub repos.
+pub const FEED_URL: &str = "";
 
 /// An app's entry is trusted for this long after storyteller-web fetched it.
 pub const MAX_AGE: i64 = 24 * 3600;
@@ -447,27 +448,27 @@ mod tests {
         "release_info": {{
           "apps": {{
             "photocraft": {{
-              "name": "PhotoCraft", "repo": "storytold/photocraft",
+              "name": "PhotoCraft", "repo": "luanlengoc1991-art/photocraft",
               "latest_release": {{
                 "tag": "v0.6.0", "version": "0.6.0", "name": "PhotoCraft v0.6.0",
                 "published_at": "2026-10-09T10:00:00Z",
-                "html_url": "https://github.com/storytold/photocraft/releases/tag/v0.6.0",
+                "html_url": "https://github.com/luanlengoc1991-art/photocraft/releases/tag/v0.6.0",
                 "prerelease": false, "notes_markdown": "Notes",
                 "assets": [
                   {{ "name": "photocraft-0.6.0-macos-universal.dmg", "size_bytes": 123,
-                     "download_url": "https://github.com/storytold/photocraft/releases/download/v0.6.0/photocraft-0.6.0-macos-universal.dmg",
+                     "download_url": "https://github.com/luanlengoc1991-art/photocraft/releases/download/v0.6.0/photocraft-0.6.0-macos-universal.dmg",
                      "sha256": "{HASH}", "platform": {{ "os": "macos", "arch": "universal", "package_type": "dmg" }} }},
                   {{ "name": "evil.dmg", "size_bytes": 1, "download_url": "https://evil.example/evil.dmg", "sha256": null }}
                 ]
               }},
               "app_last_fetched": "2026-10-09T13:00:00Z"
             }},
-            "soundcraft": {{ "name": "SoundCraft", "repo": "storytold/soundcraft", "latest_release": null,
+            "soundcraft": {{ "name": "SoundCraft", "repo": "luanlengoc1991-art/soundcraft", "latest_release": null,
                              "app_last_fetched": "2026-10-09T13:00:00Z" }},
-            "filmcraft": {{ "name": "FilmCraft", "repo": "storytold/filmcraft", "latest_release": null, "app_last_fetched": null }},
-            "vectorcraft": {{ "repo": "storytold/vectorcraft", "app_last_fetched": "2026-10-01T00:00:00Z",
+            "filmcraft": {{ "name": "FilmCraft", "repo": "luanlengoc1991-art/filmcraft", "latest_release": null, "app_last_fetched": null }},
+            "vectorcraft": {{ "repo": "luanlengoc1991-art/vectorcraft", "app_last_fetched": "2026-10-01T00:00:00Z",
                               "latest_release": {{ "tag": "v0.7.0" }} }},
-            "brandnewcraft": {{ "repo": "storytold/brandnewcraft", "app_last_fetched": "2026-10-09T13:00:00Z" }}
+            "brandnewcraft": {{ "repo": "luanlengoc1991-art/brandnewcraft", "app_last_fetched": "2026-10-09T13:00:00Z" }}
           }},
           "last_fetched": "2026-10-09T13:00:00Z",
           "some_future_field": {{ "whatever": [1, 2, 3] }}
@@ -528,19 +529,19 @@ mod tests {
         let moved = sample()
             .replace(
                 "\"repo_renames\": []",
-                r#""repo_renames": [{"old_name": "Storytold/photocraft", "new_name": "storytold/photocraft-app", "renamed_at": null}]"#,
+                r#""repo_renames": [{"old_name": "LuanLeNgoc1991-Art/photocraft", "new_name": "luanlengoc1991-art/photocraft-app", "renamed_at": null}]"#,
             )
             .replace(
-                "\"name\": \"PhotoCraft\", \"repo\": \"storytold/photocraft\"",
-                "\"name\": \"PhotoCraft\", \"repo\": \"storytold/photocraft-app\"",
+                "\"name\": \"PhotoCraft\", \"repo\": \"luanlengoc1991-art/photocraft\"",
+                "\"name\": \"PhotoCraft\", \"repo\": \"luanlengoc1991-art/photocraft-app\"",
             )
-            .replace("github.com/storytold/photocraft/releases", "github.com/storytold/photocraft-app/releases");
+            .replace("github.com/luanlengoc1991-art/photocraft/releases", "github.com/luanlengoc1991-art/photocraft-app/releases");
         let feed = Feed::parse(&moved).unwrap();
-        assert_eq!(feed.repo_for(app("photocraft")), "storytold/photocraft-app");
+        assert_eq!(feed.repo_for(app("photocraft")), "luanlengoc1991-art/photocraft-app");
         let FeedAnswer::Fresh(Some(r)) = feed.answer(app("photocraft"), NOW) else { panic!() };
-        assert!(r.assets[0].url.starts_with("https://github.com/storytold/photocraft-app/releases/download/"));
+        assert!(r.assets[0].url.starts_with("https://github.com/luanlengoc1991-art/photocraft-app/releases/download/"));
         // The same entry without the rename: the repo doesn't match, so GitHub decides.
-        let unannounced = moved.replace(r#"{"old_name": "Storytold/photocraft", "new_name": "storytold/photocraft-app", "renamed_at": null}"#, "");
+        let unannounced = moved.replace(r#"{"old_name": "LuanLeNgoc1991-Art/photocraft", "new_name": "luanlengoc1991-art/photocraft-app", "renamed_at": null}"#, "");
         let feed = Feed::parse(&unannounced).unwrap();
         assert_eq!(feed.answer(app("photocraft"), NOW), FeedAnswer::AskGitHub);
     }
@@ -552,22 +553,22 @@ mod tests {
         let moved = sample()
             .replace(
                 "\"repo_renames\": []",
-                r#""repo_renames": [{"old_name": "storytold/photocraft", "new_name": "art/photocraft", "renamed_at": null},
-                                  {"old_name": "art/photocraft", "new_name": "storytold/photocraft", "renamed_at": null},
-                                  {"old_name": "storytold/photocraft", "new_name": "storytold.evil.example/photocraft", "renamed_at": null}]"#,
+                r#""repo_renames": [{"old_name": "luanlengoc1991-art/photocraft", "new_name": "art/photocraft", "renamed_at": null},
+                                  {"old_name": "art/photocraft", "new_name": "luanlengoc1991-art/photocraft", "renamed_at": null},
+                                  {"old_name": "luanlengoc1991-art/photocraft", "new_name": "storytold.evil.example/photocraft", "renamed_at": null}]"#,
             )
-            .replace("\"name\": \"PhotoCraft\", \"repo\": \"storytold/photocraft\"", "\"name\": \"PhotoCraft\", \"repo\": \"art/photocraft\"")
-            .replace("github.com/storytold/photocraft/releases", "github.com/art/photocraft/releases");
+            .replace("\"name\": \"PhotoCraft\", \"repo\": \"luanlengoc1991-art/photocraft\"", "\"name\": \"PhotoCraft\", \"repo\": \"art/photocraft\"")
+            .replace("github.com/luanlengoc1991-art/photocraft/releases", "github.com/art/photocraft/releases");
         let feed = Feed::parse(&moved).unwrap();
         assert!(feed.repo_renames.is_empty(), "{:?}", feed.repo_renames);
-        assert_eq!(feed.repo_for(app("photocraft")), "storytold/photocraft");
+        assert_eq!(feed.repo_for(app("photocraft")), "luanlengoc1991-art/photocraft");
         assert_eq!(feed.answer(app("photocraft"), NOW), FeedAnswer::AskGitHub);
     }
 
     #[test]
     fn a_local_mirror_is_trusted_only_when_asked_for_and_never_goes_stale() {
         const MIRROR: &str = "http://127.0.0.1:8787/";
-        let local = sample().replace("https://github.com/storytold/photocraft/releases/download/v0.6.0/", "http://127.0.0.1:8787/photocraft/v0.6.0/");
+        let local = sample().replace("https://github.com/luanlengoc1991-art/photocraft/releases/download/v0.6.0/", "http://127.0.0.1:8787/photocraft/v0.6.0/");
         // Without the mirror, the local link is dropped like any other stranger's.
         let FeedAnswer::Fresh(Some(r)) = Feed::parse(&local).unwrap().answer(app("photocraft"), NOW) else { panic!() };
         assert!(r.assets.is_empty());

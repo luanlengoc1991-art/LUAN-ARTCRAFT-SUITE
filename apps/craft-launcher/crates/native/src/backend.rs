@@ -625,8 +625,12 @@ struct Fallback {
 ///   apps the feed doesn't list or hasn't refreshed in a day, or once the feed has seriously
 ///   failed (several checks in a row and an hour without an answer); then hourly per app.
 fn feed_and_fallback(http: &Http, paths: &Paths, shared: &Shared) -> (Option<Feed>, Fallback) {
-    let saved = load_feed(paths);
     let loaded = shared.loaded.load(Ordering::SeqCst);
+    // LUAN-ARTCRAFT-SUITE: no feed configured (FEED_URL is empty): ask GitHub directly.
+    if feed_url().is_empty() {
+        return (None, Fallback { trust_feed: false, github_every: if loaded { GITHUB_FALLBACK_EVERY } else { EARLY_GITHUB_EVERY } });
+    }
+    let saved = load_feed(paths);
     let first_time = !loaded && saved.is_none();
     let attempts = if first_time { 1 } else { FEED_ATTEMPTS };
     let fetched = fetch_feed(http, paths, &feed_url(), &shared.feed_throttle, attempts);
@@ -1104,7 +1108,7 @@ mod tests {
     fn feed() -> Feed {
         Feed::parse(
             r#"{"release_info": {"apps": {
-            "photocraft": {"repo": "storytold/photocraft", "latest_release": {"tag": "v0.6.0"}, "app_last_fetched": "2026-10-09T13:00:00Z"}
+            "photocraft": {"repo": "luanlengoc1991-art/photocraft", "latest_release": {"tag": "v0.6.0"}, "app_last_fetched": "2026-10-09T13:00:00Z"}
         }}}"#,
         )
         .unwrap()

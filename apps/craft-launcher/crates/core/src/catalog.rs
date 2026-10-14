@@ -65,7 +65,7 @@ impl CraftApp {
 
     /// The app's page on getartcraft.com.
     pub fn website(&self) -> String {
-        format!("https://getartcraft.com/apps/{}", self.id)
+        format!("https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/tree/main/apps/{}", self.id)
     }
 
     /// Asset stems this app's releases may use, current first.
@@ -102,7 +102,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Image editing",
         AppGroup::Classic,
         [[0x2f, 0x7b, 0xf5], [0x1a, 0x5b, 0xc4], [0x7f, 0xb0, 0xff]],
-        "storytold/photocraft",
+        "luanlengoc1991-art/photocraft",
     ),
     app(
         "vectorcraft",
@@ -110,7 +110,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Vector illustration",
         AppGroup::Classic,
         [[0xe8, 0x57, 0x3f], [0xb8, 0x3a, 0x24], [0xff, 0x8a, 0x70]],
-        "storytold/vectorcraft",
+        "luanlengoc1991-art/vectorcraft",
     ),
     app(
         "filmcraft",
@@ -118,7 +118,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Video editing, color and sound",
         AppGroup::Classic,
         [[0x8b, 0x5c, 0xf6], [0x6a, 0x3f, 0xd6], [0xb6, 0x9c, 0xff]],
-        "storytold/filmcraft",
+        "luanlengoc1991-art/filmcraft",
     ),
     app(
         "lightcraft",
@@ -126,7 +126,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Photo library and raw development",
         AppGroup::Classic,
         [[0xf2, 0xa5, 0x16], [0x8a, 0x58, 0x00], [0xff, 0xc1, 0x4d]],
-        "storytold/lightcraft",
+        "luanlengoc1991-art/lightcraft",
     ),
     CraftApp {
         former_ids: &["printcraft"],
@@ -137,7 +137,7 @@ pub const SUITE: [CraftApp; 13] = [
             "Reading, organizing and protecting PDFs",
             AppGroup::Classic,
             [[0x12, 0xa5, 0x8a], [0x0a, 0x75, 0x63], [0x3f, 0xd6, 0xb8]],
-            "storytold/pdfcraft",
+            "luanlengoc1991-art/pdfcraft",
         )
     },
     app(
@@ -146,7 +146,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Motion graphics and visual effects",
         AppGroup::Classic,
         [[0xe0, 0x36, 0x8f], [0xb0, 0x20, 0x6c], [0xff, 0x7a, 0xb8]],
-        "storytold/effectcraft",
+        "luanlengoc1991-art/effectcraft",
     ),
     app(
         "designcraft",
@@ -154,7 +154,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Page layout and publishing",
         AppGroup::Classic,
         [[0x7b, 0xb5, 0x1c], [0x45, 0x70, 0x08], [0xa6, 0xe0, 0x4a]],
-        "storytold/designcraft",
+        "luanlengoc1991-art/designcraft",
     ),
     app(
         "wordcraft",
@@ -162,7 +162,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Writing and document design",
         AppGroup::New,
         [[0x3f, 0x5f, 0xe0], [0x2a, 0x44, 0xb8], [0x8e, 0xa2, 0xff]],
-        "storytold/wordcraft",
+        "luanlengoc1991-art/wordcraft",
     ),
     app(
         "deckcraft",
@@ -170,7 +170,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Presentations and slide shows",
         AppGroup::New,
         [[0xf0, 0x7a, 0x1e], [0xa8, 0x4f, 0x0a], [0xff, 0xa0, 0x60]],
-        "storytold/deckcraft",
+        "luanlengoc1991-art/deckcraft",
     ),
     app(
         "gridcraft",
@@ -178,7 +178,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Spreadsheets and data",
         AppGroup::New,
         [[0x1f, 0x9d, 0x55], [0x12, 0x70, 0x3a], [0x4f, 0xd6, 0x8a]],
-        "storytold/gridcraft",
+        "luanlengoc1991-art/gridcraft",
     ),
     app(
         "cadcraft",
@@ -186,7 +186,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Computer-aided design and drafting",
         AppGroup::New,
         [[0x3e, 0xa6, 0xe8], [0x1a, 0x6f, 0xa8], [0x7c, 0xc8, 0xff]],
-        "storytold/cadcraft",
+        "luanlengoc1991-art/cadcraft",
     ),
     app(
         "soundcraft",
@@ -194,7 +194,7 @@ pub const SUITE: [CraftApp; 13] = [
         "Recording, editing and mixing audio",
         AppGroup::New,
         [[0x1f, 0xa5, 0xc9], [0x0e, 0x72, 0x90], [0x5f, 0xd0, 0xee]],
-        "storytold/soundcraft",
+        "luanlengoc1991-art/soundcraft",
     ),
     app(
         "figcraft",
@@ -202,17 +202,17 @@ pub const SUITE: [CraftApp; 13] = [
         "Interface design and prototyping",
         AppGroup::New,
         [[0x02, 0xda, 0x96], [0x04, 0x7a, 0x56], [0x4f, 0xe8, 0xb6]],
-        "storytold/figcraft",
+        "luanlengoc1991-art/figcraft",
     ),
 ];
 
 /// ArtCraft's website.
-pub const WEBSITE_URL: &str = "https://getartcraft.com";
+pub const WEBSITE_URL: &str = "https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE";
 /// The GitHub account every Craft App's repository lives under: the only one the launcher
 /// installs from, whatever the release feed says.
-pub const GITHUB_OWNER: &str = "storytold";
+pub const GITHUB_OWNER: &str = "luanlengoc1991-art";
 /// ArtCraft on GitHub: every Craft App's source.
-pub const GITHUB_URL: &str = "https://github.com/storytold";
+pub const GITHUB_URL: &str = "https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE";
 /// ArtCraft's social accounts: (service, URL). Shown as small icons, less prominent than Discord.
 pub const SOCIAL: [(&str, &str); 5] = [
     ("X", "https://x.com/get_artcraft"),
@@ -234,11 +234,11 @@ pub const LAUNCHER: CraftApp = app(
     "Installs and updates the Craft App Suite",
     AppGroup::New,
     [[0x0b, 0x0b, 0x0c], [0x0b, 0x0b, 0x0c], [0xf2, 0xf1, 0xee]],
-    "storytold/craft-launcher",
+    "luanlengoc1991-art/craft-launcher",
 );
 
 /// The launcher's own repo, checked so it can say when a newer launcher is out.
-pub const LAUNCHER_REPO: &str = "storytold/craft-launcher";
+pub const LAUNCHER_REPO: &str = "luanlengoc1991-art/craft-launcher";
 /// The launcher's own asset stem.
 pub const LAUNCHER_ID: &str = "artcraft-launcher";
 
@@ -255,7 +255,7 @@ mod tests {
         ids.dedup();
         assert_eq!(ids.len(), SUITE.len());
         for a in &SUITE {
-            assert_eq!(a.repo, format!("storytold/{}", a.id));
+            assert_eq!(a.repo, format!("{GITHUB_OWNER}/{}", a.id));
             assert_eq!(a.name.to_lowercase(), a.id);
         }
     }
@@ -265,7 +265,7 @@ mod tests {
         let pdf = CraftApp::by_id("pdfcraft").unwrap();
         assert_eq!(pdf.stems().collect::<Vec<_>>(), ["pdfcraft", "printcraft"]);
         assert_eq!(pdf.names().collect::<Vec<_>>(), ["PdfCraft", "PrintCraft"]);
-        assert_eq!(pdf.website(), "https://getartcraft.com/apps/pdfcraft");
-        assert_eq!(CraftApp::by_id("wordcraft").unwrap().website(), "https://getartcraft.com/apps/wordcraft");
+        assert_eq!(pdf.website(), "https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/tree/main/apps/pdfcraft");
+        assert_eq!(CraftApp::by_id("wordcraft").unwrap().website(), "https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/tree/main/apps/wordcraft");
     }
 }
