@@ -56,6 +56,15 @@ foreach ($id in $Apps) {
   if ($DryRun) { $results += [pscustomobject]@{ app = $id; version = $ver; result = "dry run: would publish $($files.Name -join ', ') to $repo" }; continue }
   & gh @ghArgs @assets
   if ($LASTEXITCODE -ne 0) { $results += [pscustomobject]@{ app = $id; version = $ver; result = "FAILED (gh exit $LASTEXITCODE)" }; continue }
+  # The launcher also ships under fixed names, so .../releases/latest/download/<name> never changes.
+  # The launcher's own update check ignores these names (they don't parse as <stem>-<ver>-<os>-<arch>).
+  if ($a.id -eq 'craft-launcher') {
+    $stable = Join-Path $dir 'stable'
+    New-Item -ItemType Directory -Force -Path $stable | Out-Null
+    Copy-Item ($files | Where-Object Name -like '*.msi').FullName (Join-Path $stable 'ArtCraft-Launcher-Setup.msi') -Force
+    Copy-Item (Join-Path $dir 'artcraft-launcher.exe') (Join-Path $stable 'ArtCraft-Launcher.exe') -Force
+    & gh release upload $tag -R $repo (Join-Path $stable 'ArtCraft-Launcher-Setup.msi') (Join-Path $stable 'ArtCraft-Launcher.exe') --clobber
+  }
   $results += [pscustomobject]@{ app = $id; version = $ver; result = "published https://github.com/$repo/releases/tag/$tag" }
   Start-Sleep -Seconds 20  # stay clear of GitHub's content-creation rate limit
 }

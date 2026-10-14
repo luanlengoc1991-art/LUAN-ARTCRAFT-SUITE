@@ -33,7 +33,12 @@ GitHub: https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE
 thư viện (`vendor/`), file cài (Releases của `luanlengoc1991-art/<app>`) và trình quản lý. Xem
 [docs/INDEPENDENCE.md](docs/INDEPENDENCE.md).
 
-**Tải trình quản lý:** https://github.com/luanlengoc1991-art/craft-launcher/releases/latest
+**Tải trình quản lý (link cố định, luôn là bản mới nhất):**
+- Bộ cài: https://github.com/luanlengoc1991-art/craft-launcher/releases/latest/download/ArtCraft-Launcher-Setup.msi
+- Bản chạy ngay không cần cài: https://github.com/luanlengoc1991-art/craft-launcher/releases/latest/download/ArtCraft-Launcher.exe
+
+Cài trình quản lý, mở lên, rồi bấm **Install** cho app bạn cần. Sau đó app tự cập nhật mỗi khi bạn
+push thay đổi lên repo này.
 
 Tất cả viết bằng Rust thuần (egui). Mỗi app có GUI (`<app>.exe`), CLI kèm **MCP server**
 (`<app>-cli.exe mcp`) và bản web. Chi tiết: [docs/AUDIT.md](docs/AUDIT.md).
