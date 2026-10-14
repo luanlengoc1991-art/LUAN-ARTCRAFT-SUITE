@@ -40,6 +40,8 @@ mod mac_window;
 mod open_documents;
 mod prefs_dir;
 mod printing;
+#[cfg(windows)]
+mod self_update;
 #[cfg(all(windows, not(target_vendor = "win7")))]
 mod system_fonts;
 mod window;
@@ -93,6 +95,8 @@ impl eframe::App for App {
             self.app.titlebar_inset = inset.unwrap_or(mac_window::DEFAULT_INSET);
         }
         file_access::unconfined(|| self.app.ui(ui));
+        #[cfg(windows)]
+        self_update::banner(ui.ctx());
         // Preferences are written when confirmed, not only at exit: a session ended any other way
         // (the system shutting down, the process ended or crashing) used to lose them (#1747).
         if self.app.take_prefs_changed() {
@@ -107,11 +111,15 @@ impl eframe::App for App {
     #[cfg(not(feature = "windows7"))]
     fn on_exit(&mut self) {
         file_access::unconfined(|| save_prefs(&self.app));
+        #[cfg(windows)]
+        self_update::relaunch_if_requested();
         end_before_teardown(self.frames);
     }
     #[cfg(feature = "windows7")]
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
         file_access::unconfined(|| save_prefs(&self.app));
+        #[cfg(windows)]
+        self_update::relaunch_if_requested();
     }
 }
 
@@ -682,6 +690,10 @@ fn main() -> std::process::ExitCode {
             None => logger.no_file(),
         }
     }
+    // After the log file, so the result is recorded; agents' test runs never update the exe under
+    // them. A person's own app with --control (driven over MCP) still updates.
+    #[cfg(windows)]
+    self_update::spawn(!prefs_enabled());
     // The roots confine the control channel: a bad one keeps the app from starting rather than
     // leaving agents unconfined. Without a control port there is nothing to confine.
     let roots = if control_port.is_none() {
@@ -797,6 +809,8 @@ fn main() -> std::process::ExitCode {
             Box::new(move |cc| {
                 let mut app = VectorcraftApp::new(Session::new(), services(cc.winit_window().cloned(), cc.egui_ctx.clone()));
                 load_prefs(&mut app, saved);
+                #[cfg(windows)]
+                self_update::set_context(&cc.egui_ctx);
                 // Fit the window to its monitor, or put it back where it was (still hidden).
                 if let Some(w) = cc.winit_window() {
                     app.ui.window = Some(window::restore(w, saved_window));

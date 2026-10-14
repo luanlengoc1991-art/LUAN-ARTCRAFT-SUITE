@@ -1,0 +1,76 @@
+# Every push to `main` builds vectorcraft.exe and vectorcraft-cli.exe (the MCP server), Windows x64,
+# portable and unsigned, and publishes them as the latest GitHub Release, tagged `build-<run number>`.
+# Copies of the app built here update themselves (and the CLI next to them) from that release (apps/vectorcraft/src/self_update.rs). Download:
+#   https://github.com/<owner>/<repo>/releases/latest/download/vectorcraft.exe
+name: Windows autobuild
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md", "docs/**", "contributors/**", "examples/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-autobuild
+  # Each build only needs to beat the one before; a newer push makes a running build moot.
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  build:
+    name: Build and publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Japanese, Chinese, Arabic and Thai fonts, embedded by crates/text/build.rs; same commit as release.yml.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: storytold/craft-fonts
+          ref: 3d9ab3a132ed0eff457e424226a435a901da30d3
+          path: craft-fonts
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: windows-autobuild
+      - name: Build
+        shell: pwsh
+        env:
+          # Static CRT: no VC++ redistributable needed (as packaging/windows/package.ps1).
+          # Scoped to the target so host build scripts and proc-macros are unaffected.
+          CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS: -C target-feature=+crt-static
+          VECTORCRAFT_REQUIRE_WINRES: "1"
+          VECTORCRAFT_BUILD_SHA: ${{ github.sha }}
+          VECTORCRAFT_UPDATE_REPO: ${{ github.repository }}
+          VECTORCRAFT_UPDATE_BUILD: ${{ github.run_number }}
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+          CRAFT_FONTS_REQUIRED: "1"
+        run: |
+          cargo build --release --locked -p vectorcraft -p vectorcraft-cli --target x86_64-pc-windows-msvc
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item target/x86_64-pc-windows-msvc/release/vectorcraft.exe, target/x86_64-pc-windows-msvc/release/vectorcraft-cli.exe dist/
+          dist/vectorcraft-cli.exe --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Item dist/*.exe | Format-Table Name, Length
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: build-${{ github.run_number }}
+        run: |
+          msg="$(git log -1 --format=%s "$GITHUB_SHA")"
+          gh release create "$TAG" dist/vectorcraft.exe dist/vectorcraft-cli.exe \
+            --target "$GITHUB_SHA" --latest \
+            --title "VectorCraft build ${{ github.run_number }}" \
+            --notes "Built from \`${GITHUB_SHA::9}\`: ${msg}"
+          # Keep only the newest builds; older copies update straight to the latest anyway.
+          gh release list --limit 100 --json tagName,createdAt \
+            --jq '[.[] | select(.tagName | startswith("build-"))] | sort_by(.createdAt) | reverse | .[5:] | .[].tagName' \
+            | while read -r old; do gh release delete "$old" --yes --cleanup-tag; done

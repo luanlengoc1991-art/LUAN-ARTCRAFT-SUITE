@@ -8,6 +8,9 @@ fn main() -> Result<(), String> {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=../../assets/app-icon/vectorcraft.ico");
     println!("cargo:rerun-if-env-changed=VECTORCRAFT_REQUIRE_WINRES");
+    // Baked in by src/self_update.rs (option_env!); listed so a new build number rebuilds.
+    println!("cargo:rerun-if-env-changed=VECTORCRAFT_UPDATE_REPO");
+    println!("cargo:rerun-if-env-changed=VECTORCRAFT_UPDATE_BUILD");
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
         return Ok(());
     }
