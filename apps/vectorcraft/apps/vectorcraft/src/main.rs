@@ -40,6 +40,8 @@ mod mac_window;
 mod open_documents;
 mod prefs_dir;
 mod printing;
+#[cfg(windows)]
+mod self_update;
 #[cfg(all(windows, not(target_vendor = "win7")))]
 mod system_fonts;
 mod window;
@@ -682,6 +684,9 @@ fn main() -> std::process::ExitCode {
             None => logger.no_file(),
         }
     }
+    // After the log file, so the result is recorded; agents' runs never update the exe under them.
+    #[cfg(windows)]
+    self_update::spawn(control_port.is_some() || !prefs_enabled());
     // The roots confine the control channel: a bad one keeps the app from starting rather than
     // leaving agents unconfined. Without a control port there is nothing to confine.
     let roots = if control_port.is_none() {
