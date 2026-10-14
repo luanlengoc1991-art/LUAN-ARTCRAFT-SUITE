@@ -115,7 +115,7 @@ fn harness_language(
     let sent = Rc::new(RefCell::new(Vec::new()));
     let sent2 = sent.clone();
     let mut backend = Some(Fake { events: events(), sent: sent2, manage, clock: Rc::new(Cell::new(NOW)) });
-    let settings = Settings { view, notify: false, language: language.into(), ..Settings::default() };
+    let settings = Settings { view, notify: false, language: language.into(), auto_update: false, ..Settings::default() };
     let harness = Harness::builder().with_size(egui::vec2(1180.0, 900.0)).with_theme(theme).build_ui_state(
         move |ui, state: &mut Option<LauncherUi>| {
             if state.is_none()

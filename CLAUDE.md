@@ -35,6 +35,12 @@ each imported from its official upstream at `github.com/storytold/<id>` with **g
   `vectorcraft-fork-old` are the owner's old forks: keep them, don't publish there.
 - See `docs/INDEPENDENCE.md`.
 
+**Continuous delivery:** every push to `main` that changes `apps/<id>/` (for apps with
+`build.buildByDefault`) makes `.github/workflows/release.yml` build and publish a new, higher
+release (`scripts/release-version.ps1`); installed launchers auto-update within ~20 minutes. So a
+commit to main ships to the owner's machines: run `scripts\test-app.ps1 -App <id>` (at least
+`-Mode check`) before pushing an app change. Don't bump versions by hand; the workflow does it.
+
 `config/apps.json` is the source of truth: upstream URL, branch, imported commit, version,
 rust-version, license, build packages/features, automation entry points, cross-app deps.
 

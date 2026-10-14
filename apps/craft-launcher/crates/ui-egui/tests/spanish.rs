@@ -83,7 +83,7 @@ fn harness(view: ViewMode) -> Harness<'static, Option<LauncherUi>> {
     artcraft_launcher_ui_egui::i18n::set_test_lang(artcraft_launcher_ui_egui::i18n::Lang::EN);
     let mut backend = Some(Fake { events: events(), clock: Rc::new(Cell::new(NOW)) });
     let settings =
-        Settings { view, notify: false, language: "es".into(), theme: artcraft_launcher_ui_egui::theme::ThemeChoice::Dark, ..Settings::default() };
+        Settings { view, notify: false, language: "es".into(), theme: artcraft_launcher_ui_egui::theme::ThemeChoice::Dark, auto_update: false, ..Settings::default() };
     Harness::builder().with_size(egui::vec2(1180.0, 900.0)).with_theme(egui::Theme::Dark).build_ui_state(
         move |ui, state: &mut Option<LauncherUi>| {
             if state.is_none()

@@ -219,7 +219,7 @@ fn harness_full(
     let sent = Rc::new(RefCell::new(Vec::new()));
     let sent2 = sent.clone();
     let mut backend = Some(Fake { events, sent: sent2, manage, pictures, asked: Vec::new(), clock: Rc::new(Cell::new(NOW)) });
-    let settings = Settings { view, notify: false, ..Settings::default() };
+    let settings = Settings { view, notify: false, auto_update: false, ..Settings::default() };
     // No `.wgpu()`: it gives every test its own GPU device, and those segfault on parallel test threads (see above).
     // The default renderer creates one only when a test renders.
     let harness = Harness::builder().with_size(egui::vec2(1180.0, 900.0)).with_pixels_per_point(scale).with_theme(theme).build_ui_state(
@@ -257,7 +257,7 @@ fn keeps_working_with_no_window_then_draws_in_a_new_one() {
     let backend =
         Fake { events: events(), sent: sent.clone(), manage: true, pictures: Rc::default(), asked: Vec::new(), clock: Rc::new(Cell::new(NOW)) };
     let windowless = egui::Context::default();
-    let mut ui = LauncherUi::new(&windowless, Box::new(backend), Settings { notify: false, ..Settings::default() });
+    let mut ui = LauncherUi::new(&windowless, Box::new(backend), Settings { notify: false, auto_update: false, ..Settings::default() });
     // No window: the backend's news is still taken in.
     ui.logic(&windowless, &mut NoHost);
     assert!(sent.borrow().contains(&Command::CheckForUpdates { force: false }));
@@ -704,7 +704,7 @@ fn looks_again_at_installed_apps_every_few_minutes_not_every_frame() {
             if state.is_none()
                 && let Some(b) = backend.take()
             {
-                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, ..Settings::default() }));
+                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, auto_update: false, ..Settings::default() }));
             }
             if let Some(l) = state.as_mut() {
                 l.logic(&ui.ctx().clone(), &mut NoHost);
@@ -770,7 +770,7 @@ fn the_launcher_updates_itself_and_quits_to_restart() {
             if state.is_none()
                 && let Some(b) = backend.take()
             {
-                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, ..Settings::default() }));
+                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, auto_update: false, ..Settings::default() }));
             }
             if let Some(l) = state.as_mut() {
                 l.logic(&ui.ctx().clone(), &mut host);
@@ -825,6 +825,8 @@ fn the_current_desktop_setting_is_only_offered_where_the_os_has_desktops() {
     assert!(h.query_by_label("Show the window on the current desktop").is_none());
     // On by default for everyone; macOS shows it in Settings (DesktopHost::has_desktops).
     assert!(Settings::default().show_on_current_desktop);
+    // LUAN-ARTCRAFT-SUITE: new builds install themselves unless the user turns this off.
+    assert!(Settings::default().auto_update);
 }
 
 #[test]
@@ -849,7 +851,7 @@ fn feed_announcements_and_alerts_show_until_dismissed() {
             if state.is_none()
                 && let Some(b) = backend.take()
             {
-                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, ..Settings::default() }));
+                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, auto_update: false, ..Settings::default() }));
             }
             if let Some(l) = state.as_mut() {
                 l.logic(&ui.ctx().clone(), &mut NoHost);
@@ -953,7 +955,7 @@ fn the_footer_names_the_services_behind_what_is_on_screen() {
                 if state.is_none()
                     && let Some(b) = backend.take()
                 {
-                    *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, ..Settings::default() }));
+                    *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, auto_update: false, ..Settings::default() }));
                 }
                 if let Some(l) = state.as_mut() {
                     l.logic(&ui.ctx().clone(), &mut NoHost);
@@ -1003,7 +1005,7 @@ fn custom_title_bar_has_window_buttons() {
             if state.is_none()
                 && let Some(b) = backend.take()
             {
-                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, ..Settings::default() }));
+                *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, auto_update: false, ..Settings::default() }));
             }
             if let Some(l) = state.as_mut() {
                 l.logic(&ui.ctx().clone(), &mut FramelessHost);
@@ -1293,7 +1295,7 @@ fn the_rate_limit_notice_never_runs_under_the_footer_links() {
                 if state.is_none()
                     && let Some(b) = backend.take()
                 {
-                    *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, ..Settings::default() }));
+                    *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), Settings { notify: false, auto_update: false, ..Settings::default() }));
                 }
                 if let Some(l) = state.as_mut() {
                     l.logic(&ui.ctx().clone(), &mut NoHost);
@@ -1388,7 +1390,7 @@ fn short_window(reduce: Rc<Cell<bool>>) -> Harness<'static, Option<LauncherUi>> 
             if state.is_none()
                 && let Some(b) = backend.take()
             {
-                let settings = Settings { view: ViewMode::Grid, notify: false, ..Settings::default() };
+                let settings = Settings { view: ViewMode::Grid, notify: false, auto_update: false, ..Settings::default() };
                 *state = Some(LauncherUi::new(ui.ctx(), Box::new(b), settings));
             }
             if let Some(l) = state.as_mut() {

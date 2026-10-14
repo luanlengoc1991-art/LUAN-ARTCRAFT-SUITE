@@ -1,0 +1,106 @@
+# Push to main -> every changed app (in the default build set) is built for Windows x64 and
+# published to its release repo (luanlengoc1991-art/<id>) as a new, higher X.Y.Z version.
+# ArtCraft Launcher on each machine checks those repos every 20 minutes and installs the update
+# (auto-update is on by default); the app's CLI / MCP server is in the same MSI, so it updates too.
+#
+# Needs the repository secret RELEASE_TOKEN: a token of the owner's account with `repo` scope
+# (GITHUB_TOKEN can't create releases in other repositories).
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/**']
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: 'Comma-separated app ids to release, or "all" (default build set)'
+        required: true
+        default: all
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.p.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: p
+        shell: bash
+        run: |
+          set -euo pipefail
+          enabled=$(jq -c '[.apps[] | select(.build.buildByDefault) | .id]' config/apps.json)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.apps }}" = "all" ]; then apps="$enabled"
+            else apps=$(echo '${{ inputs.apps }}' | jq -R -c 'split(",") | map(gsub("^\\s+|\\s+$";""))'); fi
+          else
+            base="${{ github.event.before }}"
+            if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$base" 2>/dev/null; then
+              apps='[]'
+            else
+              apps=$(git diff --name-only "$base" "${{ github.sha }}" | sed -n 's#^apps/\([^/]*\)/.*#\1#p' | sort -u \
+                | jq -R -s -c --argjson ok "$enabled" 'split("\n") | map(select(length > 0 and (. as $a | $ok | index($a))))')
+            fi
+          fi
+          echo "apps=$apps" >> "$GITHUB_OUTPUT"
+          echo "Release: $apps"
+
+  release:
+    needs: plan
+    if: needs.plan.outputs.apps != '[]' && needs.plan.outputs.apps != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.plan.outputs.apps) }}
+    # One release at a time per app, so two quick pushes can't pick the same version.
+    concurrency:
+      group: release-${{ matrix.app }}
+      cancel-in-progress: false
+    runs-on: windows-latest
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+    steps:
+      - run: git config --global core.longpaths true
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/${{ matrix.app }}
+          key: release-${{ matrix.app }}
+      - name: Install WiX v5
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+      - name: Next version
+        id: v
+        shell: pwsh
+        run: |
+          $v = ./scripts/release-version.ps1 -App ${{ matrix.app }}
+          if ($LASTEXITCODE -ne 0 -or -not $v) { throw 'could not compute the release version' }
+          "version=$v" >> $env:GITHUB_OUTPUT
+          "Releasing ${{ matrix.app }} $v"
+      - name: Stamp version (build only, not committed)
+        working-directory: apps/${{ matrix.app }}
+        run: cargo run --locked -q -p xtask -- version set ${{ steps.v.outputs.version }}
+      - name: Build + MSI
+        shell: pwsh
+        run: ./scripts/build-app.ps1 -App ${{ matrix.app }} -Arch x64 -Msi
+      - name: Publish release
+        shell: pwsh
+        run: ./scripts/publish-release.ps1 -Apps ${{ matrix.app }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.app }}-${{ steps.v.outputs.version }}-windows-x64
+          path: builds/${{ matrix.app }}/
+          if-no-files-found: ignore

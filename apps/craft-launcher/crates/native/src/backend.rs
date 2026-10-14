@@ -30,7 +30,9 @@ const RESTART_WAIT: Duration = Duration::from_secs(10 * 60);
 const FRESH_FOR: i64 = 4 * 60;
 /// Once every app has loaded, GitHub is asked about an app the feed can't vouch for at most this
 /// often (pressing Refresh asks right away).
-const GITHUB_FALLBACK_EVERY: i64 = 60 * 60;
+/// LUAN-ARTCRAFT-SUITE: 20 minutes (was an hour): GitHub is the only source now, and 14 repos
+/// three times an hour stays under its 60 unauthenticated requests an hour.
+const GITHUB_FALLBACK_EVERY: i64 = 20 * 60;
 /// Until every app has loaded once, GitHub may be asked a little more eagerly.
 const EARLY_GITHUB_EVERY: i64 = 5 * 60;
 /// Tries at the feed per check (after the very first poll). The pause between tries is the
@@ -1193,14 +1195,14 @@ mod tests {
         let (_, _, used) = latest_for(word, Some(&feed), LOADED, &github, &shared, false, false, NOW);
         assert_eq!(used, Some(Source::GitHubApi));
         assert_eq!(github.0.load(Ordering::SeqCst), 1);
-        // …not again within the hour…
-        let (_, _, used) = latest_for(word, Some(&feed), LOADED, &github, &shared, false, false, NOW + 30 * 60);
+        // …not again within the interval…
+        let (_, _, used) = latest_for(word, Some(&feed), LOADED, &github, &shared, false, false, NOW + GITHUB_FALLBACK_EVERY / 2);
         assert_eq!(used, None);
         assert_eq!(github.0.load(Ordering::SeqCst), 1);
-        // …but Refresh asks right away, and an hour later it's due again.
-        latest_for(word, Some(&feed), LOADED, &github, &shared, false, true, NOW + 31 * 60);
+        // …but Refresh asks right away, and an interval later it's due again.
+        latest_for(word, Some(&feed), LOADED, &github, &shared, false, true, NOW + GITHUB_FALLBACK_EVERY / 2 + 60);
         assert_eq!(github.0.load(Ordering::SeqCst), 2);
-        latest_for(word, Some(&feed), LOADED, &github, &shared, false, false, NOW + 31 * 60 + GITHUB_FALLBACK_EVERY);
+        latest_for(word, Some(&feed), LOADED, &github, &shared, false, false, NOW + GITHUB_FALLBACK_EVERY / 2 + 60 + GITHUB_FALLBACK_EVERY);
         assert_eq!(github.0.load(Ordering::SeqCst), 3);
 
         // No feed answer at all (server down): GitHub, still rate-limited per app.

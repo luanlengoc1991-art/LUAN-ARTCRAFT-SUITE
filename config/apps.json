@@ -46,7 +46,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/photocraft"
+      "releaseRepo": "luanlengoc1991-art/photocraft",
+      "installFolder": "%ProgramFiles%\\PhotoCraft"
     },
     {
       "id": "vectorcraft",
@@ -87,7 +88,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/vectorcraft"
+      "releaseRepo": "luanlengoc1991-art/vectorcraft",
+      "installFolder": "%ProgramFiles%\\VectorCraft"
     },
     {
       "id": "filmcraft",
@@ -128,7 +130,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/filmcraft"
+      "releaseRepo": "luanlengoc1991-art/filmcraft",
+      "installFolder": "%ProgramFiles%\\FilmCraft"
     },
     {
       "id": "lightcraft",
@@ -172,7 +175,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/lightcraft"
+      "releaseRepo": "luanlengoc1991-art/lightcraft",
+      "installFolder": "%ProgramFiles%\\LightCraft"
     },
     {
       "id": "pdfcraft",
@@ -213,7 +217,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/pdfcraft"
+      "releaseRepo": "luanlengoc1991-art/pdfcraft",
+      "installFolder": "%ProgramFiles%\\PdfCraft"
     },
     {
       "id": "effectcraft",
@@ -261,7 +266,8 @@
           "crates": "filmcraft-codecs, -media, -frame, -color, -time, -h264enc, -prores, -aac, -isobmff, -opus, -vp9, -hevc, -av1, -interchange, -project, -geom"
         }
       ],
-      "releaseRepo": "luanlengoc1991-art/effectcraft"
+      "releaseRepo": "luanlengoc1991-art/effectcraft",
+      "installFolder": "%ProgramFiles%\\EffectCraft"
     },
     {
       "id": "designcraft",
@@ -309,7 +315,8 @@
           "crates": "hayro, hayro-interpret, hayro-syntax, hayro-jbig2"
         }
       ],
-      "releaseRepo": "luanlengoc1991-art/designcraft"
+      "releaseRepo": "luanlengoc1991-art/designcraft",
+      "installFolder": "%ProgramFiles%\\DesignCraft"
     },
     {
       "id": "figcraft",
@@ -350,7 +357,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/figcraft"
+      "releaseRepo": "luanlengoc1991-art/figcraft",
+      "installFolder": "%ProgramFiles%\\FigCraft"
     },
     {
       "id": "wordcraft",
@@ -391,7 +399,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/wordcraft"
+      "releaseRepo": "luanlengoc1991-art/wordcraft",
+      "installFolder": "%ProgramFiles%\\WordCraft"
     },
     {
       "id": "soundcraft",
@@ -432,7 +441,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/soundcraft"
+      "releaseRepo": "luanlengoc1991-art/soundcraft",
+      "installFolder": "%ProgramFiles%\\SoundCraft"
     },
     {
       "id": "deckcraft",
@@ -473,7 +483,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/deckcraft"
+      "releaseRepo": "luanlengoc1991-art/deckcraft",
+      "installFolder": "%ProgramFiles%\\DeckCraft"
     },
     {
       "id": "cadcraft",
@@ -514,7 +525,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/cadcraft"
+      "releaseRepo": "luanlengoc1991-art/cadcraft",
+      "installFolder": "%ProgramFiles%\\CADCraft"
     },
     {
       "id": "gridcraft",
@@ -555,7 +567,8 @@
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
       "dependsOnApps": [],
-      "releaseRepo": "luanlengoc1991-art/gridcraft"
+      "releaseRepo": "luanlengoc1991-art/gridcraft",
+      "installFolder": "%ProgramFiles%\\GridCraft"
     },
     {
       "id": "craft-launcher",
@@ -595,7 +608,8 @@
       },
       "dependsOnApps": [],
       "releaseRepo": "luanlengoc1991-art/craft-launcher",
-      "customized": "Installs/updates apps from luanlengoc1991-art release repos; vendor feed disabled"
+      "customized": "Installs/updates apps from luanlengoc1991-art release repos; vendor feed disabled",
+      "installFolder": "%LOCALAPPDATA% (per-user)"
     }
   ]
 }

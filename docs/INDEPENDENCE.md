@@ -49,16 +49,49 @@ Launcher chỉ hiện "có bản cài" cho app nào đã được phát hành l�
 mặc định có 8 app + launcher. 5 app còn lại sẽ hiện "chưa có bản phát hành" cho tới khi bạn build
 và phát hành chúng.
 
-## Phát hành phiên bản mới
+## Phát hành tự động: sửa → push → mọi máy tự cập nhật
 
-```powershell
-scripts\build-app.ps1 -App pdfcraft -Msi        # .exe + .msi + .zip vào builds\
-scripts\publish-release.ps1 -Apps pdfcraft      # tạo Release v<phiên bản> trên luanlengoc1991-art/pdfcraft
+```
+bạn sửa apps/<app>/ → git push
+   → GitHub Actions "Release" (.github/workflows/release.yml), chỉ chạy cho app bị sửa:
+       tính phiên bản mới (scripts/release-version.ps1: luôn cao hơn bản trước, ví dụ 0.9.0 → 0.9.1)
+       đặt phiên bản vào mã (cargo xtask version set, chỉ trong lúc build, không commit)
+       build .exe + .msi bằng công cụ đóng gói gốc, tạo Release trên luanlengoc1991-art/<app>
+   → ArtCraft Launcher trên mọi máy hỏi GitHub 20 phút/lần, tự tải và cài bản mới
+       (tự cập nhật bật mặc định; tắt được trong Settings)
+   → <app>-cli.exe (MCP) nằm trong cùng file .msi nên cập nhật cùng lúc, cùng đường dẫn
 ```
 
-Mỗi phiên bản chỉ phát hành một lần (tag `v<version>`). Khi bạn tự sửa một app và muốn launcher
-cập nhật, hãy tăng `version` trong `apps/<app>/Cargo.toml` (`[workspace.package]`), ví dụ
-`0.9.0` → `0.9.1`, rồi build và phát hành.
+- Sửa `apps/craft-launcher` thì chính **trình quản lý** cũng được phát hành bản mới và tự cập nhật.
+- `scripts\upgrade.ps1` (nâng cấp từ upstream) push lên `main`, nên các app nâng cấp cũng tự phát hành.
+- Chỉ các app có `build.buildByDefault: true` trong `config/apps.json` mới tự phát hành (8 app +
+  trình quản lý). Muốn thêm app nào, đổi giá trị đó thành `true`.
+- Một lần build trên GitHub mất khoảng 15–30 phút mỗi app (repo public nên miễn phí). Theo dõi ở
+  tab **Actions** → **Release**.
+- Phát hành tay một app bất kỳ: tab Actions → Release → **Run workflow** → nhập tên app (hoặc `all`).
+- Secret `RELEASE_TOKEN` (Settings → Secrets → Actions) là token GitHub CLI của tài khoản bạn. Nếu
+  bạn đăng xuất `gh` hoặc thu hồi token, hãy tạo token mới (quyền `repo`) và cập nhật secret này.
+
+Phát hành từ máy cục bộ (không qua GitHub Actions) vẫn dùng được:
+
+```powershell
+scripts\build-app.ps1 -App pdfcraft -Msi
+scripts\publish-release.ps1 -Apps pdfcraft
+```
+
+## MCP cho Claude Code và Cursor
+
+Mỗi app cài qua launcher đều có MCP server: `C:\Program Files\<App>\<app>-cli.exe mcp`. Đăng ký
+một lần trên mỗi máy (chạy lại khi cài thêm app):
+
+```powershell
+scripts\register-mcp.ps1                        # hoặc: -Folder D:\ArtCraftWork để giới hạn thư mục
+```
+
+Script ghi `.mcp.json` (Claude Code trong dự án này) và `%USERPROFILE%\.cursor\mcp.json` (Cursor,
+mọi dự án). Khi launcher cập nhật app, file `.exe` được thay tại chỗ nên MCP tự lên bản mới.
+Trình quản lý không có MCP riêng. Đề xuất "MCP Gateway" gom 13 app vào một server nằm trong
+`docs/MCP-AUTOMATION.md`.
 
 Bản cài chưa được ký số (không có chứng chỉ code-signing), nên Windows SmartScreen có thể cảnh báo
 "Unknown publisher" lần đầu. Chọn **More info → Run anyway**.

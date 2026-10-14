@@ -52,3 +52,6 @@ node_modules/
 # vendor/: exact copies of pinned git dependencies (scripts/vendor-git-deps.ps1). Every file is
 # covered by .cargo-checksum.json, so nothing in it may be ignored.
 !vendor/**
+
+# Machine-specific MCP registrations (scripts/register-mcp.ps1 writes it)
+.mcp.json
