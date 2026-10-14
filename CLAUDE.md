@@ -77,6 +77,8 @@ builds/             local build output (git-ignored)
    files; keep diffs small and local. That keeps future `git subtree pull` merges clean.
 7. **Commits.** One app per commit, message prefix `feat(<id>):`, `fix(<id>):`, `chore(<id>):`.
    Commit a checkpoint before any large change. Never mix an upstream sync with owner edits.
+   Stage explicit paths (`git add <paths>`); never `git commit -a` / `git add -A`, and review
+   `git diff --cached --stat` before committing, so stray edits under apps/ can't slip in.
 8. **Forbidden without explicit permission:** `git reset --hard`, `git clean -fd/-fdx`,
    `git push --force`, `git checkout -- .`, `git restore .`, deleting folders, rewriting history,
    `git subtree split/push`, pushing to any remote other than `origin`, creating GitHub repos.
