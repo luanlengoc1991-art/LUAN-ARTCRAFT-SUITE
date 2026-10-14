@@ -30,8 +30,10 @@ dừng lại và **không** tự chọn bên nào.
    git commit                                   # hoàn tất merge
    scripts\test-app.ps1 -App <id>
    ```
-5. Cập nhật thủ công `config/apps.json` → `upstream.importedCommit` của app = SHA upstream mới
-   (script đã in ra), rồi commit `chore(<id>): record upstream commit ...`.
+5. Ghi commit upstream mới (và phiên bản) vào `config/apps.json`:
+   ```powershell
+   scripts\upstream-update.ps1 -App <id> -RecordOnly
+   ```
 6. Merge vào main như bình thường (UPSTREAM-SYNC.md bước 4).
 
 ## Các trường hợp đặc biệt
