@@ -35,6 +35,9 @@ Install-Winget 'Git.Git'
 Install-Winget 'Rustlang.Rustup'
 Install-Winget 'Microsoft.VisualStudio.2022.BuildTools' '--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended'
 Install-Winget 'GitHub.cli'
+# Upstream packaging scripts (packaging/windows/*.ps1) expect PowerShell 7: Windows PowerShell 5.1
+# misreads their UTF-8 text (PdfCraft's test-msi.ps1 fails on "…").
+Install-Winget 'Microsoft.PowerShell'
 if (-not $SkipMsiTools) { Install-Winget 'Microsoft.DotNet.SDK.8' }
 
 $env:PATH = "$env:USERPROFILE\.cargo\bin;C:\Program Files\Git\cmd;C:\Program Files\dotnet;$env:USERPROFILE\.dotnet\tools;C:\Program Files\GitHub CLI;$env:PATH"

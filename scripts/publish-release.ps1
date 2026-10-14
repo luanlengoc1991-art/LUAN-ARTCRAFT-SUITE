@@ -19,6 +19,8 @@
 #>
 param([string[]] $Apps, [switch] $DryRun)
 . "$PSScriptRoot\lib\common.ps1"
+# gh writes normal results ("release not found") to stderr; exit codes are checked explicitly below.
+$ErrorActionPreference = 'Continue'
 
 $ghDir = 'C:\Program Files\GitHub CLI'
 if (-not (Test-Command gh) -and (Test-Path "$ghDir\gh.exe")) { $env:PATH = "$ghDir;$env:PATH" }
@@ -55,7 +57,7 @@ foreach ($id in $Apps) {
   & gh @ghArgs @assets
   if ($LASTEXITCODE -ne 0) { $results += [pscustomobject]@{ app = $id; version = $ver; result = "FAILED (gh exit $LASTEXITCODE)" }; continue }
   $results += [pscustomobject]@{ app = $id; version = $ver; result = "published https://github.com/$repo/releases/tag/$tag" }
-  Start-Sleep -Seconds 5   # stay clear of GitHub's content-creation rate limit
+  Start-Sleep -Seconds 20  # stay clear of GitHub's content-creation rate limit
 }
 $results | Format-Table -AutoSize -Wrap | Out-String | Write-Host
 if ($results | Where-Object { $_.result -like 'FAILED*' }) { exit 1 }

@@ -2,6 +2,21 @@
 
 Mọi kết quả dưới đây đã **chạy và kiểm tra thật** trên máy Windows 11 x64 này, trừ chỗ ghi rõ khác.
 
+## Cập nhật (tối 14/10): độc lập + trình quản lý
+
+- **Thư viện git đã vendor** vào `vendor/git/` (10 bộ, khoảng 20 MB). Với CARGO_HOME trống, DesignCraft,
+  PhotoCraft và EffectCraft tải 0 repo git. Xem `docs/INDEPENDENCE.md`.
+- **Trình quản lý** `apps/craft-launcher` (ArtCraft Launcher 0.4.1): cài và cập nhật app từ
+  `luanlengoc1991-art/<app>`, đã tắt feed `api.storyteller.ai`. `cargo test --workspace` đạt toàn bộ.
+- **Releases đã phát hành** (`.msi` + `.zip` portable + `SHA256SUMS.txt`):
+  photocraft v0.9.0, vectorcraft v0.11.0, filmcraft v0.8.0, pdfcraft v0.8.0, effectcraft v0.10.0,
+  wordcraft v0.7.0, cadcraft v0.7.0, gridcraft v0.7.0, craft-launcher v0.4.1.
+- Kiểm chứng bằng mã của launcher trên dữ liệu GitHub thật: cả 9 đều chọn được bản `.msi` Windows x64
+  kèm checksum. **Chưa** thử cài thật bằng giao diện launcher.
+- VectorCraft đã nhận 3 tính năng từ fork cũ của bạn (tự cập nhật, autobuild, CLI cho MCP). Các fork
+  cũ được đổi tên thành `photocraft-fork-old` và `vectorcraft-fork-old`.
+- Bản cài **chưa ký số**, nên Windows SmartScreen sẽ cảnh báo lần đầu.
+
 ## Tích hợp
 
 - **13/13 app** đã nhập vào `apps/<id>/` bằng git subtree (squash) từ `github.com/storytold/<id>`, nhánh `main`.
