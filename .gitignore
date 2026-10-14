@@ -48,3 +48,7 @@ desktop.ini
 
 # Node tooling (scripts only; no app uses node)
 node_modules/
+
+# vendor/: exact copies of pinned git dependencies (scripts/vendor-git-deps.ps1). Every file is
+# covered by .cargo-checksum.json, so nothing in it may be ignored.
+!vendor/**
