@@ -70,7 +70,7 @@ foreach ($id in $Apps) {
     if ($cur -and $line -match '^(git|rev|branch|tag) = "([^"]+)"') { if ($Matches[1] -eq 'git') { $cur.url = $Matches[2] } else { $cur.refKind = $Matches[1]; $cur.refValue = $Matches[2] } }
     if ($line -match '^\[source\.vendored-sources\]') { $cur = $null }
   }
-  if ($gitSources.Count -eq 0) { Write-Host '  no git dependencies'; continue }
+  if ($gitSources.Count -eq 0) { Write-Host '  no git dependencies'; Remove-Item -Recurse -Force $tmp; continue }
 
   # Cargo.lock: which packages come from which git source (source = "git+URL?rev=X#commit")
   $lock = Get-Content -Raw (Join-Path $dir 'Cargo.lock')
