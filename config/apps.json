@@ -25,6 +25,7 @@
       "rustVersion": "1.95",
       "version": "0.8.2",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "photocraft",
           "photocraft-cli"
@@ -66,6 +67,7 @@
       "rustVersion": "1.95",
       "version": "0.11.0",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "vectorcraft",
           "vectorcraft-cli"
@@ -105,6 +107,7 @@
       "rustVersion": "1.95",
       "version": "0.7.2",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "filmcraft",
           "filmcraft-cli"
@@ -144,6 +147,7 @@
       "rustVersion": "1.90",
       "version": "0.8.0",
       "build": {
+        "buildByDefault": false,
         "packages": [
           "lightcraft",
           "lightcraft-cli"
@@ -186,6 +190,7 @@
       "rustVersion": "1.95",
       "version": "0.8.0",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "pdfcraft",
           "pdfcraft-cli"
@@ -225,6 +230,7 @@
       "rustVersion": "1.95",
       "version": "0.9.2",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "effectcraft",
           "effectcraft-cli"
@@ -271,6 +277,7 @@
       "rustVersion": "1.95",
       "version": "0.8.0",
       "build": {
+        "buildByDefault": false,
         "packages": [
           "designcraft",
           "designcraft-cli"
@@ -317,6 +324,7 @@
       "rustVersion": "1.95",
       "version": "0.6.0",
       "build": {
+        "buildByDefault": false,
         "packages": [
           "figcraft",
           "figcraft-cli"
@@ -356,6 +364,7 @@
       "rustVersion": "1.90",
       "version": "0.7.0",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "wordcraft",
           "wordcraft-cli"
@@ -395,6 +404,7 @@
       "rustVersion": "1.90",
       "version": "0.7.0",
       "build": {
+        "buildByDefault": false,
         "packages": [
           "soundcraft",
           "soundcraft-cli"
@@ -434,6 +444,7 @@
       "rustVersion": "1.90",
       "version": "0.7.0",
       "build": {
+        "buildByDefault": false,
         "packages": [
           "deckcraft",
           "deckcraft-cli"
@@ -473,6 +484,7 @@
       "rustVersion": "1.90",
       "version": "0.7.0",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "cadcraft",
           "cadcraft-cli"
@@ -512,6 +524,7 @@
       "rustVersion": "1.90",
       "version": "0.7.0",
       "build": {
+        "buildByDefault": true,
         "packages": [
           "gridcraft",
           "gridcraft-cli"

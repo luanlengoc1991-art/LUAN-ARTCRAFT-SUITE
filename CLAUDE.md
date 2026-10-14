@@ -79,7 +79,13 @@ builds/             local build output (git-ignored)
    Commit a checkpoint before any large change. Never mix an upstream sync with owner edits.
 8. **Forbidden without explicit permission:** `git reset --hard`, `git clean -fd/-fdx`,
    `git push --force`, `git checkout -- .`, `git restore .`, deleting folders, rewriting history,
-   `git subtree split/push`, pushing anywhere, creating GitHub repos.
+   `git subtree split/push`, pushing to any remote other than `origin`, creating GitHub repos.
+10. **Publish every change.** The owner's GitHub is `origin` =
+   https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE (public). After committing a change
+   on `main` (tests/build checked), run `git push origin main`. Normal fast-forward pushes only.
+11. **Build scope.** The owner builds 8 apps: photocraft, vectorcraft, filmcraft, pdfcraft,
+   effectcraft, wordcraft, cadcraft, gridcraft. lightcraft, designcraft, figcraft, soundcraft and
+   deckcraft stay in the repo (source kept, upstream-synced) but are not built unless asked.
 9. **Never report success you have not verified.** If a build or test was not run (e.g. Rust not
    installed), say so.
 

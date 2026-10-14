@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Build several (default: all 13) apps one after another; a failure does not stop the others.
+  Build several apps (default: those with build.buildByDefault in config/apps.json) one after another; a failure does not stop the others.
 
 .DESCRIPTION
   Calls scripts\build-app.ps1 for each app, captures each log under builds\logs\, and writes
@@ -19,7 +19,7 @@ param(
 . "$PSScriptRoot\lib\common.ps1"
 
 $Apps = Split-AppList $Apps
-if (-not $Apps) { $Apps = Get-AppIds }
+if (-not $Apps) { $Apps = @((Get-Manifest).apps | Where-Object { $_.build.buildByDefault } | ForEach-Object { $_.id }) }
 $logs = Join-Path $script:RepoRoot 'builds\logs'
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 $ps = if (Test-Command pwsh) { 'pwsh' } else { 'powershell' }
