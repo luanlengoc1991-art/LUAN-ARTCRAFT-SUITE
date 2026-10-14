@@ -94,7 +94,7 @@
       "upstream": {
         "repo": "https://github.com/storytold/filmcraft.git",
         "branch": "main",
-        "importedCommit": "cee1feb185e675a108f78067f71ad86a640ace3d",
+        "importedCommit": "f03e21556d8e3a7155b91892d958debd5255d7af",
         "importMethod": "git subtree --squash"
       },
       "license": "MIT OR Apache-2.0",
@@ -105,7 +105,7 @@
       ],
       "language": "Rust",
       "rustVersion": "1.95",
-      "version": "0.7.2",
+      "version": "0.8.0",
       "build": {
         "buildByDefault": true,
         "packages": [
