@@ -8,6 +8,8 @@ sửa, build và cập nhật cả 13 app từ một project duy nhất trong Cu
 > phép gốc **MIT OR Apache-2.0** và thông báo bản quyền trong `apps/<app>/LICENSE-*`, `NOTICE`,
 > `ATTRIBUTION.md`. Bản quyền thuộc ArtCraft Team và các contributor.
 
+GitHub: https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE
+
 ## 13 ứng dụng
 
 | App | Thư mục | Chức năng | Upstream |
@@ -65,9 +67,10 @@ chạy `powershell -ExecutionPolicy Bypass -File scripts\<script>.ps1 ...`.
 | App nào bị ảnh hưởng | `scripts\affected.ps1` |
 | Test một app | `scripts\test-app.ps1 -App <app> [-Mode check\|test\|full]` |
 | Build một app | `scripts\build-app.ps1 -App <app> [-Msi] [-Arch x64]` |
-| Build tất cả | `scripts\build-all.ps1 [-Apps a,b]` |
+| Build bộ mặc định (8 app) | `scripts\build-all.ps1 [-Apps a,b]` |
 | Kiểm tra bản mới upstream | `scripts\upstream-status.ps1` |
 | Cập nhật một app từ upstream | `scripts\upstream-update.ps1 -App <app> [-DryRun]` |
+| **Nâng cấp liên tục** (sync → kiểm tra → merge → push GitHub) | `scripts\upgrade.ps1` |
 
 ## Tài liệu
 

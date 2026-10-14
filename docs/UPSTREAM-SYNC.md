@@ -67,6 +67,18 @@ git merge --no-ff upstream-sync/photocraft-<thời gian>
 
 Mỗi lần chỉ cập nhật một app, để dễ khoanh vùng lỗi.
 
+## Nâng cấp liên tục bằng một lệnh
+
+```powershell
+scripts\upgrade.ps1            # mọi app có bản mới, rồi push lên GitHub
+scripts\upgrade.ps1 -NoPush    # không đẩy lên GitHub
+scripts\upgrade.ps1 -CheckAll  # kiểm tra biên dịch cả 13 app (mặc định chỉ 8 app trong bộ build)
+```
+
+Với từng app có bản mới: chạy `upstream-update.ps1` (nhánh riêng, tag khôi phục). Nếu **xung đột
+thì dừng toàn bộ** để bạn xem. Sau đó kiểm tra biên dịch; lỗi thì không merge và giữ nhánh để xem.
+Đạt thì merge `--no-ff` vào `main`. Cuối cùng `git push origin main` (không bao giờ force-push).
+
 ## 5. Quay lại nếu cần (không mất dữ liệu)
 
 - Bỏ nhánh sync chưa merge: `git switch main` (nhánh sync vẫn còn để xem lại, xóa khi chắc chắn:

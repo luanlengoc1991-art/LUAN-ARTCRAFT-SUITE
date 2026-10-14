@@ -1,6 +1,8 @@
 # Đưa monorepo lên GitHub
 
-Chưa có remote `origin` và chưa push gì. Repo đích do bạn quyết định.
+Đã cấu hình: `origin` = https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE (public).
+Mỗi thay đổi trên `main` được đẩy lên bằng `git push origin main`. `scripts\upgrade.ps1` tự push
+sau khi nâng cấp. Phần dưới giữ lại để tham khảo.
 
 ## Lưu ý trước khi tạo repo
 
