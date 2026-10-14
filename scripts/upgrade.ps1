@@ -69,6 +69,13 @@ foreach ($id in $Apps) {
   }
   Invoke-Git switch main | Out-Null
   Invoke-Git merge --no-ff -q -m "Merge $branch" $branch | Out-Null
+  # Keep the repo self-contained: copy any git dependency rev the new upstream pins.
+  & $ps -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'vendor-git-deps.ps1') -Apps $id
+  if ($LASTEXITCODE -eq 0) {
+    Invoke-Git add .cargo/config.toml vendor | Out-Null
+    $staged = & git -C $script:RepoRoot diff --cached --name-only
+    if ($staged) { Invoke-Git commit -q -m "chore($id): vendor git dependencies pinned by the new upstream" | Out-Null }
+  } else { Write-Warning "vendor-git-deps failed for $id; run scripts\vendor-git-deps.ps1 -Apps $id" }
   $results += [pscustomobject]@{ app = $id; result = $(if ($check) { 'merged (compile check passed)' } else { 'merged (not compiled: not in build set)' }) }
 }
 

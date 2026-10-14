@@ -24,6 +24,16 @@ each imported from its official upstream at `github.com/storytold/<id>` with **g
 | deckcraft | DeckCraft (presentations) | storytold/deckcraft |
 | cadcraft | CADCraft (CAD, drafting) | storytold/cadcraft |
 | gridcraft | GridCraft (spreadsheets) | storytold/gridcraft |
+| craft-launcher | ArtCraft Launcher (installs/updates the apps) | storytold/craft-launcher, **customized**: installs from luanlengoc1991-art/<id> releases, vendor feed off |
+
+**Independence (owner's requirement):** nothing may depend on storytold at build or install time.
+- Pinned git deps are vendored in `vendor/git/` + root `.cargo/config.toml`
+  (`scripts/vendor-git-deps.ps1`). After any change that pins a new git rev, re-run it and commit
+  `vendor/` + `.cargo/config.toml`. Never hand-edit files under `vendor/` (checksummed).
+- Installers are published to `luanlengoc1991-art/<id>` Releases (`scripts/publish-release.ps1`,
+  tag `v<version>`); the launcher reads only those. `luanlengoc1991-art/photocraft-fork-old` and
+  `vectorcraft-fork-old` are the owner's old forks: keep them, don't publish there.
+- See `docs/INDEPENDENCE.md`.
 
 `config/apps.json` is the source of truth: upstream URL, branch, imported commit, version,
 rust-version, license, build packages/features, automation entry points, cross-app deps.

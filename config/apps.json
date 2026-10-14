@@ -45,7 +45,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/photocraft"
     },
     {
       "id": "vectorcraft",
@@ -85,7 +86,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/vectorcraft"
     },
     {
       "id": "filmcraft",
@@ -125,7 +127,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/filmcraft"
     },
     {
       "id": "lightcraft",
@@ -168,7 +171,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/lightcraft"
     },
     {
       "id": "pdfcraft",
@@ -208,7 +212,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/pdfcraft"
     },
     {
       "id": "effectcraft",
@@ -255,7 +260,8 @@
           "rev": "2c5ba7a726",
           "crates": "filmcraft-codecs, -media, -frame, -color, -time, -h264enc, -prores, -aac, -isobmff, -opus, -vp9, -hevc, -av1, -interchange, -project, -geom"
         }
-      ]
+      ],
+      "releaseRepo": "luanlengoc1991-art/effectcraft"
     },
     {
       "id": "designcraft",
@@ -302,7 +308,8 @@
           "rev": "b5467d93a0",
           "crates": "hayro, hayro-interpret, hayro-syntax, hayro-jbig2"
         }
-      ]
+      ],
+      "releaseRepo": "luanlengoc1991-art/designcraft"
     },
     {
       "id": "figcraft",
@@ -342,7 +349,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/figcraft"
     },
     {
       "id": "wordcraft",
@@ -382,7 +390,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/wordcraft"
     },
     {
       "id": "soundcraft",
@@ -422,7 +431,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/soundcraft"
     },
     {
       "id": "deckcraft",
@@ -462,7 +472,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/deckcraft"
     },
     {
       "id": "cadcraft",
@@ -502,7 +513,8 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/cadcraft"
     },
     {
       "id": "gridcraft",
@@ -542,7 +554,48 @@
         "mcpTransport": "stdio (JSON-RPC 2.0)",
         "controlChannel": "TCP 127.0.0.1:<port> (JSON lines), bridged by mcp --connect/--bridge/--attach"
       },
-      "dependsOnApps": []
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/gridcraft"
+    },
+    {
+      "id": "craft-launcher",
+      "name": "ArtCraft Launcher",
+      "path": "apps/craft-launcher",
+      "upstream": {
+        "repo": "https://github.com/storytold/craft-launcher.git",
+        "branch": "main",
+        "importedCommit": "0f295d4b9c90d15c2e38e36c322bdbc0fa943a54",
+        "importMethod": "git subtree --squash"
+      },
+      "license": "MIT OR Apache-2.0",
+      "licenseFiles": [
+        "LICENSE-MIT",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ],
+      "language": "Rust",
+      "rustVersion": "1.90",
+      "version": "0.4.1",
+      "build": {
+        "buildByDefault": true,
+        "packages": [
+          "artcraft-launcher"
+        ],
+        "features": [],
+        "windowsPackager": "packaging/windows/package.ps1",
+        "binaries": [
+          "artcraft-launcher.exe"
+        ]
+      },
+      "automation": {
+        "cli": null,
+        "mcp": null,
+        "mcpTransport": null,
+        "controlChannel": null
+      },
+      "dependsOnApps": [],
+      "releaseRepo": "luanlengoc1991-art/craft-launcher",
+      "customized": "Installs/updates apps from luanlengoc1991-art release repos; vendor feed disabled"
     }
   ]
 }

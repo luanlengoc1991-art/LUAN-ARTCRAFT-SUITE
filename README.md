@@ -27,6 +27,13 @@ GitHub: https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE
 | DeckCraft | [apps/deckcraft](apps/deckcraft) | Trình chiếu | [storytold/deckcraft](https://github.com/storytold/deckcraft) |
 | CADCraft | [apps/cadcraft](apps/cadcraft) | CAD, bản vẽ kỹ thuật | [storytold/cadcraft](https://github.com/storytold/cadcraft) |
 | GridCraft | [apps/gridcraft](apps/gridcraft) | Bảng tính | [storytold/gridcraft](https://github.com/storytold/gridcraft) |
+| **ArtCraft Launcher** | [apps/craft-launcher](apps/craft-launcher) | **Trình quản lý**: cài và cập nhật các app từ GitHub của bạn | [storytold/craft-launcher](https://github.com/storytold/craft-launcher) (đã tùy biến) |
+
+**Độc lập:** mọi thứ cần để build, phát hành và cài đặt đều nằm trên GitHub của bạn: mã nguồn,
+thư viện (`vendor/`), file cài (Releases của `luanlengoc1991-art/<app>`) và trình quản lý. Xem
+[docs/INDEPENDENCE.md](docs/INDEPENDENCE.md).
+
+**Tải trình quản lý:** https://github.com/luanlengoc1991-art/craft-launcher/releases/latest
 
 Tất cả viết bằng Rust thuần (egui). Mỗi app có GUI (`<app>.exe`), CLI kèm **MCP server**
 (`<app>-cli.exe mcp`) và bản web. Chi tiết: [docs/AUDIT.md](docs/AUDIT.md).
@@ -71,6 +78,9 @@ chạy `powershell -ExecutionPolicy Bypass -File scripts\<script>.ps1 ...`.
 | Kiểm tra bản mới upstream | `scripts\upstream-status.ps1` |
 | Cập nhật một app từ upstream | `scripts\upstream-update.ps1 -App <app> [-DryRun]` |
 | **Nâng cấp liên tục** (sync → kiểm tra → merge → push GitHub) | `scripts\upgrade.ps1` |
+| Phát hành file cài lên GitHub (cho trình quản lý) | `scripts\publish-release.ps1 [-Apps a,b]` |
+| Vendor lại thư viện git (sau khi đổi rev) | `scripts\vendor-git-deps.ps1` |
+| Cài đặt máy mới | `scripts\setup-machine.ps1` |
 
 ## Tài liệu
 
