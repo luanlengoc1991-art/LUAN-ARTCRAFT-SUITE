@@ -16,18 +16,47 @@
   -DryRun fetches and shows what would change (upstream commits, your local edits, and files
   touched by both, i.e. likely conflicts) without creating a branch or merging.
 
+  -RecordOnly is for after a conflicted sync: once you resolved and committed the merge, it
+  writes the upstream commit that is now in apps/<id>/ (read from the latest subtree squash
+  commit) and the version into config/apps.json. No fetch, no merge.
+
 .EXAMPLE
   scripts\upstream-update.ps1 -App photocraft -DryRun
   scripts\upstream-update.ps1 -App photocraft
+  scripts\upstream-update.ps1 -App photocraft -RecordOnly     # after resolving conflicts
 #>
 param(
   [Parameter(Mandatory = $true)] [string] $App,
-  [switch] $DryRun
+  [switch] $DryRun,
+  [switch] $RecordOnly
 )
 . "$PSScriptRoot\lib\common.ps1"
 
 $a = Get-App $App
 $prefix = "apps/$($a.id)"
+
+function Save-SyncRecord([string] $Sha) {
+  $fields = @{ importedCommit = $Sha; version = (Get-AppVersion $a) }
+  $toml = Get-Content -Raw (Join-Path (Get-AppDir $a) 'Cargo.toml')
+  if ($toml -match 'rust-version\s*=\s*"([^"]+)"') { $fields.rustVersion = $Matches[1] }
+  Set-ManifestAppFields $a.id $fields
+  Invoke-Git add config/apps.json | Out-Null
+  Invoke-Git commit -q -m "chore($($a.id)): record upstream commit $($Sha.Substring(0,12)) in config/apps.json" | Out-Null
+  return $fields.version
+}
+
+if ($RecordOnly) {
+  if (Test-Path (Join-Path $script:RepoRoot '.git\MERGE_HEAD')) { throw 'A merge is still in progress. Resolve the conflicts and commit first.' }
+  $body = Invoke-Git log -1 --format=%B --grep "^git-subtree-dir: $prefix`$" HEAD
+  $split = ($body | Where-Object { $_ -match '^git-subtree-split:\s*([0-9a-f]{40})' } | Select-Object -First 1) -replace '^git-subtree-split:\s*', ''
+  if (-not $split) { throw "No subtree squash commit for $prefix found in history." }
+  if ($split -eq $a.upstream.importedCommit) { Write-Host "config/apps.json already records $($split.Substring(0,12))."; exit 0 }
+  Assert-CleanTree
+  $v = Save-SyncRecord $split
+  Write-Host "Recorded $($a.id) upstream $($split.Substring(0,12)) (version $v)." -ForegroundColor Green
+  exit 0
+}
+
 $remote = Initialize-UpstreamRemote $a
 $branchRef = "$remote/$($a.upstream.branch)"
 
@@ -83,8 +112,7 @@ if ($LASTEXITCODE -ne 0) {
 You are on branch $branch with the merge in progress. Next:
   1. Open each conflicted file in Cursor and resolve it (keep your change, upstream's, or combine).
   2. git add <files>; git commit            (completes the merge)
-  3. Re-run scripts\upstream-update.ps1 is NOT needed; instead update config\apps.json
-     upstream.importedCommit to $new and commit.
+  3. scripts\upstream-update.ps1 -App $($a.id) -RecordOnly   (records $($new.Substring(0,12)) in config\apps.json)
 To give up this sync instead: git merge --abort; git switch -   (your main is untouched)
 See docs\UPSTREAM-SYNC.md
 "@
@@ -92,18 +120,10 @@ See docs\UPSTREAM-SYNC.md
 }
 
 # Record the new upstream commit (and version) in the manifest.
-$m = Get-Manifest
-$entry = $m.apps | Where-Object { $_.id -eq $a.id }
-$entry.upstream.importedCommit = $new
-$entry.version = Get-AppVersion $entry
-$toml = Get-Content -Raw (Join-Path (Get-AppDir $entry) 'Cargo.toml')
-if ($toml -match 'rust-version\s*=\s*"([^"]+)"') { $entry.rustVersion = $Matches[1] }
-Save-Manifest $m
-Invoke-Git add config/apps.json | Out-Null
-Invoke-Git commit -q -m "chore($($a.id)): record upstream commit $($new.Substring(0,12)) in config/apps.json" | Out-Null
+$ver = Save-SyncRecord $new
 
 Write-Host ''
-Write-Host "Synced $($a.id) on branch $branch (version now $($entry.version))." -ForegroundColor Green
+Write-Host "Synced $($a.id) on branch $branch (version now $ver)." -ForegroundColor Green
 Write-Host @"
 Next (nothing has touched main):
   scripts\test-app.ps1 -App $($a.id)

@@ -9,11 +9,23 @@ function Get-Manifest {
   return (Get-Content -Raw -Encoding UTF8 $script:ManifestPath | ConvertFrom-Json)
 }
 
-function Save-Manifest($Manifest) {
-  $json = $Manifest | ConvertTo-Json -Depth 20
-  # UTF-8 without BOM, LF line endings, trailing newline.
-  $json = ($json -replace "`r`n", "`n") + "`n"
-  [System.IO.File]::WriteAllText($script:ManifestPath, $json, (New-Object System.Text.UTF8Encoding $false))
+# Set string fields of one app in config/apps.json by editing only those values in place, so the
+# file keeps its formatting and the diff shows just the changed lines (ConvertTo-Json would
+# reformat the whole file). $Fields: @{ importedCommit = '...'; version = '...' }
+function Set-ManifestAppFields([string] $Id, [hashtable] $Fields) {
+  $text = [System.IO.File]::ReadAllText($script:ManifestPath)
+  $start = $text.IndexOf("`"id`": `"$Id`"")
+  if ($start -lt 0) { throw "app $Id not found in $script:ManifestPath" }
+  $next = $text.IndexOf('"id": "', $start + 1)
+  if ($next -lt 0) { $next = $text.Length }
+  $block = $text.Substring($start, $next - $start)
+  foreach ($k in $Fields.Keys) {
+    $re = "(`"$k`"\s*:\s*`")[^`"]*(`")"
+    if ($block -notmatch $re) { throw "field $k not found for app $Id" }
+    $block = [regex]::Replace($block, $re, "`${1}$($Fields[$k])`${2}", 1)
+  }
+  $text = $text.Substring(0, $start) + $block + $text.Substring($next)
+  [System.IO.File]::WriteAllText($script:ManifestPath, $text, (New-Object System.Text.UTF8Encoding $false))
 }
 
 function Get-AppIds { return @((Get-Manifest).apps | ForEach-Object { $_.id }) }
