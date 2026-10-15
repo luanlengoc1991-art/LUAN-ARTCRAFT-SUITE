@@ -4374,3 +4374,27 @@ lighting	Light	ライト
 	Softness	柔らかさ
 	Ambient Light	環境光
 	Light behind the object	オブジェクトの背後のライト
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP コマンドセンター
+	The AI / MCP Command Center needs the desktop app.	AI / MCP コマンドセンターにはデスクトップ版が必要です。
+	AI Chat	AI チャット
+	MCP Console	MCP コンソール
+	Connections	接続
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	このコンピューターに AI エージェントが見つかりません。Claude Code、Codex CLI、Cursor Agent をインストールするか、MCP コンソールからツールを実行してください。
+	Agent:	エージェント:
+	Changes on the canvas:	キャンバス上の変更:
+	Keep changes	変更を保持
+	Undo changes	変更を取り消す
+	Describe what to do, e.g. Change the logo to teal	やりたいことを入力（例: ロゴを青緑色にする）
+	Send	送信
+	tools	個のツール
+	Arguments (JSON)	引数 (JSON)
+	Execute	実行
+	Test Connection	接続をテスト
+	Copy Config	設定をコピー
+	Live control of this window:	このウィンドウのライブ制御:
+	Turn on	オンにする
+	Connected	接続済み
+	Disconnected	未接続
+	Unsupported	非対応
+	Logs	ログ

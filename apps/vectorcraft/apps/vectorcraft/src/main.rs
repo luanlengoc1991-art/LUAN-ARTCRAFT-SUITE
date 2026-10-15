@@ -860,9 +860,13 @@ fn main() -> std::process::ExitCode {
                     app.graphics_adapter = Some("OpenGL (Windows 7 compatibility)".into());
                 }
                 app.custom_titlebar = custom_titlebar;
+                // LUAN-ARTCRAFT-SUITE: the AI / MCP Command Center can turn the channel on later.
+                let starter_ctx = cc.egui_ctx.clone();
+                app = app.with_control_starter(move |port| control_server::start(port, starter_ctx.clone()));
                 if let Some(port) = control_port {
                     let rx = control_server::start(port, cc.egui_ctx.clone());
                     app = app.with_control(rx).with_automation_roots(roots.clone());
+                    app.control_port = Some(port);
                     if let Some(roots) = &roots {
                         // Everywhere the app doesn't say whose work it is (worker threads), the
                         // roots hold: unconfined is only what the person at the keyboard does.

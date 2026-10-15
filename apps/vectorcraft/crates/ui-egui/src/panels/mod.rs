@@ -4,6 +4,8 @@
 //! Every icon panel has a body (`show_icon_panel`) and a panel (≡) menu (`panel_menu`).
 
 pub mod actions;
+/// LUAN-ARTCRAFT-SUITE: the AI / MCP Command Center.
+pub mod ai_center;
 pub mod align;
 pub mod appearance;
 pub mod artboards;
@@ -174,6 +176,7 @@ pub fn show_icon_panel(app: &mut VectorcraftApp, ui: &mut Ui, id: &str) {
         links::ID => links::show(app, ui),
         asset_export::ID => asset_export::show(app, ui),
         css_properties::ID => css_properties::show(app, ui),
+        ai_center::ID => ai_center::show(app, ui),
         _ => {
             dim_label(ui, tl!("This panel is on the roadmap (see the parity plan)."));
         }

@@ -4775,3 +4775,27 @@ imageTrace	Outline	Körvonal
 	Softness	Lágyság
 	Ambient Light	Környezeti fény
 	Light behind the object	Fény az objektum mögött
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP parancsközpont
+	The AI / MCP Command Center needs the desktop app.	Az AI / MCP parancsközponthoz az asztali alkalmazás kell.
+	AI Chat	AI csevegés
+	MCP Console	MCP konzol
+	Connections	Kapcsolatok
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Nem található AI-ügynök ezen a számítógépen. Telepítse a Claude Code, a Codex CLI vagy a Cursor Agent programot, vagy futtasson eszközöket az MCP konzolból.
+	Agent:	Ügynök:
+	Changes on the canvas:	Változások a vásznon:
+	Keep changes	Változások megtartása
+	Undo changes	Változások visszavonása
+	Describe what to do, e.g. Change the logo to teal	Írja le a feladatot, pl. Legyen a logó türkiz
+	Send	Küldés
+	tools	eszköz
+	Arguments (JSON)	Argumentumok (JSON)
+	Execute	Végrehajtás
+	Test Connection	Kapcsolat tesztelése
+	Copy Config	Konfiguráció másolása
+	Live control of this window:	Az ablak élő vezérlése:
+	Turn on	Bekapcsolás
+	Connected	Kapcsolódva
+	Disconnected	Nincs kapcsolat
+	Unsupported	Nem támogatott
+	Logs	Naplók

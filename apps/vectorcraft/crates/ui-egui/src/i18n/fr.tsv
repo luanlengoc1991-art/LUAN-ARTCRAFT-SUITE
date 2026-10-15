@@ -4808,3 +4808,27 @@ theme	Appearance	Apparence
 	Softness	Douceur
 	Ambient Light	Lumière ambiante
 	Light behind the object	Lumière derrière l'objet
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Centre de commande IA / MCP
+	The AI / MCP Command Center needs the desktop app.	Le centre de commande IA / MCP nécessite l'application de bureau.
+	AI Chat	Discussion IA
+	MCP Console	Console MCP
+	Connections	Connexions
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Aucun agent IA trouvé sur cet ordinateur. Installez Claude Code, Codex CLI ou Cursor Agent, ou lancez les outils depuis la console MCP.
+	Agent:	Agent :
+	Changes on the canvas:	Modifications sur la zone de travail :
+	Keep changes	Conserver les modifications
+	Undo changes	Annuler les modifications
+	Describe what to do, e.g. Change the logo to teal	Décrivez la tâche, par ex. Passe le logo en bleu canard
+	Send	Envoyer
+	tools	outils
+	Arguments (JSON)	Arguments (JSON)
+	Execute	Exécuter
+	Test Connection	Tester la connexion
+	Copy Config	Copier la configuration
+	Live control of this window:	Contrôle en direct de cette fenêtre :
+	Turn on	Activer
+	Connected	Connecté
+	Disconnected	Déconnecté
+	Unsupported	Non pris en charge
+	Logs	Journaux

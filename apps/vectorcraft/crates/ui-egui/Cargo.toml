@@ -38,6 +38,11 @@ log = { workspace = true }
 # MIT OR Apache-2.0 and already in the build through eframe.
 web-time = "1"
 
+# LUAN-ARTCRAFT-SUITE: the AI / MCP Command Center runs VectorCraft's own MCP tools in this process
+# (desktop only: it also starts AI agents' command lines, which the web build can't).
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+vectorcraft-mcp = { workspace = true }
+
 [dev-dependencies]
 egui_kittest = { workspace = true, features = ["wgpu", "snapshot"] }
 vectorcraft-testkit = { workspace = true }

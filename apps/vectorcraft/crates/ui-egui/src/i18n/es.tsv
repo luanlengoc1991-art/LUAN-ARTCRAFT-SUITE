@@ -4749,3 +4749,27 @@ mark-style	Japanese	Japonesas
 	Softness	Suavidad
 	Ambient Light	Luz ambiental
 	Light behind the object	Luz detrás del objeto
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Centro de comandos de IA / MCP
+	The AI / MCP Command Center needs the desktop app.	El centro de comandos de IA / MCP necesita la aplicación de escritorio.
+	AI Chat	Chat de IA
+	MCP Console	Consola MCP
+	Connections	Conexiones
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	No se encontró ningún agente de IA en este equipo. Instala Claude Code, Codex CLI o Cursor Agent, o ejecuta herramientas desde la consola MCP.
+	Agent:	Agente:
+	Changes on the canvas:	Cambios en el lienzo:
+	Keep changes	Conservar cambios
+	Undo changes	Deshacer cambios
+	Describe what to do, e.g. Change the logo to teal	Describe qué hacer, p. ej. Cambia el logotipo a verde azulado
+	Send	Enviar
+	tools	herramientas
+	Arguments (JSON)	Argumentos (JSON)
+	Execute	Ejecutar
+	Test Connection	Probar conexión
+	Copy Config	Copiar configuración
+	Live control of this window:	Control en vivo de esta ventana:
+	Turn on	Activar
+	Connected	Conectado
+	Disconnected	Desconectado
+	Unsupported	No compatible
+	Logs	Registros

@@ -3957,3 +3957,27 @@ lighting	Light	光源
 	Softness	柔和度
 	Ambient Light	环境光
 	Light behind the object	光源位于对象后方
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP 命令中心
+	The AI / MCP Command Center needs the desktop app.	AI / MCP 命令中心需要桌面版应用。
+	AI Chat	AI 对话
+	MCP Console	MCP 控制台
+	Connections	连接
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	这台电脑上找不到 AI 代理。请安装 Claude Code、Codex CLI 或 Cursor Agent，或者在 MCP 控制台中运行工具。
+	Agent:	代理：
+	Changes on the canvas:	画布上的更改：
+	Keep changes	保留更改
+	Undo changes	撤销更改
+	Describe what to do, e.g. Change the logo to teal	描述要做的事，例如：把标志改成蓝绿色
+	Send	发送
+	tools	个工具
+	Arguments (JSON)	参数 (JSON)
+	Execute	执行
+	Test Connection	测试连接
+	Copy Config	复制配置
+	Live control of this window:	实时控制此窗口：
+	Turn on	开启
+	Connected	已连接
+	Disconnected	未连接
+	Unsupported	不支持
+	Logs	日志

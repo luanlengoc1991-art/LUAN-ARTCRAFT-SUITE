@@ -2651,6 +2651,7 @@ pub fn menu_tree_named(english_names: bool) -> Vec<(&'static str, Vec<Item>)> {
                 sub("Toolbars", vec![c("Advanced", "window.toolbarAdvanced"), c("Double Column", "window.toolbarColumns")]),
                 Sep,
                 panel("Actions", "actions"),
+                panel("AI / MCP Command Center", crate::panels::ai_center::ID),
                 panel("Align", "align"),
                 panel("Appearance", "appearance"),
                 panel("Artboards", "artboards"),

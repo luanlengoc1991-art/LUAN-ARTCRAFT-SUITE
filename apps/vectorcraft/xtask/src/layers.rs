@@ -81,6 +81,8 @@ pub const INTRA_LAYER_ORDER: &[&[&str]] = &[
     &["pdf", "eps"],
     &["plugins", "effects"],
     &["three-d", "effects"],
+    // LUAN-ARTCRAFT-SUITE: the AI / MCP Command Center runs the MCP tools in the app.
+    &["mcp", "ui-egui"],
     // Inflate cuts its surface's grid cells to the shape with Pathfinder's booleans.
     &["pathops", "three-d"],
 ];

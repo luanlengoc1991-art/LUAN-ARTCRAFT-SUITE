@@ -4344,3 +4344,27 @@ lighting	Light	광원
 	Softness	부드러움
 	Ambient Light	주변광
 	Light behind the object	개체 뒤의 조명
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP 명령 센터
+	The AI / MCP Command Center needs the desktop app.	AI / MCP 명령 센터는 데스크톱 앱이 필요합니다.
+	AI Chat	AI 채팅
+	MCP Console	MCP 콘솔
+	Connections	연결
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	이 컴퓨터에서 AI 에이전트를 찾을 수 없습니다. Claude Code, Codex CLI 또는 Cursor Agent를 설치하거나 MCP 콘솔에서 도구를 실행하세요.
+	Agent:	에이전트:
+	Changes on the canvas:	캔버스의 변경 사항:
+	Keep changes	변경 사항 유지
+	Undo changes	변경 사항 실행 취소
+	Describe what to do, e.g. Change the logo to teal	할 일을 입력하세요 (예: 로고를 청록색으로 바꾸기)
+	Send	보내기
+	tools	개 도구
+	Arguments (JSON)	인수 (JSON)
+	Execute	실행
+	Test Connection	연결 테스트
+	Copy Config	구성 복사
+	Live control of this window:	이 창의 실시간 제어:
+	Turn on	켜기
+	Connected	연결됨
+	Disconnected	연결 안 됨
+	Unsupported	지원 안 됨
+	Logs	로그

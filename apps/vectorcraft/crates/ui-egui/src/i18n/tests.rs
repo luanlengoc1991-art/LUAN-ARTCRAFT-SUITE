@@ -1172,7 +1172,21 @@ const MESSAGE_CRATES: &[&str] = &["ui-egui", "engine", "doc", "format", "svg", "
 const MESSAGE_MARKERS: &[&str] = &[".status(", "ui.status = ", "status = ", "Other(", "Err(", "ok_or(", "ok_or_else(|| ", "#[error("];
 
 /// Messages that are signals, not text for people.
-const NOT_MESSAGES: &[&str] = &["quit", "cancelled"];
+const NOT_MESSAGES: &[&str] = &[
+    "quit",
+    "cancelled",
+    // LUAN-ARTCRAFT-SUITE: the AI / MCP Command Center's diagnostics (MCP handshake, the control
+    // channel, agent processes): English technical data in its log, like control replies.
+    "MCP answered without tools: {line}",
+    "a window screenshot answers after a frame: use render_preview here",
+    "no answer from the MCP server",
+    "no free local port between 7979 and 7999",
+    "no stdin",
+    "no stdout",
+    "the control channel is on but its port is unknown",
+    "this build can't open a control channel",
+    "vectorcraft-cli wasn't found next to the app",
+];
 
 /// Every status and error message literal in [`MESSAGE_CRATES`] (test modules aside), as catalog
 /// templates: `{}` becomes `{_1}`, `{_2}` … and format specs are dropped (`{n:?}` → `{n}`).

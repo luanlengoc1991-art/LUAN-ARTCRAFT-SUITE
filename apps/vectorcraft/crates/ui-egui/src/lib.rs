@@ -358,6 +358,11 @@ pub struct VectorcraftApp {
     /// moves ([`native_menu::sync`]).
     run_count: u64,
     control_rx: Option<Receiver<ControlRequest>>,
+    /// LUAN-ARTCRAFT-SUITE: the loopback port of the control channel, once it listens (`--control`,
+    /// or turned on from the AI / MCP Command Center).
+    pub control_port: Option<u16>,
+    /// Starts the control server on a port (the host's): how the Command Center turns it on.
+    control_starter: Option<Box<dyn Fn(u16) -> Receiver<ControlRequest>>>,
     /// Window captures asked for and not answered yet.
     pending_screenshots: Vec<PendingScreenshot>,
     queued_screenshots: Vec<(u64, f64, u32)>,
@@ -493,6 +498,8 @@ impl VectorcraftApp {
             clipboard_in: None,
             pending_url: None,
             control_rx: None,
+            control_port: None,
+            control_starter: None,
             pending_screenshots: vec![],
             queued_screenshots: vec![],
             screenshot_token: 0,
@@ -532,6 +539,31 @@ impl VectorcraftApp {
     pub fn with_control(mut self, rx: Receiver<ControlRequest>) -> Self {
         self.control_rx = Some(rx);
         self
+    }
+
+    /// LUAN-ARTCRAFT-SUITE: how to start the control server later, on a port, when the app didn't
+    /// start with one: the AI / MCP Command Center turns it on so an agent can drive this window.
+    pub fn with_control_starter(mut self, start: impl Fn(u16) -> Receiver<ControlRequest> + 'static) -> Self {
+        self.control_starter = Some(Box::new(start));
+        self
+    }
+
+    /// The control channel's port, starting it (loopback only) on the first free port from 7979
+    /// when it isn't listening yet.
+    pub fn ensure_control(&mut self) -> Result<u16, String> {
+        if let Some(port) = self.control_port {
+            return Ok(port);
+        }
+        if self.control_rx.is_some() {
+            return Err("the control channel is on but its port is unknown".into());
+        }
+        let Some(start) = self.control_starter.as_ref() else {
+            return Err("this build can't open a control channel".into());
+        };
+        let port = (7979..8000).find(|p| std::net::TcpListener::bind(("127.0.0.1", *p)).is_ok()).ok_or("no free local port between 7979 and 7999")?;
+        self.control_rx = Some(start(port));
+        self.control_port = Some(port);
+        Ok(port)
     }
 
     /// Confine what the control channel does to `roots` (#832): its requests, the input it

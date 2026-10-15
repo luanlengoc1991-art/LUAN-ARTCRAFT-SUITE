@@ -4967,6 +4967,7 @@ dependencies = [
  "vectorcraft-eps",
  "vectorcraft-format",
  "vectorcraft-geom",
+ "vectorcraft-mcp",
  "vectorcraft-pdf",
  "vectorcraft-plugins",
  "vectorcraft-render",
