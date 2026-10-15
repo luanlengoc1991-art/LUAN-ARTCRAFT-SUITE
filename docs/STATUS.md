@@ -2,6 +2,14 @@
 
 Mọi kết quả dưới đây đã **chạy và kiểm tra thật** trên máy Windows 11 x64 này, trừ chỗ ghi rõ khác.
 
+## Cập nhật 15/10: MCP tổng (ArtCraft MCP)
+
+- `tools/artcraft-mcp`: một MCP server cho mọi app đã cài. Tool có tên dạng `<app>_<tool>`. Có
+  thêm `artcraft_open` để mở cửa sổ app và điều khiển trực tiếp. Không sửa app nào.
+- Link cố định: https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/latest/download/ArtCraft-MCP.exe,
+  do workflow `artcraft-mcp.yml` phát hành. Cài và đăng ký vào Claude Code + Cursor bằng `scripts\install-mcp.ps1`.
+- Đã kiểm tra thật với PhotoCraft, VectorCraft, WordCraft và GridCraft. Chi tiết trong `docs/MCP-AUTOMATION.md`.
+
 ## Cập nhật (tối 14/10): độc lập + trình quản lý
 
 - **Thư viện git đã vendor** vào `vendor/git/` (10 bộ, khoảng 20 MB). Với CARGO_HOME trống, DesignCraft,

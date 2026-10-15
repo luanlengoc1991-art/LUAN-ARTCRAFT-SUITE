@@ -70,43 +70,42 @@ bật sẵn vì các `.exe` chưa được build.
 Khuyến nghị an toàn: luôn đặt `--automation-read-root` / `--automation-write-root` (hoặc `--root`
 với PdfCraft) để giới hạn thư mục agent được đọc/ghi.
 
-## Đề xuất: MCP Gateway chung (CHƯA triển khai)
+## MCP tổng: ArtCraft MCP (`tools/artcraft-mcp`, ĐÃ triển khai 15/10/2026)
 
-Mục tiêu: một MCP server duy nhất trong Cursor/Claude Code điều khiển được cả 13 app.
+Một MCP server duy nhất cho Claude Code và Cursor, điều khiển mọi app ArtCraft đã cài. Hướng dẫn
+dùng, link tải và cấu hình nằm trong [tools/artcraft-mcp/README.md](../tools/artcraft-mcp/README.md).
 
 ```
 Claude Code / Cursor
         │ stdio (MCP)
         ▼
-┌──────────────────────── artcraft-gateway ────────────────────────┐
-│ Registry: đọc config/apps.json → 13 app, đường dẫn <id>-cli.exe  │
-│ Lazy spawn: chỉ khởi động `<id>-cli mcp ...` khi có tool của app │
-│ Namespacing: tool "export" của pdfcraft → "pdfcraft.export"      │
-│ tools/list = hợp nhất tools/list của các app đã bật              │
-│ Policy: allowlist app, read/write roots chung, timeout, log      │
-│ Meta tools: suite.list_apps, suite.launch_app(id, port),         │
-│             suite.status                                          │
+┌──────────────────────── artcraft-mcp.exe ─────────────────────────┐
+│ Tìm app: Program Files\<App>\<id>-cli.exe (+ searchDirs config)   │
+│ Lazy spawn: `<id>-cli mcp ...` chỉ khởi động khi cần              │
+│ Tên tool: draw_shape của vectorcraft -> vectorcraft_draw_shape   │
+│ tools/list = hợp nhất (cache theo exe, làm mới khi app cập nhật)  │
+│ Meta tools: artcraft_apps, artcraft_open, artcraft_call           │
 └───────┬──────────────┬──────────────┬─────────────────────────────┘
         │stdio         │stdio         │stdio      (một tiến trình con mỗi app)
-   photocraft-cli   pdfcraft-cli   gridcraft-cli ...
-        │ (tùy chọn --connect / --bridge)
-   photocraft.exe --control PORT
+   photocraft-cli   vectorcraft-cli  gridcraft-cli ...
+        │ (--bridge / --connect / --attach khi cửa sổ đang mở)
+   photocraft.exe --control 7971
 ```
 
-Thiết kế:
+So với bản đề xuất cũ:
+- Tên tool dùng `_` thay cho `.`, vì MCP chỉ cho phép `[A-Za-z0-9_-]`.
+- Gateway tự viết JSON-RPC và chỉ cần `serde_json`, không dùng `rmcp`.
+- Port do gateway cấp, mỗi app một port. VectorCraft giữ 7979.
+- Tool của mọi app đã cài được bật sẵn: 4 app trên máy này có tổng 94 tool. Cursor dùng `--compact`.
 
-1. **Không sửa app nào.** Gateway chỉ là client MCP của 13 server có sẵn, nên khi đồng bộ
-   upstream không bị xung đột.
-2. **Viết bằng Rust**, đặt ở `tools/artcraft-gateway/` (workspace riêng, không đụng `apps/`). Dùng
-   crate `rmcp`, vì FilmCraft và PhotoCraft đã dùng nó.
-3. **Lazy + giới hạn:** chỉ spawn app khi cần, tắt khi idle. `tools/list` có thể rất lớn (hàng
-   trăm command mỗi app), nên mặc định chỉ bật các app được cấu hình. Tool `suite.enable_app`
-   bật thêm khi cần.
-4. **Port tập trung:** gateway cấp port riêng cho mỗi app (7801–7813) để tránh trùng 7979.
-5. **Bảo mật:** mọi app chạy với read/write roots do gateway đặt. Token/key file (PhotoCraft,
-   WordCraft) do gateway quản lý.
-6. **Rủi ro:** giao thức điều khiển của từng app đang thay đổi nhanh (alpha). Gateway chỉ dựa vào
-   giao diện MCP chuẩn (`initialize`, `tools/list`, `tools/call`), không dựa vào kênh JSON nội bộ.
+Đã kiểm tra thật trên máy này (15/10/2026):
+- Tìm thấy PhotoCraft, WordCraft và GridCraft trong `Program Files`, VectorCraft trong `D:\Apps`.
+  MCP của cả 4 app đều trả lời: 25, 16, 21 và 32 tool.
+- Gọi headless `gridcraft_list_commands` và `vectorcraft doc_inspect` thành công.
+- `artcraft_open vectorcraft` mở cửa sổ và gắn vào trong 1,1 giây. Sau đó `file.new`, `draw_shape`
+  (ngôi sao) và `add_text` hiện ngay trên cửa sổ.
+- `artcraft_open gridcraft` mở cửa sổ. Cửa sổ vẫn còn sau khi phiên MCP đóng, và phiên kết thúc
+  không bị treo.
 
-Bước tiếp theo nếu bạn đồng ý: build 2–3 app → chạy thử từng MCP server riêng → viết gateway
-tối thiểu (registry + proxy tools/list và tools/call).
+Chưa kiểm tra: FilmCraft, PdfCraft, EffectCraft và CADCraft (chưa cài trên máy này). Cửa sổ
+PhotoCraft qua token file cũng chưa thử.

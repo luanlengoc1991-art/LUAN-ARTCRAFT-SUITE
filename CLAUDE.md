@@ -146,4 +146,12 @@ new branch `upstream-sync/<id>-<stamp>`, tags a restore point, and stops on conf
 
 Every app ships an MCP server: `<id>-cli mcp` (JSON-RPC 2.0 over stdio), headless or bridged to a
 running window via its loopback control channel. Details per app: `docs/MCP-AUTOMATION.md`. Do
-not change any app's MCP protocol or add a gateway unless the owner asks.
+not change any app's MCP protocol unless the owner asks.
+
+The suite-wide MCP server is `tools/artcraft-mcp` (owner-requested): one stdio server that finds
+installed apps and proxies their own `<id>-cli mcp` servers, exposing tools as `<app>_<tool>`. It
+changes no app and only uses standard MCP (initialize, tools/list, tools/call). Its own Cargo
+workspace; run `cargo test` there. Pushing a change to it publishes a release through
+`.github/workflows/artcraft-mcp.yml` (fixed link `.../releases/latest/download/ArtCraft-MCP.exe`);
+bump `version` in its Cargo.toml for a new release. `scripts/install-mcp.ps1` installs and
+registers it with Claude Code and Cursor.

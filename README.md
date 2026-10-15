@@ -40,6 +40,13 @@ thư viện (`vendor/`), file cài (Releases của `luanlengoc1991-art/<app>`) v
 Cài trình quản lý, mở lên, rồi bấm **Install** cho app bạn cần. Sau đó app tự cập nhật mỗi khi bạn
 push thay đổi lên repo này.
 
+**MCP tổng (một MCP cho mọi app đã cài, dùng trong Claude Code và Cursor):**
+- Tải: https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/latest/download/ArtCraft-MCP.exe
+- Cài và đăng ký vào Claude Code + Cursor bằng một lệnh PowerShell:
+  `irm https://raw.githubusercontent.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/main/scripts/install-mcp.ps1 | iex`
+
+Chi tiết: [tools/artcraft-mcp/README.md](tools/artcraft-mcp/README.md).
+
 Tất cả viết bằng Rust thuần (egui). Mỗi app có GUI (`<app>.exe`), CLI kèm **MCP server**
 (`<app>-cli.exe mcp`) và bản web. Chi tiết: [docs/AUDIT.md](docs/AUDIT.md).
 
@@ -50,6 +57,7 @@ LUAN-ARTCRAFT-SUITE/
 ├─ apps/<app>/            mã nguồn đầy đủ từng app (Cargo workspace độc lập, giữ nguyên cấu trúc gốc)
 ├─ config/apps.json       manifest: upstream, commit, phiên bản, giấy phép, cách build
 ├─ config/mcp.example.json  cấu hình MCP mẫu cho Claude Code / Cursor
+├─ tools/artcraft-mcp/    MCP tổng: một MCP server cho cả 13 app (không sửa app nào)
 ├─ scripts/               build, test, phân tích ảnh hưởng, đồng bộ upstream (PowerShell)
 ├─ docs/                  tài liệu
 ├─ builds/                đầu ra build cục bộ (không commit)
@@ -86,6 +94,7 @@ chạy `powershell -ExecutionPolicy Bypass -File scripts\<script>.ps1 ...`.
 | Phát hành file cài lên GitHub (cho trình quản lý) | `scripts\publish-release.ps1 [-Apps a,b]` |
 | Vendor lại thư viện git (sau khi đổi rev) | `scripts\vendor-git-deps.ps1` |
 | Cài đặt máy mới | `scripts\setup-machine.ps1` |
+| Cài/cập nhật MCP tổng + đăng ký Claude Code, Cursor | `scripts\install-mcp.ps1 [-SearchDir D:\Apps] [-RemoveAppEntries]` |
 
 ## Tài liệu
 
@@ -93,7 +102,7 @@ chạy `powershell -ExecutionPolicy Bypass -File scripts\<script>.ps1 ...`.
 - [docs/AUDIT.md](docs/AUDIT.md): kiểm tra mã nguồn 13 app, thư viện dùng chung, yêu cầu build
 - [docs/WINDOWS-SETUP.md](docs/WINDOWS-SETUP.md): cài đặt môi trường Windows
 - [docs/BUILD.md](docs/BUILD.md): build từng app, đầu ra, lỗi thường gặp
-- [docs/MCP-AUTOMATION.md](docs/MCP-AUTOMATION.md): MCP/CLI từng app, kết nối Claude Code, đề xuất MCP Gateway
+- [docs/MCP-AUTOMATION.md](docs/MCP-AUTOMATION.md): MCP/CLI từng app, kết nối Claude Code, MCP tổng
 - [docs/UPSTREAM-SYNC.md](docs/UPSTREAM-SYNC.md): theo dõi và cập nhật upstream
 - [docs/CONFLICTS.md](docs/CONFLICTS.md): giải quyết xung đột
 - [docs/CURSOR.md](docs/CURSOR.md): làm việc trong Cursor + Claude Code

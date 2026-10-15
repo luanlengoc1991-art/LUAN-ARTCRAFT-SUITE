@@ -1,0 +1,20 @@
+[package]
+name = "artcraft-mcp"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+description = "One MCP server for every installed ArtCraft app: proxies each app's own `<id>-cli mcp`."
+license = "MIT OR Apache-2.0"
+publish = false
+
+# Its own workspace: the repo has no root workspace on purpose (see CLAUDE.md).
+[workspace]
+
+[dependencies]
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

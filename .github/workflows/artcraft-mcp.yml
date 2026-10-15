@@ -1,0 +1,60 @@
+# ArtCraft MCP (tools/artcraft-mcp): one MCP server for every installed ArtCraft app.
+# Push to main that changes it -> test, build for Windows x64, publish to this repo's Releases
+# as artcraft-mcp-v<version>, with the fixed-name asset ArtCraft-MCP.exe, so
+#   https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/latest/download/ArtCraft-MCP.exe
+# always serves the newest build. scripts/install-mcp.ps1 downloads from that link.
+name: ArtCraft MCP
+
+on:
+  push:
+    branches: [main]
+    paths: ['tools/artcraft-mcp/**', '.github/workflows/artcraft-mcp.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: artcraft-mcp
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tools/artcraft-mcp
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Test
+        run: cargo test --locked
+      - name: Build
+        run: cargo build --release --locked
+      - name: Publish release
+        shell: pwsh
+        run: |
+          $v = (& ./target/release/artcraft-mcp.exe --version).Split(' ')[1]
+          $tag = "artcraft-mcp-v$v"
+          $out = New-Item -ItemType Directory -Force dist
+          Copy-Item target/release/artcraft-mcp.exe "$out/ArtCraft-MCP.exe"
+          Copy-Item target/release/artcraft-mcp.exe "$out/artcraft-mcp-$v-windows-x64.exe"
+          Push-Location $out
+          Get-ChildItem *.exe | ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" } | Set-Content -Encoding ascii SHA256SUMS.txt
+          Pop-Location
+          $assets = Get-ChildItem $out -File | ForEach-Object FullName
+          gh release view $tag 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            # Same version pushed again: refresh its files.
+            gh release upload $tag @assets --clobber
+          } else {
+            $notes = "ArtCraft MCP $v: one MCP server for every installed ArtCraft app.`n`nDownload: ArtCraft-MCP.exe, or run scripts/install-mcp.ps1 to install and register it with Claude Code and Cursor.`n`nBuilt from $env:GITHUB_SHA."
+            gh release create $tag @assets --title "ArtCraft MCP $v" --notes $notes --latest --target $env:GITHUB_SHA
+          }
+          if ($LASTEXITCODE -ne 0) { throw "publishing $tag failed" }
