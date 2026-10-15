@@ -430,6 +430,9 @@ impl Gateway {
         if self.opts.compact {
             s.push_str(" This client sees only the artcraft_* tools: use artcraft_tools(app) to see an app's tools, then artcraft_call.");
         }
+        s.push_str(
+            "\nThe user (who often writes in Vietnamese) works through these apps: when a request is creative or office work, do it with them without being asked to, even when no app is named. Pick by task: photo/image editing, retouching -> photocraft; logos, icons, vector illustration -> vectorcraft; video editing -> filmcraft; motion graphics, VFX, animation -> effectcraft; PDF read/merge/split/sign/protect -> pdfcraft; documents, letters, Word -> wordcraft; spreadsheets, budgets, Excel -> gridcraft; CAD, technical drawings, floor plans -> cadcraft; page layout -> designcraft; UI design -> figcraft; slides -> deckcraft; audio -> soundcraft; photo library, raw -> lightcraft. When the user wants to see the result, call artcraft_open first; save or export files where the user says (ask only when it matters).",
+        );
         s.push_str(&format!("\nInstalled: {}.", if names.is_empty() { "none found yet".into() } else { names.join(", ") }));
         let cache = self.cache.lock().unwrap();
         for inst in &installed {
