@@ -2,6 +2,32 @@
 
 Mọi kết quả dưới đây đã **chạy và kiểm tra thật** trên máy Windows 11 x64 này, trừ chỗ ghi rõ khác.
 
+## Đang làm (15/10, chiều): nâng cấp AI & MCP cho PhotoCraft + VectorCraft
+
+Yêu cầu gốc: thêm "AI / MCP Command Center" (Trò chuyện AI, Bảng điều khiển MCP, Kết nối) vào
+PhotoCraft và VectorCraft, rồi bổ sung tính năng còn thiếu. Quy tắc: không đăng nhập mới, không API
+key, không đọc token, không công cụ giả, không viết lại MCP. Chủ repo chỉ cần tiếng Việt + tiếng Anh,
+và muốn mọi trả lời bằng tiếng Việt.
+
+- **Nhóm 1 — XONG: VectorCraft** (`apps/vectorcraft/crates/ui-egui/src/panels/ai_center.rs`).
+  Menu Cửa sổ → Trung tâm lệnh AI / MCP. Gửi lệnh qua CLI chính thức của agent (`claude -p`
+  với `--mcp-config` trỏ `vectorcraft-cli mcp --connect` vào cửa sổ, `--resume` để nhớ ngữ cảnh),
+  Giữ/Hoàn tác thay đổi, lưu lịch sử `%APPDATA%\VectorCraft\ai-chats.json`. Console chạy
+  `vectorcraft_mcp::call_tool` ngay trong app. Kênh điều khiển bật lúc chạy: `VectorcraftApp::ensure_control`.
+  Đã chạy thật với Claude Code (vẽ, đổi màu, trace logo). Codex CLI / Cursor Agent chưa thử (máy chưa cài).
+- **Nhóm 2 — CHƯA LÀM: PhotoCraft.** MCP của PhotoCraft dùng `rmcp` (async, crate `automation`), có
+  token: Console nên là MCP client tới `photocraft-cli mcp --bridge 127.0.0.1:PORT --control-token-file F`
+  (chạy tiến trình con, nói JSON-RPC qua stdio). UI PhotoCraft khác VectorCraft, cần tìm cách đăng ký panel.
+- **Nhóm 3 — CHƯA LÀM: tính năng PhotoCraft còn thiếu:** Upscale, tách nhiều đối tượng thành PNG riêng,
+  xuất hàng loạt PNG/ZIP. Đã có sẵn: layer, mask, Smart Object, 134 filter, `layer.removeBackground`,
+  `select.subject/object`, healing, `file.automate.batch`, `file.export.layersToFiles`.
+- **Nhóm 4 — CHƯA LÀM: VectorCraft còn thiếu:** Auto Layout, xuất hàng loạt SVG/PDF/PNG, kiểm tra 3D Extrude.
+  Đã có: Pathfinder, Shape Builder, Gradient, Type, Perspective, Image Trace, Recolor, Align/Distribute.
+- Generative Fill / xóa vật thể bằng AI cần mô hình ảnh: hiện "Không hỗ trợ", không làm giả.
+- Kiểm thử VectorCraft: `cargo test -p vectorcraft-ui-egui --lib` (1268 test), clippy, `cargo xtask layers`,
+  wasm. Chuỗi giao diện mới phải có trong mọi file `i18n/*.tsv` (test bắt buộc); chuỗi kỹ thuật thì thêm
+  vào `NOT_MESSAGES` trong `i18n/tests.rs`.
+
 ## Cập nhật 15/10: MCP tổng (ArtCraft MCP)
 
 - `tools/artcraft-mcp`: một MCP server cho mọi app đã cài. Tool có tên dạng `<app>_<tool>`. Có
