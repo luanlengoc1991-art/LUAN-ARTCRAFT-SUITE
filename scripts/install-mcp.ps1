@@ -61,8 +61,11 @@ else {
 }
 # A running exe can't be overwritten but can be renamed: Claude Code / Cursor may be using it.
 if (Test-Path $target) {
-  Remove-Item "$target.old" -Force -ErrorAction SilentlyContinue
-  Move-Item $target "$target.old" -Force
+  # Clear old copies no client runs any more; a locked one stays, so use a name of our own.
+  Get-ChildItem $dir -Filter 'artcraft-mcp.exe.old*' | Remove-Item -Force -ErrorAction SilentlyContinue
+  $old = "$target.old"
+  if (Test-Path $old) { $old = "$target.old-$([DateTime]::Now.Ticks)" }
+  Move-Item $target $old -Force
 }
 Move-Item $tmp $target -Force
 $version = & $target --version

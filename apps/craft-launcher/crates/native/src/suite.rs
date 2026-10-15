@@ -115,8 +115,19 @@ pub fn install_mcp(release: &Release, http: &Http, paths: &Paths, stop: &Stop, p
     if updating {
         // Claude Code or Cursor may be running it: a running exe can't be overwritten, but it can
         // be renamed out of the way.
-        let old = exe.with_extension("exe.old");
-        let _ = std::fs::remove_file(&old);
+        // Copies no client runs any more go; one still running stays locked, so the name must be
+        // new (a second update in one Claude Code session meets the first one's leftover).
+        if let Ok(entries) = std::fs::read_dir(dir) {
+            for e in entries.flatten() {
+                if e.file_name().to_string_lossy().starts_with("artcraft-mcp.exe.old") {
+                    let _ = std::fs::remove_file(e.path());
+                }
+            }
+        }
+        let mut old = exe.with_extension("exe.old");
+        if old.exists() {
+            old = exe.with_extension(format!("exe.old-{}", crate::now()));
+        }
         std::fs::rename(&exe, &old).map_err(|e| format!("couldn't replace {} ({e})", exe.display()))?;
     }
     std::fs::copy(&file, &exe).map_err(|e| format!("couldn't install {} ({e})", exe.display()))?;
