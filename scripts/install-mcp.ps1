@@ -108,15 +108,25 @@ function Find-Claude {
     Where-Object { Test-Path $_ } | Select-Object -First 1
   return $exe
 }
+# Windows PowerShell turns a native command's stderr into an error under 'Stop'; claude prints
+# "no server named ..." there, which is expected on a first install.
+function Invoke-Claude([string[]] $CliArgs) {
+  $prev = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  $out = & $claude @CliArgs 2>&1
+  $code = $LASTEXITCODE
+  $ErrorActionPreference = $prev
+  return [pscustomobject]@{ Code = $code; Output = ($out | Out-String).Trim() }
+}
 if (-not $NoClaude) {
   $claude = Find-Claude
   if ($claude) {
-    & $claude mcp remove artcraft -s user 2>$null | Out-Null
-    & $claude mcp add artcraft -s user -- $target | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "claude mcp add failed ($LASTEXITCODE)" }
+    Invoke-Claude @('mcp', 'remove', 'artcraft', '-s', 'user') | Out-Null
+    $r = Invoke-Claude @('mcp', 'add', 'artcraft', '-s', 'user', '--', $target)
+    if ($r.Code -ne 0) { throw "claude mcp add failed ($($r.Code)): $($r.Output)" }
     Write-Host "Claude Code: registered 'artcraft' (user scope) with $claude"
     if ($RemoveAppEntries) {
-      foreach ($id in $found) { & $claude mcp remove $id -s user 2>$null | Out-Null }
+      foreach ($id in $found) { Invoke-Claude @('mcp', 'remove', $id, '-s', 'user') | Out-Null }
     }
   } else {
     Write-Warning "Claude Code CLI not found. Run: claude mcp add artcraft -s user -- `"$target`""

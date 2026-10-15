@@ -54,7 +54,7 @@ jobs:
             # Same version pushed again: refresh its files.
             gh release upload $tag @assets --clobber
           } else {
-            $notes = "ArtCraft MCP $v: one MCP server for every installed ArtCraft app.`n`nDownload: ArtCraft-MCP.exe, or run scripts/install-mcp.ps1 to install and register it with Claude Code and Cursor.`n`nBuilt from $env:GITHUB_SHA."
+            $notes = "ArtCraft MCP ${v}: one MCP server for every installed ArtCraft app.`n`nDownload: ArtCraft-MCP.exe, or run scripts/install-mcp.ps1 to install and register it with Claude Code and Cursor.`n`nBuilt from $env:GITHUB_SHA."
             gh release create $tag @assets --title "ArtCraft MCP $v" --notes $notes --latest --target $env:GITHUB_SHA
           }
           if ($LASTEXITCODE -ne 0) { throw "publishing $tag failed" }
