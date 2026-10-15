@@ -85,6 +85,26 @@ fn marker(paths: &Paths) -> PathBuf {
     paths.data.join("self-update.txt")
 }
 
+/// LUAN-ARTCRAFT-SUITE: the version this launcher has just updated itself to, once: the first start
+/// of the new version says so ("ArtCraft Launcher updated to 0.4.6"), later starts don't.
+pub fn announce_update_once(paths: &Paths) -> Option<String> {
+    let text = std::fs::read_to_string(marker(paths)).ok()?;
+    let tag = text.lines().next()?.trim().to_string();
+    let current = current_version()?;
+    if version::parse(tag.trim_start_matches('v')).as_ref() != Some(&current) {
+        return None;
+    }
+    let announced = paths.data.join("self-update-announced.txt");
+    if std::fs::read_to_string(&announced).is_ok_and(|t| t.trim() == tag) {
+        return None;
+    }
+    if let Err(e) = crate::paths::write_atomic(&announced, tag.as_bytes()) {
+        log::warn!("couldn't record the update notice: {e}");
+        return None;
+    }
+    Some(current.to_string())
+}
+
 /// How this copy is installed, if it's one the launcher knows how to replace.
 pub fn current() -> Option<Install> {
     let exe = std::env::current_exe().ok()?;

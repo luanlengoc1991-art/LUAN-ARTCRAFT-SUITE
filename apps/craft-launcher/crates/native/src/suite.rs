@@ -98,8 +98,44 @@ pub fn latest_mcp(http: &Http) -> Result<Option<Release>, String> {
 pub fn state(latest: Option<Release>) -> McpState {
     let Some(exe) = mcp_exe() else { return McpState::default() };
     let installed = installed_version(&exe);
-    let (claude, cursor) = if installed.is_some() { (claude_registered(&exe), cursor_registered(&exe)) } else { (None, None) };
-    McpState { supported: true, installed, latest, claude, cursor }
+    if installed.is_none() {
+        return McpState { supported: true, latest, ..McpState::default() };
+    }
+    let installed_at = std::fs::metadata(&exe)
+        .and_then(|m| m.modified())
+        .ok()
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .and_then(|d| i64::try_from(d.as_secs()).ok());
+    McpState {
+        supported: true,
+        installed,
+        latest,
+        claude: claude_registered(&exe),
+        cursor: cursor_registered(&exe),
+        desktop: desktop_registered(&exe),
+        installed_at,
+    }
+}
+
+/// The local time's offset from UTC in seconds (Vietnam: +25200), for dates the user reads.
+pub fn local_utc_offset() -> i64 {
+    static OFFSET: std::sync::OnceLock<i64> = std::sync::OnceLock::new();
+    *OFFSET.get_or_init(|| {
+        #[cfg(windows)]
+        {
+            use winreg::RegKey;
+            use winreg::enums::HKEY_LOCAL_MACHINE;
+            // Minutes to add to local time to get UTC, daylight saving included.
+            let bias = RegKey::predef(HKEY_LOCAL_MACHINE)
+                .open_subkey(r"SYSTEM\CurrentControlSet\Control\TimeZoneInformation")
+                .and_then(|k| k.get_value::<u32, _>("ActiveTimeBias"))
+                .ok();
+            if let Some(bias) = bias {
+                return -i64::from(bias as i32) * 60;
+            }
+        }
+        0
+    })
 }
 
 /// Downloads and verifies `release`, swaps it in and registers it. Returns the toast text.
@@ -137,14 +173,15 @@ pub fn install_mcp(release: &Release, http: &Http, paths: &Paths, stop: &Stop, p
         return Err(format!("{MCP_NAME} was copied but doesn't start ({})", exe.display()));
     }
     // A client it couldn't be registered with shows as such in the launcher (and in the log).
-    let _ = register(&exe);
+    register(&exe);
     // The launcher's own message templates, so the toast is translated like an app's.
     let v = release.version_label();
     Ok(if updating { format!("{MCP_NAME} updated to {v}") } else { format!("{MCP_NAME} installed: {v}") })
 }
 
-/// Makes sure ArtCraft MCP is registered wherever Claude Code and Cursor are installed.
-pub fn register(exe: &Path) -> (Option<bool>, Option<bool>) {
+/// Makes sure ArtCraft MCP is registered wherever Claude Code, Cursor and the Claude desktop app are
+/// installed. What couldn't be registered shows in the launcher's MCP bar (and in the log).
+pub fn register(exe: &Path) {
     let claude = match claude_registered(exe) {
         Some(false) => Some(register_claude(exe)),
         other => other,
@@ -152,11 +189,60 @@ pub fn register(exe: &Path) -> (Option<bool>, Option<bool>) {
     if claude == Some(true) {
         allow_in_claude();
     }
-    let cursor = match cursor_registered(exe) {
-        Some(false) => Some(register_cursor(exe)),
-        other => other,
-    };
-    (claude, cursor)
+    if cursor_registered(exe) == Some(false) {
+        register_cursor(exe);
+    }
+    if desktop_registered(exe) == Some(false) {
+        register_desktop(exe);
+    }
+}
+
+/// The Claude desktop app's config files: the installer's (`%APPDATA%\Claude`) and the Microsoft
+/// Store package's (`%LOCALAPPDATA%\Packages\Claude_*\LocalCache\Roaming\Claude`).
+fn desktop_configs() -> Vec<PathBuf> {
+    let mut found = Vec::new();
+    if let Some(dir) = dirs::config_dir().map(|d| d.join("Claude")).filter(|d| d.is_dir()) {
+        found.push(dir.join("claude_desktop_config.json"));
+    }
+    if cfg!(windows)
+        && let Some(packages) = dirs::data_local_dir().map(|d| d.join("Packages"))
+        && let Ok(entries) = std::fs::read_dir(packages)
+    {
+        for e in entries.flatten() {
+            let dir = e.path().join("LocalCache").join("Roaming").join("Claude");
+            if e.file_name().to_string_lossy().starts_with("Claude_") && dir.is_dir() {
+                found.push(dir.join("claude_desktop_config.json"));
+            }
+        }
+    }
+    found
+}
+
+/// `Some(registered everywhere)` when the Claude desktop app is on this computer.
+fn desktop_registered(exe: &Path) -> Option<bool> {
+    let configs = desktop_configs();
+    if configs.is_empty() {
+        return None;
+    }
+    Some(configs.iter().all(|c| {
+        let v = read_json(c).unwrap_or(Value::Null);
+        v["mcpServers"][MCP_SERVER]["command"].as_str().is_some_and(|cmd| same_path(cmd, exe))
+    }))
+}
+
+/// Adds the `artcraft` server (every tool: the desktop app has no tool cap) to each config, keeping
+/// everything else in it. The app reads it when it starts.
+fn register_desktop(exe: &Path) -> bool {
+    let mut ok = true;
+    for path in desktop_configs() {
+        let existing = std::fs::read_to_string(&path).ok();
+        let written = mcp_config(existing.as_deref(), exe, &[]).and_then(|text| write_atomic(&path, text.as_bytes()));
+        if let Err(e) = written {
+            log::warn!("{}: {e}", path.display());
+            ok = false;
+        }
+    }
+    ok
 }
 
 fn home() -> Option<PathBuf> {
@@ -288,7 +374,8 @@ fn cursor_registered(exe: &Path) -> Option<bool> {
 fn register_cursor(exe: &Path) -> bool {
     let Some(path) = home().map(|h| h.join(".cursor").join("mcp.json")) else { return false };
     let existing = std::fs::read_to_string(&path).ok();
-    let text = match cursor_config(existing.as_deref(), exe) {
+    // Cursor sends only so many tools to its agent: the compact set reaches every app.
+    let text = match mcp_config(existing.as_deref(), exe, &["--compact"]) {
         Ok(t) => t,
         Err(e) => {
             // Never overwrite a file we can't read: it holds the user's other servers.
@@ -305,8 +392,9 @@ fn register_cursor(exe: &Path) -> bool {
     }
 }
 
-/// `existing` (Cursor's `mcp.json`, if any) with the `artcraft` server set to `exe`.
-fn cursor_config(existing: Option<&str>, exe: &Path) -> Result<String, String> {
+/// `existing` (an `mcpServers` config: Cursor's `mcp.json`, the Claude desktop app's config) with
+/// the `artcraft` server set to `exe` with `args`, and everything else kept.
+fn mcp_config(existing: Option<&str>, exe: &Path, args: &[&str]) -> Result<String, String> {
     let mut v = match existing.map(|t| t.trim_start_matches('\u{feff}').trim()) {
         None | Some("") => json!({}),
         Some(t) => serde_json::from_str::<Value>(t).map_err(|e| format!("unreadable ({e})"))?,
@@ -314,7 +402,7 @@ fn cursor_config(existing: Option<&str>, exe: &Path) -> Result<String, String> {
     let root = v.as_object_mut().ok_or("not a JSON object")?;
     let servers = root.entry("mcpServers").or_insert_with(|| json!({}));
     let servers = servers.as_object_mut().ok_or("mcpServers is not an object")?;
-    servers.insert(MCP_SERVER.into(), json!({ "command": exe.to_string_lossy(), "args": ["--compact"] }));
+    servers.insert(MCP_SERVER.into(), json!({ "command": exe.to_string_lossy(), "args": args }));
     serde_json::to_string_pretty(&v).map(|s| s + "\n").map_err(|e| e.to_string())
 }
 
@@ -335,17 +423,23 @@ mod tests {
     }
 
     #[test]
-    fn cursor_config_keeps_other_servers() {
+    fn mcp_config_keeps_everything_else() {
         let exe = Path::new(r"C:\Users\x\AppData\Local\Programs\ArtCraft MCP\artcraft-mcp.exe");
         let before = r#"{"mcpServers":{"other":{"command":"a.exe"}},"keep":1}"#;
-        let after: Value = serde_json::from_str(&cursor_config(Some(before), exe).unwrap()).unwrap();
+        let after: Value = serde_json::from_str(&mcp_config(Some(before), exe, &["--compact"]).unwrap()).unwrap();
         assert_eq!(after["mcpServers"]["other"]["command"], "a.exe");
         assert_eq!(after["keep"], 1);
         assert_eq!(after["mcpServers"]["artcraft"]["args"][0], "--compact");
         assert!(same_path(after["mcpServers"]["artcraft"]["command"].as_str().unwrap(), exe));
-        assert!(cursor_config(Some(""), exe).is_ok());
-        assert!(cursor_config(None, exe).is_ok());
-        assert!(cursor_config(Some("{broken"), exe).is_err(), "never overwrite an unreadable file");
-        assert!(cursor_config(Some("[]"), exe).is_err());
+        // The Claude desktop app's config: its preferences stay, the server gets every tool.
+        let desktop = r#"{"preferences":{"sidebarMode":"chat"}}"#;
+        let after: Value = serde_json::from_str(&mcp_config(Some(desktop), exe, &[]).unwrap()).unwrap();
+        assert_eq!(after["preferences"]["sidebarMode"], "chat");
+        assert_eq!(after["mcpServers"]["artcraft"]["args"], json!([]));
+        assert!(mcp_config(Some(""), exe, &[]).is_ok());
+        assert!(mcp_config(None, exe, &[]).is_ok());
+        assert!(mcp_config(Some("{broken"), exe, &[]).is_err(), "never overwrite an unreadable file");
+        assert!(mcp_config(Some("{\n}\n  \"a\": 1\n}"), exe, &[]).is_err(), "nor a damaged one");
+        assert!(mcp_config(Some("[]"), exe, &[]).is_err());
     }
 }

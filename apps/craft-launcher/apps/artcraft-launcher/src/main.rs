@@ -455,6 +455,10 @@ impl Host for DesktopHost {
     fn quit(&mut self) {
         self.quit = true;
     }
+    // LUAN-ARTCRAFT-SUITE: dates in notifications and the MCP bar are local.
+    fn utc_offset(&self) -> i64 {
+        artcraft_launcher_native::suite::local_utc_offset()
+    }
 }
 
 /// Everything that outlives a window: the UI state and its backend, the tray icon, and the work

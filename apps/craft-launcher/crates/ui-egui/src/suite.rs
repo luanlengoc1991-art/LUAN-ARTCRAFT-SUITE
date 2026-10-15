@@ -64,22 +64,31 @@ impl LauncherUi {
 
     /// A job the launcher started by itself ended: tell the user what it did.
     pub(crate) fn auto_job_finished(&mut self, app: &str, result: &Result<String, String>) {
-        if self.auto_jobs.remove(app)
-            && let Ok(text) = result
-        {
+        // The launcher's own update is always automatic: its first start says so.
+        let auto = self.auto_jobs.remove(app) || app == artcraft_launcher_core::catalog::LAUNCHER_ID;
+        if auto && let Ok(text) = result {
             self.done_notices.push(text.clone());
         }
+    }
+
+    /// Local date and time, as in "Oct 15, 2026 11:42" (the month in the UI's language).
+    pub(crate) fn local_time_text(&self, unix: i64) -> String {
+        let local = unix + self.utc_offset;
+        let secs = local.rem_euclid(86_400);
+        format!("{} {:02}:{:02}", crate::views::date_text(local), secs / 3600, secs % 3600 / 60)
     }
 
     /// Sends the notifications [`Self::auto_job_finished`] collected.
     pub(crate) fn flush_done_notices(&mut self, host: &mut dyn Host) {
         let done = std::mem::take(&mut self.done_notices);
-        if !self.settings.notify {
+        if !self.settings.notify || done.is_empty() {
             return;
         }
+        // When it happened, so the user knows which update this was.
+        let when = format!("ArtCraft Launcher · {}", self.local_time_text(self.backend.now()));
         for text in done {
             // The backend's messages ("PhotoCraft updated to 0.9.3"), translated like toasts.
-            host.notify(&crate::i18n::msg(&text), "ArtCraft Launcher");
+            host.notify(&crate::i18n::msg(&text), &when);
         }
     }
 
@@ -96,12 +105,14 @@ impl LauncherUi {
                 widgets::tag(ui, "MCP", t.invert_bg, t.invert_fg);
                 ui.add_space(4.0);
                 ui.label(RichText::new(MCP_NAME).family(theme::semibold()).color(t.ink_strong));
-                let version = match &mcp.installed {
-                    Some(v) => v.to_string(),
-                    None => tl!("Not installed").to_string(),
+                let version = match (&mcp.installed, mcp.installed_at) {
+                    // The version, and the day it was put on this computer.
+                    (Some(v), Some(at)) => format!("{v} · {}", crate::views::date_text(at + self.utc_offset)),
+                    (Some(v), None) => v.to_string(),
+                    (None, _) => tl!("Not installed").to_string(),
                 };
                 widgets::badge(ui, &version, if update { t.warn } else { t.muted });
-                for (client, registered) in [("Claude Code", mcp.claude), ("Cursor", mcp.cursor)] {
+                for (client, registered) in [("Claude Code", mcp.claude), ("Cursor", mcp.cursor), ("Claude Desktop", mcp.desktop)] {
                     if let Some(on) = registered {
                         widgets::badge(ui, client, if on { t.good } else { t.faint });
                     }

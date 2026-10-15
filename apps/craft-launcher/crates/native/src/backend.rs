@@ -144,6 +144,10 @@ impl NativeBackend {
         if let Some(list) = crate::suite::cached_sync(&paths) {
             shared.emit(Event::SuiteSync(list));
         }
+        // LUAN-ARTCRAFT-SUITE: the first start after a self-update says so (a notification).
+        if let Some(v) = crate::self_update::announce_update_once(&paths) {
+            shared.emit(Event::JobFinished { app: LAUNCHER_ID.to_string(), result: Ok(format!("{} updated to {v}", LAUNCHER.name)) });
+        }
         let backend = Self { shared, paths, http, source, platform: native_platform(), self_install: crate::self_update::current() };
         backend.replay_cache();
         backend.detect_all();

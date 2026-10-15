@@ -58,6 +58,10 @@ pub struct McpState {
     pub claude: Option<bool>,
     /// Registered with Cursor; `None` when Cursor isn't on this computer.
     pub cursor: Option<bool>,
+    /// Registered with the Claude desktop app (its chat); `None` when it isn't on this computer.
+    pub desktop: Option<bool>,
+    /// When the installed copy was put in place (Unix seconds).
+    pub installed_at: Option<i64>,
 }
 
 impl McpState {

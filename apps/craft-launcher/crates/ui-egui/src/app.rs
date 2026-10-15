@@ -60,6 +60,10 @@ pub trait Host {
     }
     /// Quit the launcher for real (not just hide to the tray).
     fn quit(&mut self) {}
+    /// LUAN-ARTCRAFT-SUITE: the local time's offset from UTC in seconds, for dates and times shown.
+    fn utc_offset(&self) -> i64 {
+        0
+    }
 }
 
 pub(crate) struct Toast {
@@ -156,6 +160,8 @@ pub struct LauncherUi {
     pub(crate) auto_jobs: std::collections::BTreeSet<String>,
     /// What those jobs did, waiting to be notified.
     pub(crate) done_notices: Vec<String>,
+    /// The local time's offset from UTC in seconds (the host's).
+    pub(crate) utc_offset: i64,
 }
 
 /// The language to draw in: the preference, or English where it needs a CJK font the system
@@ -222,6 +228,7 @@ impl LauncherUi {
             mcp_attempted: None,
             auto_jobs: std::collections::BTreeSet::new(),
             done_notices: Vec::new(),
+            utc_offset: 0,
         }
     }
 
@@ -297,6 +304,7 @@ impl LauncherUi {
         }
         if !self.started {
             self.started = true;
+            self.utc_offset = host.utc_offset();
             self.backend.send(Command::CheckForUpdates { force: false });
         }
         let now = self.backend.now();
