@@ -101,6 +101,9 @@ pub struct Settings {
     /// Automatically download and install updates when found.
     #[serde(default)]
     pub auto_update: bool,
+    /// LUAN-ARTCRAFT-SUITE: install the apps (and ArtCraft MCP) the suite list names, so every one
+    /// of the owner's computers has the same ones.
+    pub sync_suite: bool,
     /// Show a system notification when an installed app has an update.
     pub notify: bool,
     pub prereleases: bool,
@@ -181,6 +184,7 @@ impl Default for Settings {
             // LUAN-ARTCRAFT-SUITE: on by default, so a push that publishes a new build reaches every
             // machine without a click.
             auto_update: true,
+            sync_suite: true,
             notify: true,
             prereleases: false,
             preferred_kinds: default_preferred_kinds(),

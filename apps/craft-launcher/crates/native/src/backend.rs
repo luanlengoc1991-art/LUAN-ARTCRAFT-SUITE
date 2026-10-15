@@ -81,6 +81,8 @@ struct Shared {
     feed_throttle: Mutex<FeedThrottle>,
     /// Apps whose details pictures are on their way (a second request meanwhile does nothing).
     pictures_busy: Mutex<std::collections::HashSet<&'static str>>,
+    /// LUAN-ARTCRAFT-SUITE: ArtCraft MCP's newest release, once a check has found it.
+    mcp_latest: Mutex<Option<Release>>,
 }
 
 impl Shared {
@@ -137,7 +139,11 @@ impl NativeBackend {
             feed_throttle: Mutex::new(FeedThrottle::load(&paths.feed_throttle(), crate::now())),
             pictures_busy: Mutex::new(std::collections::HashSet::new()),
             last_check: Mutex::new(None),
+            mcp_latest: Mutex::new(None),
         });
+        if let Some(list) = crate::suite::cached_sync(&paths) {
+            shared.emit(Event::SuiteSync(list));
+        }
         let backend = Self { shared, paths, http, source, platform: native_platform(), self_install: crate::self_update::current() };
         backend.replay_cache();
         backend.detect_all();
@@ -201,6 +207,9 @@ impl NativeBackend {
             for app in &SUITE {
                 report_partial(app, &shared, &paths, platform, &options);
             }
+            // LUAN-ARTCRAFT-SUITE: ArtCraft MCP is looked at with the apps.
+            let latest = shared.mcp_latest.lock().unwrap_or_else(PoisonError::into_inner).clone();
+            shared.emit(Event::Mcp(crate::suite::state(latest)));
             shared.detecting.store(false, Ordering::SeqCst);
         });
     }
@@ -283,6 +292,22 @@ impl NativeBackend {
                 }
             });
             source.save();
+            // LUAN-ARTCRAFT-SUITE: the apps every computer keeps, and ArtCraft MCP's newest release
+            // (neither uses GitHub API quota). An installed copy is re-registered if a client lost it.
+            if mirror.is_none() {
+                if let Some(list) = crate::suite::fetch_sync(&http, &paths) {
+                    shared.emit(Event::SuiteSync(list));
+                }
+                match crate::suite::latest_mcp(&http) {
+                    Ok(found) => *shared.mcp_latest.lock().unwrap_or_else(PoisonError::into_inner) = found,
+                    Err(e) => log::info!("ArtCraft MCP release: {e}"),
+                }
+                if let Some(exe) = crate::suite::mcp_exe().filter(|e| e.is_file()) {
+                    crate::suite::register(&exe);
+                }
+                let latest = shared.mcp_latest.lock().unwrap_or_else(PoisonError::into_inner).clone();
+                shared.emit(Event::Mcp(crate::suite::state(latest)));
+            }
             {
                 let answered = shared.answered.lock().unwrap_or_else(PoisonError::into_inner);
                 if SUITE.iter().all(|a| answered.contains(a.id)) {
@@ -437,6 +462,54 @@ impl NativeBackend {
                     shared.emit(Event::JobFinished { app: LAUNCHER_ID.to_string(), result: Err(e) });
                 }
             }
+        });
+    }
+
+    /// LUAN-ARTCRAFT-SUITE: installs or updates ArtCraft MCP (job id `MCP_ID`) and registers it.
+    fn install_mcp(&self) {
+        use artcraft_launcher_core::suite::MCP_ID;
+        let stop = Arc::new(Stop::default());
+        {
+            let mut jobs = self.shared.jobs.lock().unwrap_or_else(PoisonError::into_inner);
+            if jobs.contains_key(MCP_ID) || self.shared.restarting.load(Ordering::SeqCst) {
+                return;
+            }
+            jobs.insert(MCP_ID.to_string(), stop.clone());
+        }
+        let (shared, paths, http) = (self.shared.clone(), self.paths.clone(), self.http.clone());
+        std::thread::spawn(move || {
+            let mut last_emit = Instant::now() - Duration::from_secs(1);
+            let mut phase = |p: JobPhase| {
+                if matches!(p, JobPhase::Downloading { done, total } if done != total && done != 0) && last_emit.elapsed() < Duration::from_millis(50)
+                {
+                    return;
+                }
+                last_emit = Instant::now();
+                shared.emit(Event::Progress { app: MCP_ID.to_string(), phase: p });
+            };
+            phase(JobPhase::Downloading { done: 0, total: 0 });
+            let result = match http.as_ref() {
+                None => Err("secure connections aren't available on this system".to_string()),
+                Some(http) => {
+                    let known = shared.mcp_latest.lock().unwrap_or_else(PoisonError::into_inner).clone();
+                    let latest = match known {
+                        Some(r) => Ok(Some(r)),
+                        None => crate::suite::latest_mcp(http),
+                    };
+                    match latest {
+                        Ok(Some(release)) => {
+                            *shared.mcp_latest.lock().unwrap_or_else(PoisonError::into_inner) = Some(release.clone());
+                            crate::suite::install_mcp(&release, http, &paths, &stop, &mut phase)
+                        }
+                        Ok(None) => Err("ArtCraft MCP has no published release yet".to_string()),
+                        Err(e) => Err(e),
+                    }
+                }
+            };
+            shared.jobs.lock().unwrap_or_else(PoisonError::into_inner).remove(MCP_ID);
+            let latest = shared.mcp_latest.lock().unwrap_or_else(PoisonError::into_inner).clone();
+            shared.emit(Event::Mcp(crate::suite::state(latest)));
+            shared.emit(Event::JobFinished { app: MCP_ID.to_string(), result });
         });
     }
 
@@ -945,6 +1018,7 @@ impl Backend for NativeBackend {
                 }
             }
             Command::UpdateLauncher => self.update_launcher(),
+            Command::InstallMcp => self.install_mcp(),
             Command::FetchScreenshots { app } => self.fetch_screenshots(&app),
             Command::Configure(options) => {
                 let changed_pre = {
@@ -1047,6 +1121,7 @@ mod tests {
             feed_ok_at: Mutex::new(None),
             feed_throttle: Mutex::new(FeedThrottle::new()),
             pictures_busy: Mutex::new(std::collections::HashSet::new()),
+            mcp_latest: Mutex::new(None),
         }
     }
 

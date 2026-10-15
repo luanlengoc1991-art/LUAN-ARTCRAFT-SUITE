@@ -89,6 +89,8 @@
 	Only when I ask	手動で確認したときのみ
 	Automatically download and install updates	更新を自動でダウンロードしてインストール
 	Notify me when an installed app has an update	インストール済みアプリに更新があるときに通知する
+	Keep the same apps as my other computers	ほかのコンピューターと同じアプリをそろえる
+	One MCP server for Claude Code and Cursor, with the tools of every installed app	Claude Code と Cursor のための MCP サーバー。インストール済みのすべてのアプリのツールを使えます
 	Include pre-releases (betas and release candidates)	プレリリース（ベータ版とリリース候補）を含める
 	Installing on Linux	Linux へのインストール
 	Install new apps as	新しいアプリのインストール形式

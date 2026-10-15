@@ -24,6 +24,8 @@ pub mod screenshots;
 pub mod self_update;
 pub mod single_instance;
 pub mod source;
+/// LUAN-ARTCRAFT-SUITE: the suite's app list and ArtCraft MCP.
+pub mod suite;
 
 pub use backend::NativeBackend;
 

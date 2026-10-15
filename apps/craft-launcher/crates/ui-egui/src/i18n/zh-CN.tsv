@@ -69,6 +69,8 @@
 	Only when I ask	仅手动检查
 	Automatically download and install updates	自动下载并安装更新
 	Notify me when an installed app has an update	已安装应用有更新时通知我
+	Keep the same apps as my other computers	与我的其他电脑保持相同的应用
+	One MCP server for Claude Code and Cursor, with the tools of every installed app	一个用于 Claude Code 和 Cursor 的 MCP 服务器，包含所有已安装应用的工具
 	Include pre-releases (betas and release candidates)	包含预发布版本（测试版和候选版）
 	Installing on Linux	Linux 安装设置
 	Install new apps as	新应用安装格式

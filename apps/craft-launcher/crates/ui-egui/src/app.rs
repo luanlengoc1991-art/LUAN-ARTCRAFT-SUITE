@@ -142,6 +142,20 @@ pub struct LauncherUi {
     /// Versions of apps or the launcher already queued for auto-update during this session,
     /// preventing repeated install loops if an update fails or is in progress.
     pub(crate) auto_update_attempted: std::collections::BTreeSet<(String, String)>,
+    /// LUAN-ARTCRAFT-SUITE: the apps every one of the owner's computers keeps (`suite.rs`).
+    pub(crate) suite_sync: Option<artcraft_launcher_core::suite::SuiteSync>,
+    /// Apps the suite list already had installed this session (one try each).
+    pub(crate) sync_attempted: std::collections::BTreeSet<String>,
+    /// ArtCraft MCP on this computer.
+    pub(crate) mcp: Option<artcraft_launcher_core::suite::McpState>,
+    /// ArtCraft MCP's install, while it runs.
+    pub(crate) mcp_job: Option<JobPhase>,
+    /// The ArtCraft MCP version last installed by itself this session.
+    pub(crate) mcp_attempted: Option<String>,
+    /// Jobs the launcher started by itself; each ends with a notification.
+    pub(crate) auto_jobs: std::collections::BTreeSet<String>,
+    /// What those jobs did, waiting to be notified.
+    pub(crate) done_notices: Vec<String>,
 }
 
 /// The language to draw in: the preference, or English where it needs a CJK font the system
@@ -201,6 +215,13 @@ impl LauncherUi {
             last_detect: 0,
             was_focused: true,
             auto_update_attempted: std::collections::BTreeSet::new(),
+            suite_sync: None,
+            sync_attempted: std::collections::BTreeSet::new(),
+            mcp: None,
+            mcp_job: None,
+            mcp_attempted: None,
+            auto_jobs: std::collections::BTreeSet::new(),
+            done_notices: Vec::new(),
         }
     }
 
@@ -228,13 +249,14 @@ impl LauncherUi {
     /// Installed apps with an update waiting (the tray shows the count). Hidden apps are left out,
     /// so the badge matches the Updates list.
     pub fn update_count(&self) -> usize {
-        self.entries.iter().filter(|e| self.in_filter(e, Filter::Updates)).count()
+        let mcp = self.mcp.as_ref().is_some_and(|m| m.update_available());
+        self.entries.iter().filter(|e| self.in_filter(e, Filter::Updates)).count() + usize::from(mcp)
     }
 
     /// Something is downloading or installing, the launcher's own update included: quitting now
     /// would cut it short.
     pub fn busy(&self) -> bool {
-        self.launcher_job.is_some() || self.entries.iter().any(|e| e.job.is_some())
+        self.launcher_job.is_some() || self.mcp_job.is_some() || self.entries.iter().any(|e| e.job.is_some())
     }
 
     /// Looks for updates now (the tray's "Check for Updates").
@@ -304,7 +326,9 @@ impl LauncherUi {
             if self.settings.auto_update {
                 self.trigger_auto_updates();
             }
+            self.sync_suite();
         }
+        self.flush_done_notices(host);
         if self.restart_requested {
             // The helper is waiting for this process to exit before it starts the new launcher.
             self.restart_requested = false;
@@ -337,6 +361,18 @@ impl LauncherUi {
                     e.detected = true;
                 }
                 true
+            }
+            Event::SuiteSync(list) => {
+                self.suite_sync = Some(list);
+                true
+            }
+            Event::Mcp(state) => {
+                self.mcp = Some(state);
+                true
+            }
+            Event::Progress { app, phase } if app == artcraft_launcher_core::suite::MCP_ID => {
+                self.mcp_job = Some(phase);
+                false
             }
             Event::Progress { app, phase } => {
                 if app == artcraft_launcher_core::catalog::LAUNCHER_ID {
@@ -371,6 +407,10 @@ impl LauncherUi {
                 false
             }
             Event::JobFinished { app, result } => {
+                self.auto_job_finished(&app, &result);
+                if app == artcraft_launcher_core::suite::MCP_ID {
+                    self.mcp_job = None;
+                }
                 let launcher = app == artcraft_launcher_core::catalog::LAUNCHER_ID;
                 // What the job was doing when it ended says what a cancellation called off.
                 let last = if launcher { self.launcher_job.take() } else { self.entry(&app).and_then(|e| e.job) };
@@ -478,6 +518,7 @@ impl LauncherUi {
         for (id, version) in to_update {
             log::info!("auto-update: queuing update for {id} to {version}");
             self.auto_update_attempted.insert((id.clone(), version));
+            self.auto_jobs.insert(id.clone());
             self.send(Command::Install { app: id });
         }
         if self.caps.self_update

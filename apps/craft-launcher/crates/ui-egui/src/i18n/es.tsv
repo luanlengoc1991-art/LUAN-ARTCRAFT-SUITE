@@ -87,6 +87,8 @@
 	Only when I ask	Solo cuando lo pida
 	Automatically download and install updates	Descargar e instalar actualizaciones automáticamente
 	Notify me when an installed app has an update	Avisarme cuando una aplicación instalada tenga una actualización
+	Keep the same apps as my other computers	Mantener las mismas apps que en mis otros equipos
+	One MCP server for Claude Code and Cursor, with the tools of every installed app	Un servidor MCP para Claude Code y Cursor con las herramientas de todas las apps instaladas
 	Include pre-releases (betas and release candidates)	Incluir versiones preliminares (betas y versiones candidatas)
 	Installing on Linux	Instalación en Linux
 	Install new apps as	Instalar las aplicaciones nuevas como

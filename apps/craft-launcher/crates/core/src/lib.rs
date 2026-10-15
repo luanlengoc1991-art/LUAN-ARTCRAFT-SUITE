@@ -14,6 +14,8 @@ pub mod platform;
 pub mod protocol;
 pub mod release;
 pub mod status;
+/// LUAN-ARTCRAFT-SUITE: the same apps and ArtCraft MCP on every one of the owner's computers.
+pub mod suite;
 pub mod time;
 pub mod version;
 

@@ -27,6 +27,8 @@ pub mod model;
 mod motion;
 mod notes;
 pub mod settings;
+/// LUAN-ARTCRAFT-SUITE: the suite's app list and ArtCraft MCP.
+mod suite;
 pub mod theme;
 mod views;
 mod widgets;

@@ -279,6 +279,9 @@ impl LauncherUi {
         {
             self.trigger_auto_updates();
         }
+        if self.caps.manage_apps && ui.checkbox(&mut self.settings.sync_suite, tl!("Keep the same apps as my other computers")).changed() {
+            self.sync_suite();
+        }
         ui.checkbox(&mut self.settings.notify, tl!("Notify me when an installed app has an update"));
         ui.checkbox(&mut self.settings.prereleases, tl!("Include pre-releases (betas and release candidates)"));
 

@@ -51,6 +51,9 @@ pub enum Command {
     },
     /// Change how the backend behaves.
     Configure(BackendOptions),
+    /// LUAN-ARTCRAFT-SUITE: install or update ArtCraft MCP and register it with Claude Code and
+    /// Cursor. Progress and the result arrive under the job id [`crate::suite::MCP_ID`].
+    InstallMcp,
 }
 
 /// Settings the backend needs.
@@ -200,6 +203,10 @@ pub enum Event {
         key: String,
         result: Result<Vec<u8>, String>,
     },
+    /// LUAN-ARTCRAFT-SUITE: the apps every one of the owner's computers keeps installed.
+    SuiteSync(crate::suite::SuiteSync),
+    /// LUAN-ARTCRAFT-SUITE: ArtCraft MCP on this computer, and its newest release.
+    Mcp(crate::suite::McpState),
     CheckStarted,
     CheckFinished {
         /// Unix seconds.

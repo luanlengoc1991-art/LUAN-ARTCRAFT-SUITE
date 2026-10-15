@@ -85,6 +85,8 @@
 	Only when I ask	Только по запросу
 	Automatically download and install updates	Автоматически скачивать и устанавливать обновления
 	Notify me when an installed app has an update	Уведомлять, когда у установленного приложения есть обновление
+	Keep the same apps as my other computers	Держать те же приложения, что и на моих других компьютерах
+	One MCP server for Claude Code and Cursor, with the tools of every installed app	Один MCP-сервер для Claude Code и Cursor с инструментами всех установленных приложений
 	Include pre-releases (betas and release candidates)	Включать предварительные релизы (бета и RC)
 	Installing on Linux	Установка в Linux
 	Install new apps as	Устанавливать новые приложения как

@@ -74,6 +74,8 @@
 	Only when I ask	Pouze na vyžádání
 	Automatically download and install updates	Automaticky stahovat a instalovat aktualizace
 	Notify me when an installed app has an update	Upozornit, když má nainstalovaná aplikace aktualizaci
+	Keep the same apps as my other computers	Mít stejné aplikace jako na mých ostatních počítačích
+	One MCP server for Claude Code and Cursor, with the tools of every installed app	Jeden MCP server pro Claude Code a Cursor s nástroji všech nainstalovaných aplikací
 	Include pre-releases (betas and release candidates)	Zahrnout předběžná vydání (beta verze a kandidáty na vydání)
 	Installing on Linux	Instalace v Linuxu
 	Install new apps as	Instalovat nové aplikace jako

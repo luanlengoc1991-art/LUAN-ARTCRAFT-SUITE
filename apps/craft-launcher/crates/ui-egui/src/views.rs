@@ -197,6 +197,7 @@ impl LauncherUi {
             ui.add_space(14.0);
         }
         self.announcements(ui);
+        self.mcp_bar(ui);
         ui.horizontal(|ui| {
             let updates = self.count(Filter::Updates);
             let mut filters = vec![
