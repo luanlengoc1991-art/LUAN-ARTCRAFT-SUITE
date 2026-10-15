@@ -267,8 +267,10 @@ fn stamp(path: &Path) -> String {
 }
 
 pub fn discover(cfg: &Config) -> Vec<Installed> {
-    let mut dirs = cfg.search_dirs.clone();
-    dirs.extend(default_search_dirs());
+    // Where ArtCraft Launcher installs comes first: those copies are the ones it keeps updated.
+    // `apps.<id>.cli` still picks any other copy.
+    let mut dirs = default_search_dirs();
+    dirs.extend(cfg.search_dirs.iter().cloned());
     let mut found = Vec::new();
     for spec in APPS {
         let o = cfg.apps.get(spec.id);

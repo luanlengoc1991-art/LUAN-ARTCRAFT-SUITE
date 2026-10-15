@@ -7,6 +7,11 @@ của app khi cần, rồi chuyển tiếp lệnh tới đó.
 
 ## Tải và cài
 
+**Cách đơn giản nhất: không cần làm gì.** ArtCraft Launcher tự cài, cập nhật và đăng ký MCP này vào
+Claude Code và Cursor. Thanh **ArtCraft MCP** ở đầu cửa sổ launcher cho biết phiên bản đang cài,
+và ô Claude Code / Cursor sáng xanh khi MCP đã được đăng ký vào đó. Cách cài tay bên dưới chỉ dùng
+khi máy chưa có launcher.
+
 - Link cố định, luôn là bản mới nhất:
   https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/latest/download/ArtCraft-MCP.exe
 - Cài và đăng ký vào Claude Code (mọi project) và Cursor bằng một lệnh PowerShell:
