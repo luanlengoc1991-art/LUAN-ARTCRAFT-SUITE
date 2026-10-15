@@ -40,6 +40,25 @@ thư viện (`vendor/`), file cài (Releases của `luanlengoc1991-art/<app>`) v
 Cài trình quản lý, mở lên, rồi bấm **Install** cho app bạn cần. Sau đó app tự cập nhật mỗi khi bạn
 push thay đổi lên repo này.
 
+**Quy trình: mọi máy giống nhau, chỉ cần cài trình quản lý.**
+
+1. Trên máy mới, chỉ cần cài ArtCraft Launcher, các bước sau diễn ra tự động.
+2. Launcher đọc danh sách [config/suite-sync.json](config/suite-sync.json) trên GitHub. App nào
+   trong danh sách mà máy chưa có thì launcher tự cài, cùng với ArtCraft MCP. MCP được đăng ký sẵn
+   vào Claude Code và Cursor.
+3. Khi bạn push thay đổi lên `main`, GitHub build và phát hành bản mới. Launcher trên mọi máy thấy
+   bản mới trong vòng khoảng 20 phút, gửi thông báo và tự cập nhật. Khi xong sẽ có thêm một thông
+   báo "… updated to …". Tab **Updates** trong launcher có nút cập nhật tay, còn thanh **ArtCraft
+   MCP** ở đầu danh sách app có nút cập nhật MCP.
+4. Muốn thêm hoặc bớt app trên mọi máy: sửa `config/suite-sync.json` rồi push. Gỡ app khỏi danh
+   sách **không** xóa app ở máy nào. Muốn một máy không tự cài theo danh sách: vào Preferences, bỏ
+   chọn "Keep the same apps as my other computers".
+5. Để làm việc, dùng Claude Code hoặc Cursor ra lệnh qua MCP `artcraft`. Đây là một MCP duy nhất
+   và gọi được tool của từng app.
+
+App cài vào Program Files nên Windows hỏi quyền (UAC) mỗi lần cài hoặc cập nhật app. Bấm **Yes**
+là được. ArtCraft MCP cài theo user nên không hỏi.
+
 **MCP tổng (một MCP cho mọi app đã cài, dùng trong Claude Code và Cursor):**
 - Tải: https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/latest/download/ArtCraft-MCP.exe
 - Cài và đăng ký vào Claude Code + Cursor bằng một lệnh PowerShell:

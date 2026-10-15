@@ -1,0 +1,14 @@
+{
+  "$comment": "Every computer with ArtCraft Launcher installs these apps (and ArtCraft MCP) by itself, then keeps them updated. Edit, push to main, and every launcher follows within minutes. Removing an app here never uninstalls it anywhere.",
+  "apps": [
+    "photocraft",
+    "vectorcraft",
+    "filmcraft",
+    "pdfcraft",
+    "effectcraft",
+    "wordcraft",
+    "cadcraft",
+    "gridcraft"
+  ],
+  "mcp": true
+}
