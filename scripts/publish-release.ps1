@@ -51,7 +51,9 @@ foreach ($id in $Apps) {
 
   $notes = "$($a.name) $ver for Windows x64.`n`nBuilt from https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/tree/$commit/$($a.path) (upstream $($a.upstream.importedCommit.Substring(0,12))).`nInstall and update with ArtCraft Launcher (https://github.com/luanlengoc1991-art/craft-launcher/releases/latest).`n`nLicense: MIT OR Apache-2.0 (see LICENSE-MIT, LICENSE-APACHE, NOTICE in the source)."
   $assets = @($files.FullName) + $sums
-  $ghArgs = @('release', 'create', $tag, '-R', $repo, '--title', "$($a.name) $ver", '--notes', $notes)
+  # The day it was published (Vietnam time) in the title, so each update is easy to tell apart.
+  $day = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'SE Asia Standard Time').ToString('dd/MM/yyyy')
+  $ghArgs = @('release', 'create', $tag, '-R', $repo, '--title', "$($a.name) $ver ($day)", '--notes', $notes)
   if ($ver -match '-') { $ghArgs += '--prerelease' }
   if ($DryRun) { $results += [pscustomobject]@{ app = $id; version = $ver; result = "dry run: would publish $($files.Name -join ', ') to $repo" }; continue }
   & gh @ghArgs @assets
