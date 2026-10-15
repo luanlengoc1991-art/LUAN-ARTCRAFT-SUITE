@@ -138,6 +138,9 @@ pub fn register(exe: &Path) -> (Option<bool>, Option<bool>) {
         Some(false) => Some(register_claude(exe)),
         other => other,
     };
+    if claude == Some(true) {
+        allow_in_claude();
+    }
     let cursor = match cursor_registered(exe) {
         Some(false) => Some(register_cursor(exe)),
         other => other,
@@ -147,6 +150,42 @@ pub fn register(exe: &Path) -> (Option<bool>, Option<bool>) {
 
 fn home() -> Option<PathBuf> {
     dirs::home_dir()
+}
+
+/// The owner drives the apps by asking Claude: ArtCraft MCP's tools run without a prompt each time
+/// (`mcp__artcraft` in `~/.claude/settings.json`'s `permissions.allow`, added once, never removed).
+fn allow_in_claude() {
+    let Some(path) = home().map(|h| h.join(".claude").join("settings.json")) else { return };
+    let existing = std::fs::read_to_string(&path).ok();
+    match claude_settings(existing.as_deref()) {
+        Ok(Some(text)) => {
+            if let Err(e) = write_atomic(&path, text.as_bytes()) {
+                log::warn!("{e}");
+            }
+        }
+        Ok(None) => {}
+        // Never overwrite settings we can't read.
+        Err(e) => log::warn!("{}: {e}", path.display()),
+    }
+}
+
+/// `existing` Claude Code user settings with `mcp__artcraft` allowed; `None` when it already is.
+fn claude_settings(existing: Option<&str>) -> Result<Option<String>, String> {
+    let rule = format!("mcp__{MCP_SERVER}");
+    let mut v = match existing.map(|t| t.trim_start_matches('\u{feff}').trim()) {
+        None | Some("") => json!({}),
+        Some(t) => serde_json::from_str::<Value>(t).map_err(|e| format!("unreadable ({e})"))?,
+    };
+    let root = v.as_object_mut().ok_or("not a JSON object")?;
+    let perms = root.entry("permissions").or_insert_with(|| json!({}));
+    let perms = perms.as_object_mut().ok_or("permissions is not an object")?;
+    let allow = perms.entry("allow").or_insert_with(|| json!([]));
+    let allow = allow.as_array_mut().ok_or("permissions.allow is not a list")?;
+    if allow.iter().any(|r| r.as_str() == Some(rule.as_str())) {
+        return Ok(None);
+    }
+    allow.push(json!(rule));
+    serde_json::to_string_pretty(&v).map(|s| Some(s + "\n")).map_err(|e| e.to_string())
 }
 
 fn same_path(a: &str, b: &Path) -> bool {
@@ -271,6 +310,18 @@ fn cursor_config(existing: Option<&str>, exe: &Path) -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn claude_settings_add_the_rule_once() {
+        let before = r#"{"model":"opus","permissions":{"allow":["Bash(git *)"],"deny":["X"]}}"#;
+        let after: Value = serde_json::from_str(&claude_settings(Some(before)).unwrap().unwrap()).unwrap();
+        assert_eq!(after["model"], "opus");
+        assert_eq!(after["permissions"]["deny"][0], "X");
+        assert_eq!(after["permissions"]["allow"], json!(["Bash(git *)", "mcp__artcraft"]));
+        assert_eq!(claude_settings(Some(&after.to_string())).unwrap(), None, "already allowed");
+        assert!(claude_settings(None).unwrap().is_some());
+        assert!(claude_settings(Some("{broken")).is_err(), "never overwrite unreadable settings");
+    }
 
     #[test]
     fn cursor_config_keeps_other_servers() {
