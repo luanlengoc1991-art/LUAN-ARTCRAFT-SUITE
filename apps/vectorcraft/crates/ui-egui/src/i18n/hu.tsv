@@ -4799,3 +4799,7 @@ imageTrace	Outline	Körvonal
 	Disconnected	Nincs kapcsolat
 	Unsupported	Nem támogatott
 	Logs	Naplók
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (chat history)
+	New chat	Új csevegés
+	Chat history	Csevegési előzmények
+	No saved chats	Nincs mentett csevegés

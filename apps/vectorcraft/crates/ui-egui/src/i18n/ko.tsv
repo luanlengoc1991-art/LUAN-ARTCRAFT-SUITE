@@ -4368,3 +4368,7 @@ lighting	Light	광원
 	Disconnected	연결 안 됨
 	Unsupported	지원 안 됨
 	Logs	로그
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (chat history)
+	New chat	새 채팅
+	Chat history	채팅 기록
+	No saved chats	저장된 채팅이 없습니다

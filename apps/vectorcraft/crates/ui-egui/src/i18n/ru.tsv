@@ -4400,3 +4400,7 @@ lighting	Light	Свет
 	Disconnected	Не подключено
 	Unsupported	Не поддерживается
 	Logs	Журналы
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (chat history)
+	New chat	Новый чат
+	Chat history	История чатов
+	No saved chats	Нет сохранённых чатов

@@ -88,16 +88,76 @@ mod desktop {
         }
     }
 
+    #[derive(Clone)]
     pub(crate) enum Line {
         User(String),
         Ai(String),
         Tool(String),
         Error(String),
+        /// How the run went: turns, time, estimated cost.
+        Info(String),
+    }
+
+    impl Line {
+        fn to_pair(&self) -> [String; 2] {
+            let (k, t) = match self {
+                Line::User(t) => ("user", t),
+                Line::Ai(t) => ("ai", t),
+                Line::Tool(t) => ("tool", t),
+                Line::Error(t) => ("error", t),
+                Line::Info(t) => ("info", t),
+            };
+            [k.to_string(), t.clone()]
+        }
+
+        fn from_pair([k, t]: [String; 2]) -> Line {
+            match k.as_str() {
+                "user" => Line::User(t),
+                "tool" => Line::Tool(t),
+                "error" => Line::Error(t),
+                "info" => Line::Info(t),
+                _ => Line::Ai(t),
+            }
+        }
     }
 
     enum Msg {
         Line(Line),
+        /// The agent's conversation id, to continue it with the next request.
+        Session(String),
         Done(Result<(), String>),
+    }
+
+    /// One conversation, as saved on this computer (`ai-chats.json`).
+    #[derive(Clone, serde::Serialize, serde::Deserialize)]
+    struct SavedChat {
+        id: u64,
+        title: String,
+        agent: String,
+        session: Option<String>,
+        lines: Vec<[String; 2]>,
+    }
+
+    const MAX_SAVED_CHATS: usize = 50;
+
+    fn chats_path() -> Option<PathBuf> {
+        let base = std::env::var_os("APPDATA").map(PathBuf::from).or_else(|| dirs_home().map(|h| h.join(".config")))?;
+        Some(base.join("VectorCraft").join("ai-chats.json"))
+    }
+
+    fn load_chats() -> Vec<SavedChat> {
+        chats_path().and_then(|p| std::fs::read_to_string(p).ok()).and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
+    }
+
+    fn save_chats(chats: &[SavedChat]) -> Result<(), String> {
+        let path = chats_path().ok_or("no folder for saved chats")?;
+        if let Some(dir) = path.parent() {
+            std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+        }
+        let text = serde_json::to_string(chats).map_err(|e| e.to_string())?;
+        let tmp = path.with_extension("tmp");
+        std::fs::write(&tmp, text).map_err(|e| e.to_string())?;
+        std::fs::rename(&tmp, &path).map_err(|e| e.to_string())
     }
 
     struct Run {
@@ -142,6 +202,10 @@ mod desktop {
         transcript: Vec<Line>,
         run: Option<Run>,
         review: Option<Review>,
+        /// The agent's conversation the next request continues (Claude Code), and this chat's id.
+        session: Option<String>,
+        chat_id: Option<u64>,
+        chats: Option<Vec<SavedChat>>,
         // MCP Console
         tools: Vec<Value>,
         filter: String,
@@ -194,6 +258,7 @@ mod desktop {
             while let Ok(msg) = run.rx.try_recv() {
                 match msg {
                     Msg::Line(line) => s.transcript.push(line),
+                    Msg::Session(id) => s.session = Some(id),
                     Msg::Done(r) => finished = Some(r),
                 }
             }
@@ -216,6 +281,7 @@ mod desktop {
                         s.review = Some(Review { uid, steps });
                     }
                 }
+                save_current(s);
             } else {
                 ctx.request_repaint_after(Duration::from_millis(200));
             }
@@ -264,17 +330,18 @@ mod desktop {
                 });
             });
         }
-        let height = (ui.available_height() - 110.0).max(80.0);
-        egui::ScrollArea::vertical().id_salt("aiCenterTranscript").max_height(height).stick_to_bottom(true).show(ui, |ui| {
-            for line in &s.transcript {
-                match line {
-                    Line::User(t) => ui.label(RichText::new(format!("› {t}")).strong()),
-                    Line::Ai(t) => ui.label(t),
-                    Line::Tool(t) => ui.label(RichText::new(format!("⚙ {t}")).small().weak()),
-                    Line::Error(t) => ui.label(RichText::new(t).color(ui.visuals().error_fg_color)),
-                };
-            }
-        });
+        chat_bar(s, ui);
+        // A fixed-height transcript that scrolls, so the input below always stays in view however
+        // long the conversation gets (a floating panel grows with its content otherwise).
+        let height = (ui.available_height() - 150.0).clamp(120.0, 380.0);
+        egui::ScrollArea::vertical()
+            .id_salt("aiCenterTranscript")
+            .max_height(height)
+            .min_scrolled_height(height)
+            .auto_shrink([false, false])
+            .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::AlwaysVisible)
+            .stick_to_bottom(true)
+            .show(ui, |ui| transcript(s, ui));
         if let Some(review) = &s.review {
             let steps = review.steps;
             ui.horizontal_wrapped(|ui| {
@@ -312,6 +379,90 @@ mod desktop {
         });
     }
 
+    /// The conversation, consecutive tool calls on one line.
+    fn transcript(s: &State, ui: &mut Ui) {
+        let mut tools: Vec<&str> = Vec::new();
+        let flush = |tools: &mut Vec<&str>, ui: &mut Ui| {
+            if !tools.is_empty() {
+                ui.label(RichText::new(format!("⚙ {}", tools.join(" · "))).small().weak());
+                tools.clear();
+            }
+        };
+        for line in &s.transcript {
+            if let Line::Tool(t) = line {
+                tools.push(t);
+                continue;
+            }
+            flush(&mut tools, ui);
+            match line {
+                Line::User(t) => ui.label(RichText::new(format!("› {t}")).strong()),
+                Line::Ai(t) => ui.label(t),
+                Line::Error(t) => ui.label(RichText::new(t).color(ui.visuals().error_fg_color)),
+                Line::Info(t) => ui.label(RichText::new(t).small().weak()),
+                Line::Tool(_) => continue,
+            };
+        }
+        flush(&mut tools, ui);
+    }
+
+    /// New chat, and the chats saved on this computer to reopen.
+    fn chat_bar(s: &mut State, ui: &mut Ui) {
+        let running = s.run.is_some();
+        ui.horizontal(|ui| {
+            if ui.add_enabled(!running, egui::Button::new(tl!("New chat"))).clicked() {
+                save_current(s);
+                s.transcript.clear();
+                s.session = None;
+                s.chat_id = None;
+                s.review = None;
+            }
+            ui.add_enabled_ui(!running, |ui| {
+                ui.menu_button(tl!("Chat history"), |ui| {
+                    let chats = s.chats.get_or_insert_with(load_chats);
+                    if chats.is_empty() {
+                        dim_label(ui, tl!("No saved chats"));
+                    }
+                    let mut open = None;
+                    for c in chats.iter().rev() {
+                        if ui.button(format!("{} · {}", c.title, c.agent)).clicked() {
+                            open = Some(c.clone());
+                            ui.close();
+                        }
+                    }
+                    if let Some(c) = open {
+                        save_current(s);
+                        s.transcript = c.lines.into_iter().map(Line::from_pair).collect();
+                        s.session = c.session;
+                        s.chat_id = Some(c.id);
+                        s.review = None;
+                    }
+                });
+            });
+        });
+    }
+
+    /// Saves the current conversation (new, or over its earlier copy).
+    fn save_current(s: &mut State) {
+        let Some(first) = s.transcript.iter().find_map(|l| if let Line::User(t) = l { Some(t.clone()) } else { None }) else { return };
+        let id = *s.chat_id.get_or_insert_with(|| {
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| u64::try_from(d.as_millis()).unwrap_or(0))
+        });
+        let title: String = first.chars().take(40).collect();
+        let agent = s.agent.map_or("", |a| a.label()).to_string();
+        let chat = SavedChat { id, title, agent, session: s.session.clone(), lines: s.transcript.iter().map(Line::to_pair).collect() };
+        let chats = s.chats.get_or_insert_with(load_chats);
+        chats.retain(|c| c.id != id);
+        chats.push(chat);
+        if chats.len() > MAX_SAVED_CHATS {
+            let extra = chats.len() - MAX_SAVED_CHATS;
+            chats.drain(..extra);
+        }
+        let result = save_chats(chats);
+        if let Err(e) = result {
+            s.log(format!("couldn't save the chat: {e}"));
+        }
+    }
+
     /// Undoes the steps the last agent run made (when its document is still the active one).
     fn undo_steps(app: &mut VectorcraftApp, s: &mut State) {
         let Some(review) = s.review.take() else { return };
@@ -346,7 +497,8 @@ mod desktop {
             s.transcript.push(Line::Error("vectorcraft-cli wasn't found next to the app.".into()));
             return;
         };
-        let (program, args) = agent_command(agent, &exe, &prompt, &cli, port);
+        let resume = if agent == Agent::Claude { s.session.clone() } else { None };
+        let (program, args) = agent_command(agent, &exe, &prompt, &cli, port, resume.as_deref());
         let mut cmd = Command::new(&program);
         cmd.args(&args).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
         if let Some(dir) = app.session.active().and_then(|d| d.path.as_deref()).and_then(|p| Path::new(p).parent()) {
@@ -382,27 +534,32 @@ mod desktop {
 
     /// The program and arguments that hand `prompt` to `agent`, with VectorCraft's MCP server for
     /// this window.
-    pub(crate) fn agent_command(agent: Agent, exe: &Path, prompt: &str, cli: &Path, port: u16) -> (PathBuf, Vec<String>) {
+    pub(crate) fn agent_command(agent: Agent, exe: &Path, prompt: &str, cli: &Path, port: u16, resume: Option<&str>) -> (PathBuf, Vec<String>) {
         let addr = format!("127.0.0.1:{port}");
         let cli = cli.to_string_lossy().to_string();
         let sys = system_prompt(port);
         let args = match agent {
             Agent::Claude => {
                 let config = json!({"mcpServers": {SERVER: {"command": cli, "args": ["mcp", "--connect", addr]}}}).to_string();
-                vec![
-                    "-p".into(),
-                    prompt.into(),
-                    "--output-format".into(),
-                    "stream-json".into(),
-                    "--verbose".into(),
-                    "--strict-mcp-config".into(),
-                    "--mcp-config".into(),
-                    config,
-                    "--allowedTools".into(),
-                    format!("mcp__{SERVER}"),
-                    "--append-system-prompt".into(),
-                    sys,
-                ]
+                // The same conversation goes on, so "make it bigger" knows what "it" is.
+                let resume = resume.map(|id| vec!["--resume".to_string(), id.to_string()]).unwrap_or_default();
+                resume
+                    .into_iter()
+                    .chain([
+                        "-p".into(),
+                        prompt.into(),
+                        "--output-format".into(),
+                        "stream-json".into(),
+                        "--verbose".into(),
+                        "--strict-mcp-config".into(),
+                        "--mcp-config".into(),
+                        config,
+                        "--allowedTools".into(),
+                        format!("mcp__{SERVER}"),
+                        "--append-system-prompt".into(),
+                        sys,
+                    ])
+                    .collect()
             }
             Agent::Codex => vec![
                 "exec".into(),
@@ -448,7 +605,15 @@ mod desktop {
         let mut said = false;
         let mut failed = None;
         if let Some(out) = stdout {
+            let mut session_sent = false;
             for raw in BufReader::new(out).lines().map_while(Result::ok) {
+                if agent == Agent::Claude
+                    && !session_sent
+                    && let Some(id) = serde_json::from_str::<Value>(&raw).ok().and_then(|v| v["session_id"].as_str().map(str::to_owned))
+                {
+                    session_sent = true;
+                    let _ = tx.send(Msg::Session(id));
+                }
                 for line in parse_agent_line(agent, &raw) {
                     match &line {
                         Line::Ai(_) => said = true,
@@ -496,6 +661,21 @@ mod desktop {
                         .collect(),
                     Some("result") if v["is_error"].as_bool() == Some(true) => {
                         vec![Line::Error(v["result"].as_str().unwrap_or("the agent reported an error").into())]
+                    }
+                    // How the run went. On a Claude plan the cost is Claude Code's estimate of
+                    // what it would have cost at API prices: the plan's usage is what's spent.
+                    Some("result") => {
+                        let mut parts = vec!["✓".to_string()];
+                        if let Some(ms) = v["duration_ms"].as_f64().filter(|m| m.is_finite()) {
+                            parts.push(format!("{:.0} s", ms / 1000.0));
+                        }
+                        if let Some(n) = v["num_turns"].as_u64() {
+                            parts.push(format!("{n} ↻"));
+                        }
+                        if let Some(c) = v["total_cost_usd"].as_f64().filter(|c| c.is_finite()) {
+                            parts.push(format!("≈ ${c:.3}"));
+                        }
+                        vec![Line::Info(parts.join(" · "))]
                     }
                     _ => vec![],
                 }
@@ -991,8 +1171,14 @@ mod desktop {
 
         #[test]
         fn claude_gets_this_windows_mcp_server_and_only_its_tools() {
-            let (prog, args) =
-                agent_command(Agent::Claude, Path::new("claude.exe"), "Đổi màu logo thành xanh ngọc", Path::new("C:/vc/vectorcraft-cli.exe"), 7981);
+            let (prog, args) = agent_command(
+                Agent::Claude,
+                Path::new("claude.exe"),
+                "Đổi màu logo thành xanh ngọc",
+                Path::new("C:/vc/vectorcraft-cli.exe"),
+                7981,
+                None,
+            );
             assert_eq!(prog, PathBuf::from("claude.exe"));
             assert_eq!(args.get(1).map(String::as_str), Some("Đổi màu logo thành xanh ngọc"));
             let at = args.iter().position(|a| a == "--mcp-config").unwrap();
@@ -1005,7 +1191,7 @@ mod desktop {
 
         #[test]
         fn codex_gets_the_server_as_config_overrides() {
-            let (_, args) = agent_command(Agent::Codex, Path::new("codex.cmd"), "hi", Path::new("C:\\vc\\vectorcraft-cli.exe"), 7979);
+            let (_, args) = agent_command(Agent::Codex, Path::new("codex.cmd"), "hi", Path::new("C:\\vc\\vectorcraft-cli.exe"), 7979, None);
             assert_eq!(args[0], "exec");
             assert!(args.iter().any(|a| a == "mcp_servers.vectorcraft.command=\"C:\\\\vc\\\\vectorcraft-cli.exe\""));
             assert!(args.iter().any(|a| a.contains("\"127.0.0.1:7979\"")));
@@ -1022,6 +1208,34 @@ mod desktop {
             assert!(matches!(&err[0], Line::Error(t) if t == "Not logged in"));
             assert!(parse_agent_line(Agent::Claude, r#"{"type":"system","subtype":"init"}"#).is_empty());
             assert!(parse_agent_line(Agent::Claude, "   ").is_empty());
+        }
+
+        #[test]
+        fn a_follow_up_continues_the_claude_conversation() {
+            let (_, args) = agent_command(Agent::Claude, Path::new("claude.exe"), "to hơn", Path::new("vc-cli"), 7979, Some("abc-123"));
+            assert_eq!(args[..2], ["--resume".to_string(), "abc-123".to_string()]);
+            assert_eq!(args[2], "-p");
+        }
+
+        #[test]
+        fn a_finished_run_reports_time_turns_and_cost() {
+            let lines = parse_agent_line(
+                Agent::Claude,
+                r#"{"type":"result","is_error":false,"duration_ms":23400,"num_turns":4,"total_cost_usd":0.0521,"session_id":"x"}"#,
+            );
+            assert!(
+                matches!(&lines[0], Line::Info(t) if t == "✓ · 23 s · 4 ↻ · ≈ $0.052"),
+                "{}",
+                lines.first().map(|l| l.to_pair()[1].clone()).unwrap_or_default()
+            );
+        }
+
+        #[test]
+        fn saved_lines_round_trip() {
+            for l in [Line::User("a".into()), Line::Ai("b".into()), Line::Tool("c".into()), Line::Error("d".into()), Line::Info("e".into())] {
+                let pair = l.to_pair();
+                assert_eq!(Line::from_pair(pair.clone()).to_pair(), pair);
+            }
         }
 
         #[test]

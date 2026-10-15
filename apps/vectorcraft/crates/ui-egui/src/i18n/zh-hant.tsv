@@ -3765,3 +3765,7 @@ lighting	Light	光源
 	Disconnected	未連線
 	Unsupported	不支援
 	Logs	記錄
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (chat history)
+	New chat	新對話
+	Chat history	對話記錄
+	No saved chats	沒有已儲存的對話

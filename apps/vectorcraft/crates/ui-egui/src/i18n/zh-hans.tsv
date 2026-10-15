@@ -3981,3 +3981,7 @@ lighting	Light	光源
 	Disconnected	未连接
 	Unsupported	不支持
 	Logs	日志
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (chat history)
+	New chat	新对话
+	Chat history	对话记录
+	No saved chats	没有已保存的对话
