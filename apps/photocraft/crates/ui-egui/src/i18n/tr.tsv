@@ -3909,3 +3909,5 @@ cameraData	Lens	Lens
 	Not signed in to Claude	Claude'da oturum açılmadı
 	Sign in	Oturum aç
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Claude planınızın yapay zekâ kullanım sınırına ulaşıldı. Uygulama çalışmaya devam eder; sınır sıfırlanınca yapay zekâ istekleri yeniden çalışır.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
+	Done directly, no AI used.	Doğrudan yapıldı, yapay zekâ kullanılmadı.

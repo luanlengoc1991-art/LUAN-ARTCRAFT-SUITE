@@ -3876,3 +3876,5 @@ curves	Smooth	Згладити
 	Not signed in to Claude	Вхід у Claude не виконано
 	Sign in	Увійти
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Ліміт ШІ вашого тарифу Claude вичерпано. Застосунок працює далі; запити до ШІ знову працюватимуть після оновлення ліміту.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
+	Done directly, no AI used.	Виконано напряму, без ШІ.
