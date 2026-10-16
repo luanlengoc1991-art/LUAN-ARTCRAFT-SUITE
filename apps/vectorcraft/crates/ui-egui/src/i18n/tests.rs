@@ -1187,6 +1187,7 @@ const NOT_MESSAGES: &[&str] = &[
     "this build can't open a control channel",
     "vectorcraft-cli wasn't found next to the app",
     "no folder for saved chats",
+    "unreadable account status",
 ];
 
 /// Every status and error message literal in [`MESSAGE_CRATES`] (test modules aside), as catalog

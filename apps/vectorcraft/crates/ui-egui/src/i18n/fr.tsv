@@ -4836,3 +4836,9 @@ theme	Appearance	Apparence
 	New chat	Nouvelle discussion
 	Chat history	Historique des discussions
 	No saved chats	Aucune discussion enregistrée
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Utilise le quota de votre forfait Claude, sans clé d'API.
+	Plan usage	Utilisation du forfait
+	Not signed in to Claude	Non connecté à Claude
+	Sign in	Se connecter
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	La limite d'utilisation IA de votre forfait Claude est atteinte. L'application continue de fonctionner ; les requêtes IA refonctionneront quand la limite sera réinitialisée.

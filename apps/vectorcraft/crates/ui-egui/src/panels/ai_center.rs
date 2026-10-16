@@ -96,6 +96,8 @@ mod desktop {
         Error(String),
         /// How the run went: turns, time, estimated cost.
         Info(String),
+        /// The account's AI usage limit is reached (the agent's own words): the app works on.
+        Limit(String),
     }
 
     impl Line {
@@ -106,6 +108,7 @@ mod desktop {
                 Line::Tool(t) => ("tool", t),
                 Line::Error(t) => ("error", t),
                 Line::Info(t) => ("info", t),
+                Line::Limit(t) => ("limit", t),
             };
             [k.to_string(), t.clone()]
         }
@@ -116,9 +119,60 @@ mod desktop {
                 "tool" => Line::Tool(t),
                 "error" => Line::Error(t),
                 "info" => Line::Info(t),
+                "limit" => Line::Limit(t),
                 _ => Line::Ai(t),
             }
         }
+    }
+
+    /// Whether an agent's error says the account's plan has no AI usage left for now.
+    pub(crate) fn is_usage_limit(error: &str) -> bool {
+        let e = error.to_lowercase();
+        ["usage limit", "limit reached", "rate limit", "rate_limit", "out of extra usage", "quota", "insufficient credits", "credit balance"]
+            .iter()
+            .any(|k| e.contains(k))
+    }
+
+    /// The Claude account the agent signs in with (`claude auth status`): never a credential.
+    #[derive(Clone)]
+    pub(crate) struct Account {
+        logged_in: bool,
+        /// `claude.ai` (a Claude plan) or an API key method.
+        method: String,
+        email: String,
+        plan: String,
+    }
+
+    impl Account {
+        pub(crate) fn parse(json: &str) -> Option<Account> {
+            let v: Value = serde_json::from_str(json.trim()).ok()?;
+            Some(Account {
+                logged_in: v["loggedIn"].as_bool()?,
+                method: v["authMethod"].as_str().unwrap_or("").to_string(),
+                email: v["email"].as_str().unwrap_or("").to_string(),
+                plan: v["subscriptionType"].as_str().unwrap_or("").to_string(),
+            })
+        }
+
+        /// "luan@… · Pro", or the sign-in method when there's no plan.
+        fn label(&self) -> String {
+            let plan = match self.plan.as_str() {
+                "" => self.method.clone(),
+                p => {
+                    let mut c = p.chars();
+                    c.next().map(|f| f.to_uppercase().collect::<String>() + c.as_str()).unwrap_or_default()
+                }
+            };
+            if self.email.is_empty() { plan } else { format!("{} · {plan}", self.email) }
+        }
+    }
+
+    fn claude_account(exe: &Path) -> Result<Account, String> {
+        let mut cmd = Command::new(exe);
+        cmd.args(["auth", "status"]).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null());
+        no_window(&mut cmd);
+        let out = cmd.output().map_err(|e| e.to_string())?;
+        Account::parse(&String::from_utf8_lossy(&out.stdout)).ok_or_else(|| "unreadable account status".to_string())
     }
 
     enum Msg {
@@ -219,6 +273,9 @@ mod desktop {
         test_rx: Option<Receiver<Result<String, String>>>,
         test: Option<Result<String, String>>,
         log: VecDeque<String>,
+        /// The Claude account the agent uses, once read.
+        account: Option<Result<Account, String>>,
+        account_rx: Option<Receiver<Result<Account, String>>>,
     }
 
     impl State {
@@ -257,6 +314,8 @@ mod desktop {
             let mut finished = None;
             while let Ok(msg) = run.rx.try_recv() {
                 match msg {
+                    // The plan's usage limit gets its own line: the app works on, only AI waits.
+                    Msg::Line(Line::Error(e)) if is_usage_limit(&e) => s.transcript.push(Line::Limit(e)),
                     Msg::Line(line) => s.transcript.push(line),
                     Msg::Session(id) => s.session = Some(id),
                     Msg::Done(r) => finished = Some(r),
@@ -270,7 +329,11 @@ mod desktop {
                     Ok(()) => s.log("agent finished"),
                     Err(e) => {
                         s.log(format!("agent failed: {e}"));
-                        s.transcript.push(Line::Error(e));
+                        // Shown once: the agent's own error line may already say it.
+                        let shown = s.transcript.last().is_some_and(|l| matches!(l, Line::Error(t) | Line::Limit(t) if *t == e));
+                        if !shown {
+                            s.transcript.push(if is_usage_limit(&e) { Line::Limit(e) } else { Line::Error(e) });
+                        }
                     }
                 }
                 if let Some((uid, depth)) = base
@@ -302,8 +365,68 @@ mod desktop {
             s.test = Some(r);
             s.test_rx = None;
         }
-        if s.conns_rx.is_some() || s.test_rx.is_some() {
+        if let Some(rx) = &s.account_rx
+            && let Ok(a) = rx.try_recv()
+        {
+            s.account = Some(a);
+            s.account_rx = None;
+        }
+        if s.conns_rx.is_some() || s.test_rx.is_some() || s.account_rx.is_some() {
             ctx.request_repaint_after(Duration::from_millis(200));
+        }
+    }
+
+    /// Reads the Claude account again (after Sign in, or Refresh).
+    fn refresh_account(s: &mut State) {
+        let Some(exe) = s.agents.as_ref().and_then(|v| v.iter().find(|(a, _)| *a == Agent::Claude)).map(|(_, p)| p.clone()) else { return };
+        let (tx, rx) = channel();
+        std::thread::spawn(move || {
+            let _ = tx.send(claude_account(&exe));
+        });
+        s.account = None;
+        s.account_rx = Some(rx);
+    }
+
+    /// Who the agent works as: the Claude account and plan, Sign in when there's none, and the
+    /// plan's usage page. Requests always use the plan's usage, never an API key.
+    fn account_row(s: &mut State, ui: &mut Ui) {
+        if s.account.is_none() && s.account_rx.is_none() {
+            refresh_account(s);
+        }
+        ui.horizontal_wrapped(|ui| match &s.account {
+            None => {
+                ui.spinner();
+            }
+            Some(Ok(a)) if a.logged_in => {
+                ui.label(RichText::new(format!("Claude: {}", a.label())).small()).on_hover_text(tl!("Uses your Claude plan's usage, no API key."));
+                if ui.small_button(tl!("Plan usage")).clicked() {
+                    ui.ctx().open_url(egui::OpenUrl::new_tab("https://claude.ai/settings/usage"));
+                }
+            }
+            Some(_) => {
+                ui.label(RichText::new(tl!("Not signed in to Claude")).small().color(ui.visuals().warn_fg_color));
+                if ui.small_button(tl!("Sign in")).clicked() {
+                    sign_in(s);
+                }
+                if ui.small_button(tl!("Refresh")).clicked() {
+                    refresh_account(s);
+                }
+            }
+        });
+    }
+
+    /// Claude Code's own sign-in (`claude auth login`) in a console window: it opens the browser
+    /// to sign in to the Claude account. The panel never sees a credential.
+    fn sign_in(s: &mut State) {
+        let Some(exe) = s.agents.as_ref().and_then(|v| v.iter().find(|(a, _)| *a == Agent::Claude)).map(|(_, p)| p.clone()) else { return };
+        let started = if cfg!(windows) {
+            Command::new("cmd").args(["/c", "start", "Claude"]).arg(&exe).args(["auth", "login"]).spawn()
+        } else {
+            Command::new(&exe).args(["auth", "login"]).spawn()
+        };
+        match started {
+            Ok(_) => s.log("started claude auth login"),
+            Err(e) => s.log(format!("claude auth login: {e}")),
         }
     }
 
@@ -329,6 +452,9 @@ mod desktop {
                     }
                 });
             });
+            if s.agent == Some(Agent::Claude) {
+                account_row(s, ui);
+            }
         }
         chat_bar(s, ui);
         // A fixed-height transcript that scrolls, so the input below always stays in view however
@@ -399,6 +525,13 @@ mod desktop {
                 Line::Ai(t) => ui.label(t),
                 Line::Error(t) => ui.label(RichText::new(t).color(ui.visuals().error_fg_color)),
                 Line::Info(t) => ui.label(RichText::new(t).small().weak()),
+                Line::Limit(t) => {
+                    // On one line: the translation tests read each translated literal as written.
+                    #[rustfmt::skip]
+                    let limit = tl!("Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.");
+                    ui.label(RichText::new(limit).color(ui.visuals().warn_fg_color));
+                    ui.label(RichText::new(t).small().weak())
+                }
                 Line::Tool(_) => continue,
             };
         }
@@ -501,6 +634,10 @@ mod desktop {
         let (program, args) = agent_command(agent, &exe, &prompt, &cli, port, resume.as_deref());
         let mut cmd = Command::new(&program);
         cmd.args(&args).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
+        // Requests use the signed-in account's plan, never an API key that would bill per token.
+        for key in ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "OPENAI_API_KEY"] {
+            cmd.env_remove(key);
+        }
         if let Some(dir) = app.session.active().and_then(|d| d.path.as_deref()).and_then(|p| Path::new(p).parent()) {
             cmd.current_dir(dir);
         } else if let Some(home) = dirs_home() {
@@ -848,6 +985,7 @@ mod desktop {
         ui.horizontal_wrapped(|ui| {
             if ui.button(tl!("Refresh")).clicked() {
                 s.agents = None;
+                s.account = None;
                 refresh(app, s);
             }
             if ui.add_enabled(s.test_rx.is_none(), egui::Button::new(tl!("Test Connection"))).clicked() {
@@ -1231,8 +1369,34 @@ mod desktop {
         }
 
         #[test]
+        fn a_spent_plan_is_told_apart_from_other_errors() {
+            assert!(is_usage_limit("Claude AI usage limit reached|1792123200"));
+            assert!(is_usage_limit("5-hour limit reached ∙ resets 3pm"));
+            assert!(is_usage_limit("API Error: 429 rate_limit_error"));
+            assert!(!is_usage_limit("Not logged in · Please run /login"));
+            assert!(!is_usage_limit("tool draw_shape failed: no document"));
+        }
+
+        #[test]
+        fn the_account_is_read_without_any_credential() {
+            let a = Account::parse(r#"{"loggedIn": true, "authMethod": "claude.ai", "email": "me@example.com", "subscriptionType": "pro"}"#).unwrap();
+            assert!(a.logged_in);
+            assert_eq!(a.label(), "me@example.com · Pro");
+            let out = Account::parse(r#"{"loggedIn": false}"#).unwrap();
+            assert!(!out.logged_in);
+            assert!(Account::parse("not json").is_none());
+        }
+
+        #[test]
         fn saved_lines_round_trip() {
-            for l in [Line::User("a".into()), Line::Ai("b".into()), Line::Tool("c".into()), Line::Error("d".into()), Line::Info("e".into())] {
+            for l in [
+                Line::User("a".into()),
+                Line::Ai("b".into()),
+                Line::Tool("c".into()),
+                Line::Error("d".into()),
+                Line::Info("e".into()),
+                Line::Limit("f".into()),
+            ] {
                 let pair = l.to_pair();
                 assert_eq!(Line::from_pair(pair.clone()).to_pair(), pair);
             }

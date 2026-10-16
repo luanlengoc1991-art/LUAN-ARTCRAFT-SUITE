@@ -4363,3 +4363,9 @@ theme	Appearance	Erscheinungsbild
 	New chat	Neuer Chat
 	Chat history	Chatverlauf
 	No saved chats	Keine gespeicherten Chats
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Nutzt das Kontingent deines Claude-Tarifs, keinen API-Schlüssel.
+	Plan usage	Tarifnutzung
+	Not signed in to Claude	Nicht bei Claude angemeldet
+	Sign in	Anmelden
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Das KI-Kontingent deines Claude-Tarifs ist aufgebraucht. Die App funktioniert weiter; KI-Anfragen gehen wieder, sobald das Kontingent zurückgesetzt wird.

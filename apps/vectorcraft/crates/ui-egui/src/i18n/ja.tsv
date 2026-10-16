@@ -4402,3 +4402,9 @@ lighting	Light	ライト
 	New chat	新しいチャット
 	Chat history	チャット履歴
 	No saved chats	保存されたチャットはありません
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Claude プランの利用枠を使います（API キー不要）。
+	Plan usage	プランの利用状況
+	Not signed in to Claude	Claude にサインインしていません
+	Sign in	サインイン
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Claude プランの AI 利用上限に達しました。アプリはそのまま使えます。上限がリセットされると AI のリクエストが再び使えます。

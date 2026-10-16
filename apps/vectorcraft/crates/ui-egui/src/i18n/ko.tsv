@@ -4372,3 +4372,9 @@ lighting	Light	광원
 	New chat	새 채팅
 	Chat history	채팅 기록
 	No saved chats	저장된 채팅이 없습니다
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Claude 요금제 사용량을 씁니다(API 키 없음).
+	Plan usage	요금제 사용량
+	Not signed in to Claude	Claude에 로그인하지 않음
+	Sign in	로그인
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Claude 요금제의 AI 사용 한도에 도달했습니다. 앱은 계속 작동하며, 한도가 초기화되면 AI 요청을 다시 쓸 수 있습니다.
