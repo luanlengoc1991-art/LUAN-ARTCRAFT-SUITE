@@ -15,9 +15,14 @@ và muốn mọi trả lời bằng tiếng Việt.
   Giữ/Hoàn tác thay đổi, lưu lịch sử `%APPDATA%\VectorCraft\ai-chats.json`. Console chạy
   `vectorcraft_mcp::call_tool` ngay trong app. Kênh điều khiển bật lúc chạy: `VectorcraftApp::ensure_control`.
   Đã chạy thật với Claude Code (vẽ, đổi màu, trace logo). Codex CLI / Cursor Agent chưa thử (máy chưa cài).
-- **Nhóm 2 — CHƯA LÀM: PhotoCraft.** MCP của PhotoCraft dùng `rmcp` (async, crate `automation`), có
-  token: Console nên là MCP client tới `photocraft-cli mcp --bridge 127.0.0.1:PORT --control-token-file F`
-  (chạy tiến trình con, nói JSON-RPC qua stdio). UI PhotoCraft khác VectorCraft, cần tìm cách đăng ký panel.
+- **Nhóm 2 — XONG: PhotoCraft** (`apps/photocraft/crates/ui-egui/src/ai_center.rs`, cửa sổ nổi;
+  menu Window → AI / MCP Command Center). Console là MCP client tới
+  `photocraft-cli mcp --bridge 127.0.0.1:PORT --control-token-file F`, chạy ở luồng nền (UI phải
+  rảnh để trả lời kênh điều khiển). Kênh điều khiển bật lúc chạy: `PhotocraftApp::ensure_control`,
+  cổng 7971 + token `%LOCALAPPDATA%\ArtCraft\artcraft-mcp\photocraft.token` (trùng ArtCraft MCP).
+  Đã chạy thật: Claude tạo layer và vẽ hình chữ nhật xanh ngọc theo lệnh tiếng Việt.
+- **Ngôn ngữ (16/10):** PhotoCraft và VectorCraft chỉ cho chọn English (mặc định) và Tiếng Việt:
+  `i18n::offer_only_english_and_vietnamese()` gọi trong `main.rs`; test không gọi nên giữ hành vi gốc.
 - **Nhóm 3 — CHƯA LÀM: tính năng PhotoCraft còn thiếu:** Upscale, tách nhiều đối tượng thành PNG riêng,
   xuất hàng loạt PNG/ZIP. Đã có sẵn: layer, mask, Smart Object, 134 filter, `layer.removeBackground`,
   `select.subject/object`, healing, `file.automate.batch`, `file.export.layersToFiles`.
