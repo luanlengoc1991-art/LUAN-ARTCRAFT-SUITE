@@ -140,7 +140,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
     let mut shown = Vec::new();
     for d in dialogs {
         let lang = if crate::prefs_ui::is_preferences(&d.fields) {
-            crate::i18n::Lang::from_pref(d.fields.get("values").and_then(|v| v.pointer("/interface/language")).and_then(Value::as_str).unwrap_or("auto"))
+            crate::i18n::Lang::interface(d.fields.get("values").and_then(|v| v.pointer("/interface/language")).and_then(Value::as_str).unwrap_or("auto"))
         } else {
             crate::i18n::current()
         };

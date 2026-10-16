@@ -19,6 +19,8 @@ pub mod adjust_dialog;
 pub mod adjust_editors;
 pub mod adjust_preview;
 pub mod adjust_ui;
+/// LUAN-ARTCRAFT-SUITE: the AI / MCP Command Center.
+pub mod ai_center;
 mod alt_grab;
 pub mod analysis_ui;
 pub mod anchor_tools;
@@ -578,6 +580,13 @@ pub struct PhotocraftApp {
     /// The first digit of a two-digit opacity typed on the number keys (`opacity_keys`, #352).
     pub(crate) opacity_keys: opacity_keys::Pending,
     control_rx: Option<Receiver<ControlRequest>>,
+    /// LUAN-ARTCRAFT-SUITE: the control channel's port and the file holding its token, once it
+    /// listens (`--control`, or turned on from the AI / MCP Command Center).
+    pub control_port: Option<u16>,
+    pub control_token_file: Option<std::path::PathBuf>,
+    /// Starts the control server on a port, with a token kept in a file (the host's).
+    #[allow(clippy::type_complexity)]
+    control_starter: Option<Box<dyn Fn(u16) -> Result<(Receiver<ControlRequest>, std::path::PathBuf), String>>>,
     pending_screenshots: Vec<(u64, Option<String>, Sender<ControlResponse>)>,
     /// Screenshots not yet requested from the viewport: (token, earliest time in ms, frames seen).
     queued_screenshots: Vec<(u64, f64, u32)>,
@@ -805,6 +814,9 @@ impl PhotocraftApp {
             caps_lock: false,
             opacity_keys: None,
             control_rx: None,
+            control_port: None,
+            control_token_file: None,
+            control_starter: None,
             pending_screenshots: Vec::new(),
             queued_screenshots: Vec::new(),
             input_waiters: Vec::new(),
@@ -956,6 +968,33 @@ impl PhotocraftApp {
     pub fn with_control(mut self, rx: Receiver<ControlRequest>) -> Self {
         self.control_rx = Some(rx);
         self
+    }
+
+    /// LUAN-ARTCRAFT-SUITE: how to start the control server later (loopback, with a token file)
+    /// when the app didn't start with one: the AI / MCP Command Center turns it on for agents.
+    pub fn with_control_starter(mut self, start: impl Fn(u16) -> Result<(Receiver<ControlRequest>, std::path::PathBuf), String> + 'static) -> Self {
+        self.control_starter = Some(Box::new(start));
+        self
+    }
+
+    /// The control channel's port and token file, starting it on the first free port from 7971
+    /// (the port ArtCraft MCP drives PhotoCraft's window on) when it isn't listening yet.
+    pub fn ensure_control(&mut self) -> Result<(u16, std::path::PathBuf), String> {
+        if let (Some(port), Some(file)) = (self.control_port, self.control_token_file.clone()) {
+            return Ok((port, file));
+        }
+        if self.control_rx.is_some() {
+            return Err("the control channel was started with a token that isn't in a file; start PhotoCraft with --control-token-file".into());
+        }
+        let Some(start) = self.control_starter.as_ref() else {
+            return Err("this build can't open a control channel".into());
+        };
+        let port = (7971..8000).find(|p| std::net::TcpListener::bind(("127.0.0.1", *p)).is_ok()).ok_or("no free local port between 7971 and 7999")?;
+        let (rx, file) = start(port)?;
+        self.control_rx = Some(rx);
+        self.control_port = Some(port);
+        self.control_token_file = Some(file.clone());
+        Ok((port, file))
     }
 
     /// Run an engine command, reporting errors in the status bar.
@@ -1677,7 +1716,7 @@ impl PhotocraftApp {
 
 impl eframe::App for PhotocraftApp {
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        i18n::set_current(i18n::Lang::from_pref(&self.session.prefs().interface.language));
+        i18n::set_current(i18n::Lang::interface(&self.session.prefs().interface.language));
         // Caps Lock state read from the OS once per frame (see `Services::caps_lock`): the canvas
         // cursor block needs it before the frame renders. `None` (Wayland/web) keeps `false`.
         self.caps_lock = self.services.caps_lock.as_mut().is_some_and(|f| f());
@@ -1794,7 +1833,7 @@ impl eframe::App for PhotocraftApp {
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.hover_layer = None;
-        i18n::set_current(i18n::Lang::from_pref(&self.session.prefs().interface.language));
+        i18n::set_current(i18n::Lang::interface(&self.session.prefs().interface.language));
         // Fonts registered via set_fonts only take effect next frame; named families would panic now.
         if !self.fonts_ready {
             ctx.request_repaint();
@@ -1875,6 +1914,7 @@ impl eframe::App for PhotocraftApp {
         wide_angle_ui::show(self, &ctx);
         canvas::extra_windows(self, &ctx);
         notices::show(self, &ctx);
+        ai_center::window(self, &ctx);
         gpu_status::show_fallback(self, &ctx);
         kys_import::show_offer(self, &ctx);
         if chrome && self.ui.panels.menu_bar && self.custom_titlebar && !self.ui.dialogs.is_empty() {

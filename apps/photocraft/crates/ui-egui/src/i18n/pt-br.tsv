@@ -3934,3 +3934,30 @@ layerLabel	No Color	Sem cor
 	Sent to {printer}	Enviado para {printer}
 	set in Print Settings…	definido nas configurações de impressão…
 	ICO is limited to 256 × 256 pixels	ICO é limitado a 256 × 256 pixels
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Central de comandos de IA / MCP
+	AI Chat	Chat de IA
+	MCP Console	Console MCP
+	Connections	Conexões
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Nenhum agente de IA foi encontrado neste computador. Instale o Claude Code, o Codex CLI ou o Cursor Agent, ou execute ferramentas no console MCP.
+	Agent:	Agente:
+	Changes on the canvas:	Alterações na tela:
+	Keep changes	Manter alterações
+	Undo changes	Desfazer alterações
+	Describe what to do, e.g. Remove the background of this photo	Descreva o que fazer, por ex. Remova o fundo desta foto
+	Send	Enviar
+	New chat	Novo chat
+	Chat history	Histórico de chats
+	No saved chats	Nenhum chat salvo
+	tools	ferramentas
+	Arguments (JSON)	Argumentos (JSON)
+	Execute	Executar
+	Refresh	Atualizar
+	Test Connection	Testar conexão
+	Copy Config	Copiar configuração
+	Live control of this window:	Controle ao vivo desta janela:
+	Turn on	Ativar
+	Connected	Conectado
+	Disconnected	Desconectado
+	Unsupported	Sem suporte
+	Logs	Registros

@@ -166,7 +166,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
                     ui.add_space(6.0);
                     crate::widgets::hairline(ui);
                     ui.add_space(6.0);
-                    let lang = crate::i18n::Lang::from_pref(&app.session.prefs().interface.language);
+                    let lang = crate::i18n::Lang::interface(&app.session.prefs().interface.language);
                     let menus = crate::menus::menu_items(app);
                     let recents: Vec<String> = ui.data(|d| d.get_temp(recent_id()).unwrap_or_default());
                     let empty = q.trim().is_empty();

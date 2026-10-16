@@ -3110,3 +3110,30 @@ curves	Smooth	Сгладить
 	Gray Value (Median)	Уровень серого (медиана)
 	Integrated Density	Интегральная плотность
 	Length	Длина
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Командный центр ИИ / MCP
+	AI Chat	Чат с ИИ
+	MCP Console	Консоль MCP
+	Connections	Подключения
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	На этом компьютере не найден ИИ-агент. Установите Claude Code, Codex CLI или Cursor Agent либо запускайте инструменты из консоли MCP.
+	Agent:	Агент:
+	Changes on the canvas:	Изменения на холсте:
+	Keep changes	Сохранить изменения
+	Undo changes	Отменить изменения
+	Describe what to do, e.g. Remove the background of this photo	Опишите задачу, например: Удали фон этой фотографии
+	Send	Отправить
+	New chat	Новый чат
+	Chat history	История чатов
+	No saved chats	Нет сохранённых чатов
+	tools	инструментов
+	Arguments (JSON)	Аргументы (JSON)
+	Execute	Выполнить
+	Refresh	Обновить
+	Test Connection	Проверить подключение
+	Copy Config	Копировать конфигурацию
+	Live control of this window:	Управление этим окном:
+	Turn on	Включить
+	Connected	Подключено
+	Disconnected	Не подключено
+	Unsupported	Не поддерживается
+	Logs	Журналы

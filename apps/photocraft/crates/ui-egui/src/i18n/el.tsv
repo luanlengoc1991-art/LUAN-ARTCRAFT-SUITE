@@ -3842,3 +3842,30 @@ curves	Smooth	Εξομάλυνση
 	Sent to {printer}	Στάλθηκε στον {printer}
 	set in Print Settings…	ορίζεται στις ρυθμίσεις εκτύπωσης…
 	ICO is limited to 256 × 256 pixels	Το ICO περιορίζεται σε 256 × 256 εικονοστοιχεία
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Κέντρο εντολών AI / MCP
+	AI Chat	Συνομιλία AI
+	MCP Console	Κονσόλα MCP
+	Connections	Συνδέσεις
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Δεν βρέθηκε πράκτορας AI σε αυτόν τον υπολογιστή. Εγκαταστήστε το Claude Code, το Codex CLI ή το Cursor Agent, ή εκτελέστε εργαλεία από την κονσόλα MCP.
+	Agent:	Πράκτορας:
+	Changes on the canvas:	Αλλαγές στον καμβά:
+	Keep changes	Διατήρηση αλλαγών
+	Undo changes	Αναίρεση αλλαγών
+	Describe what to do, e.g. Remove the background of this photo	Περιγράψτε τι να γίνει, π.χ. Αφαίρεσε το φόντο αυτής της φωτογραφίας
+	Send	Αποστολή
+	New chat	Νέα συνομιλία
+	Chat history	Ιστορικό συνομιλιών
+	No saved chats	Δεν υπάρχουν αποθηκευμένες συνομιλίες
+	tools	εργαλεία
+	Arguments (JSON)	Ορίσματα (JSON)
+	Execute	Εκτέλεση
+	Refresh	Ανανέωση
+	Test Connection	Έλεγχος σύνδεσης
+	Copy Config	Αντιγραφή ρυθμίσεων
+	Live control of this window:	Ζωντανός έλεγχος αυτού του παραθύρου:
+	Turn on	Ενεργοποίηση
+	Connected	Συνδέθηκε
+	Disconnected	Αποσυνδέθηκε
+	Unsupported	Δεν υποστηρίζεται
+	Logs	Αρχεία καταγραφής

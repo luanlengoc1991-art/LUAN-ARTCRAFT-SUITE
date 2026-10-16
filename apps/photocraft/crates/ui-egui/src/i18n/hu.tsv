@@ -4065,3 +4065,30 @@ cameraRaw	Yellow	Sárga
 	Ink Characteristics	Festék jellemzői
 	Solidity:	Fedőképesség:
 	Redrawing	Újrarajzolás
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP parancsközpont
+	AI Chat	AI csevegés
+	MCP Console	MCP konzol
+	Connections	Kapcsolatok
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Nem található AI-ügynök ezen a számítógépen. Telepítse a Claude Code, a Codex CLI vagy a Cursor Agent programot, vagy futtasson eszközöket az MCP konzolból.
+	Agent:	Ügynök:
+	Changes on the canvas:	Változások a vásznon:
+	Keep changes	Változások megtartása
+	Undo changes	Változások visszavonása
+	Describe what to do, e.g. Remove the background of this photo	Írja le a feladatot, pl. Távolítsd el a fotó hátterét
+	Send	Küldés
+	New chat	Új csevegés
+	Chat history	Csevegési előzmények
+	No saved chats	Nincs mentett csevegés
+	tools	eszköz
+	Arguments (JSON)	Argumentumok (JSON)
+	Execute	Végrehajtás
+	Refresh	Frissítés
+	Test Connection	Kapcsolat tesztelése
+	Copy Config	Konfiguráció másolása
+	Live control of this window:	Az ablak élő vezérlése:
+	Turn on	Bekapcsolás
+	Connected	Kapcsolódva
+	Disconnected	Nincs kapcsolat
+	Unsupported	Nem támogatott
+	Logs	Naplók

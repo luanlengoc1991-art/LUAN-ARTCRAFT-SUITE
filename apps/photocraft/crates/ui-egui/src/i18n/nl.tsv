@@ -3904,3 +3904,30 @@ curves	Smooth	Vloeiend maken
 	Sent to {printer}	Verzonden naar {printer}
 	set in Print Settings…	instellen in de afdrukinstellingen…
 	ICO is limited to 256 × 256 pixels	ICO is beperkt tot 256 × 256 pixels
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP-commandocentrum
+	AI Chat	AI-chat
+	MCP Console	MCP-console
+	Connections	Verbindingen
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Geen AI-agent gevonden op deze computer. Installeer Claude Code, Codex CLI of Cursor Agent, of voer tools uit vanuit de MCP-console.
+	Agent:	Agent:
+	Changes on the canvas:	Wijzigingen op het canvas:
+	Keep changes	Wijzigingen behouden
+	Undo changes	Wijzigingen ongedaan maken
+	Describe what to do, e.g. Remove the background of this photo	Beschrijf wat er moet gebeuren, bijv. Verwijder de achtergrond van deze foto
+	Send	Verzenden
+	New chat	Nieuwe chat
+	Chat history	Chatgeschiedenis
+	No saved chats	Geen opgeslagen chats
+	tools	tools
+	Arguments (JSON)	Argumenten (JSON)
+	Execute	Uitvoeren
+	Refresh	Vernieuwen
+	Test Connection	Verbinding testen
+	Copy Config	Configuratie kopiëren
+	Live control of this window:	Live besturing van dit venster:
+	Turn on	Inschakelen
+	Connected	Verbonden
+	Disconnected	Niet verbonden
+	Unsupported	Niet ondersteund
+	Logs	Logboeken

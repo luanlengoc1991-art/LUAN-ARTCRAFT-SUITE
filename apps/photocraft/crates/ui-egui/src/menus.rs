@@ -100,6 +100,8 @@ pub const UI_COMMANDS: &[(&str, &str, &[&str], Option<&str>)] = &[
     ("help.reportIssue", "Report an Issue…", &["Help"], None),
     ("help.systemInfo", "System Info…", &["Help"], None),
     ("help.about", "About PhotoCraft", &["Help"], None),
+    // LUAN-ARTCRAFT-SUITE
+    (crate::ai_center::COMMAND, "AI / MCP Command Center", &["Window"], None),
 ];
 
 /// Window › <document>: the open documents, listed at the end of the Window menu as in Photoshop.
@@ -657,6 +659,10 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
             app.session.set_active(to);
             app.jobs.focus = None;
             Ok(json!({"document": to}))
+        }
+        crate::ai_center::COMMAND => {
+            crate::ai_center::toggle();
+            Ok(Value::Null)
         }
         t if t.starts_with("window.toggle.") => {
             // A shown but collapsed dock group is expanded rather than hidden (#129).

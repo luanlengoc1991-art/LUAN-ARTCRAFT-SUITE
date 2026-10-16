@@ -2829,3 +2829,31 @@ curves	Smooth	Suavizar
 	Sent to {printer}	Enviado a {printer}
 	set in Print Settings…	se establece en Ajustes de impresión…
 	ICO is limited to 256 × 256 pixels	ICO está limitado a 256 × 256 píxeles
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Centro de comandos de IA / MCP
+	AI Chat	Chat de IA
+	MCP Console	Consola MCP
+	Connections	Conexiones
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	No se encontró ningún agente de IA en este equipo. Instala Claude Code, Codex CLI o Cursor Agent, o ejecuta herramientas desde la consola MCP.
+	Agent:	Agente:
+	Changes on the canvas:	Cambios en el lienzo:
+	Keep changes	Conservar cambios
+	Undo changes	Deshacer cambios
+	Describe what to do, e.g. Remove the background of this photo	Describe qué hacer, p. ej. Quita el fondo de esta foto
+	Stop	Detener
+	Send	Enviar
+	New chat	Nuevo chat
+	Chat history	Historial de chat
+	No saved chats	No hay chats guardados
+	tools	herramientas
+	Arguments (JSON)	Argumentos (JSON)
+	Execute	Ejecutar
+	Refresh	Actualizar
+	Test Connection	Probar conexión
+	Copy Config	Copiar configuración
+	Live control of this window:	Control en vivo de esta ventana:
+	Turn on	Activar
+	Connected	Conectado
+	Disconnected	Desconectado
+	Unsupported	No compatible
+	Logs	Registros

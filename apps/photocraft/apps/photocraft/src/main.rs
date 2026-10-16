@@ -169,6 +169,8 @@ fn main() -> eframe::Result {
     // First, so the panic hook and every start-up warning are recorded (`logging`).
     let logger = logging::install();
     crash_guard::install_hook();
+    // LUAN-ARTCRAFT-SUITE: the owner's build speaks English (the default) and Vietnamese.
+    photocraft_ui_egui::i18n::offer_only_english_and_vietnamese();
     // The system font scan can take seconds (minutes on some Macs): run it off the UI thread.
     photocraft_ui_egui::type_tool::warm_fonts();
     let mut control_port: Option<u16> = None;
@@ -270,8 +272,11 @@ fn main() -> eframe::Result {
         std::process::exit(1);
     }
 
+    // LUAN-ARTCRAFT-SUITE: the token file, for the AI / MCP Command Center to bridge to this window.
+    let mut control_token_file_used: Option<std::path::PathBuf> = None;
     let control = if let Some(port) = control_port {
         let (supplied, token_file) = photocraft_automation::security::token_inputs(control_token, control_token_file);
+        control_token_file_used = token_file.clone();
         let token = match photocraft_automation::security::server_token(supplied.as_deref(), token_file.as_deref()) {
             Ok(token) => token,
             Err(e) => {
@@ -467,9 +472,27 @@ fn main() -> eframe::Result {
                     log::warn!("couldn't remember GPU backend {}: {e}", b.name());
                 }
             });
+            // LUAN-ARTCRAFT-SUITE: the AI / MCP Command Center can turn the channel on later, with
+            // its token in the file ArtCraft MCP uses for PhotoCraft (so both reach this window).
+            let starter_ctx = cc.egui_ctx.clone();
+            app = app.with_control_starter(move |port| {
+                let file = std::env::var_os("LOCALAPPDATA")
+                    .map(std::path::PathBuf::from)
+                    .unwrap_or_else(std::env::temp_dir)
+                    .join("ArtCraft")
+                    .join("artcraft-mcp")
+                    .join("photocraft.token");
+                if let Some(dir) = file.parent() {
+                    std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+                }
+                let token = photocraft_automation::security::server_token(None, Some(&file)).map_err(|e| e.to_string())?;
+                Ok((control_server::start(port, token, starter_ctx.clone()), file))
+            });
             if let Some((port, token, _)) = control {
                 let rx = control_server::start(port, token, cc.egui_ctx.clone());
                 app = app.with_control(rx);
+                app.control_port = Some(port);
+                app.control_token_file = control_token_file_used.clone();
             }
             #[cfg(target_os = "macos")]
             {

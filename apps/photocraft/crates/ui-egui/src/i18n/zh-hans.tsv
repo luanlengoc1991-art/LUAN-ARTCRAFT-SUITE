@@ -2754,3 +2754,31 @@ curves	Smooth	平滑
 	Sent to {printer}	已发送到 {printer}
 	set in Print Settings…	在打印设置中设置…
 	ICO is limited to 256 × 256 pixels	ICO 最大为 256 × 256 像素
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP 命令中心
+	AI Chat	AI 对话
+	MCP Console	MCP 控制台
+	Connections	连接
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	这台电脑上找不到 AI 代理。请安装 Claude Code、Codex CLI 或 Cursor Agent，或者在 MCP 控制台中运行工具。
+	Agent:	代理：
+	Changes on the canvas:	画布上的更改：
+	Keep changes	保留更改
+	Undo changes	撤销更改
+	Describe what to do, e.g. Remove the background of this photo	描述要做的事，例如：去除这张照片的背景
+	Stop	停止
+	Send	发送
+	New chat	新对话
+	Chat history	对话记录
+	No saved chats	没有已保存的对话
+	tools	个工具
+	Arguments (JSON)	参数 (JSON)
+	Execute	执行
+	Refresh	刷新
+	Test Connection	测试连接
+	Copy Config	复制配置
+	Live control of this window:	实时控制此窗口：
+	Turn on	开启
+	Connected	已连接
+	Disconnected	未连接
+	Unsupported	不支持
+	Logs	日志

@@ -542,11 +542,16 @@ fn language_node(pref: &str, lang: Lang) -> Node {
         label: label.into(),
         shortcut: None,
         enabled: true,
-        checked: Some(pref == code),
+        // LUAN-ARTCRAFT-SUITE: in the owner's build, the language the UI shows is checked.
+        checked: Some(if crate::i18n::only_offered() { Lang::interface(pref).code() == code } else { pref == code }),
         role: Some(ItemRole::Language),
     };
-    let mut children = vec![Node::Item(item("auto", tr(lang, "Auto"))), Node::Separator];
-    children.extend(Lang::all().map(|l| Node::Item(item(l.code(), l.name()))));
+    // LUAN-ARTCRAFT-SUITE: without Auto, and English and Vietnamese only, in the owner's build.
+    let mut children = Vec::new();
+    if !crate::i18n::only_offered() {
+        children.extend([Node::Item(item("auto", tr(lang, "Auto"))), Node::Separator]);
+    }
+    children.extend(Lang::offered().map(|l| Node::Item(item(l.code(), l.name()))));
     Node::Submenu { label: tr(lang, "Language").into(), children, role: Some(ItemRole::Language) }
 }
 

@@ -4219,3 +4219,30 @@ shape	Appearance	Izgled
 	Ink Characteristics	Karakteristike mastila
 	Solidity:	Punoća:
 	Redrawing	Ponovno iscrtavanje
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP komandni centar
+	AI Chat	AI ćaskanje
+	MCP Console	MCP konzola
+	Connections	Veze
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Na ovom računaru nije pronađen AI agent. Instalirajte Claude Code, Codex CLI ili Cursor Agent, ili pokrećite alatke iz MCP konzole.
+	Agent:	Agent:
+	Changes on the canvas:	Izmene na platnu:
+	Keep changes	Zadrži izmene
+	Undo changes	Poništi izmene
+	Describe what to do, e.g. Remove the background of this photo	Opišite šta treba uraditi, npr. Ukloni pozadinu ove fotografije
+	Send	Pošalji
+	New chat	Novo ćaskanje
+	Chat history	Istorija ćaskanja
+	No saved chats	Nema sačuvanih ćaskanja
+	tools	alatki
+	Arguments (JSON)	Argumenti (JSON)
+	Execute	Izvrši
+	Refresh	Osveži
+	Test Connection	Testiraj vezu
+	Copy Config	Kopiraj konfiguraciju
+	Live control of this window:	Upravljanje ovim prozorom uživo:
+	Turn on	Uključi
+	Connected	Povezano
+	Disconnected	Nije povezano
+	Unsupported	Nije podržano
+	Logs	Evidencija

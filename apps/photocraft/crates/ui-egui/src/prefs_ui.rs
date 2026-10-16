@@ -1126,7 +1126,7 @@ fn prefs_body(ui: &mut egui::Ui, f: &mut Map<String, Value>, system: Option<egui
     let mut section = f.get("section").and_then(Value::as_str).unwrap_or("general").to_string();
     let mut values = f.get("values").cloned().unwrap_or(Value::Null);
     // The dialog follows the language being edited, so a change shows before OK.
-    let lang = crate::i18n::Lang::from_pref(values.pointer("/interface/language").and_then(Value::as_str).unwrap_or("auto"));
+    let lang = crate::i18n::Lang::interface(values.pointer("/interface/language").and_then(Value::as_str).unwrap_or("auto"));
     let mut search = f.get("__search").and_then(Value::as_str).unwrap_or("").to_string();
     crate::widgets::text_field(ui, ui.id().with("prefs-search"), &mut search, tl!("Search settings…"), ui.available_width(), false);
     let found = preference_sections(&values, &search);
@@ -1529,9 +1529,12 @@ fn field_rows(ui: &mut egui::Ui, section: &str, obj: &mut Map<String, Value>, ke
             }
             Value::String(s) if path == "interface.language" => {
                 ui.label(RichText::new(tl!(&label)).color(t.text_dim));
-                let mut pairs: Vec<(String, &str)> = vec![("auto".into(), tl!("Auto"))];
-                pairs.extend(crate::i18n::Lang::all().map(|l| (l.code().to_string(), l.name())));
-                let mut cur = s.clone();
+                // LUAN-ARTCRAFT-SUITE: the owner's build offers English and Vietnamese only, without
+                // Auto, and anything else in the preference reads as English, as it shows.
+                let only = crate::i18n::only_offered();
+                let mut pairs: Vec<(String, &str)> = if only { Vec::new() } else { vec![("auto".into(), tl!("Auto"))] };
+                pairs.extend(crate::i18n::Lang::offered().map(|l| (l.code().to_string(), l.name())));
+                let mut cur = if only { crate::i18n::Lang::interface(s).code().to_string() } else { s.clone() };
                 crate::widgets::dropdown(ui, &format!("pref-{path}"), &mut cur, &pairs, 220.0);
                 obj.insert(k, json!(cur));
             }

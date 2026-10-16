@@ -3133,3 +3133,30 @@ curves	Smooth	Haluskan
 	Sent to {printer}	Dikirim ke {printer}
 	set in Print Settings…	diatur di Pengaturan Cetak…
 	ICO is limited to 256 × 256 pixels	ICO dibatasi hingga 256 × 256 piksel
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Pusat Perintah AI / MCP
+	AI Chat	Obrolan AI
+	MCP Console	Konsol MCP
+	Connections	Koneksi
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Tidak ada agen AI di komputer ini. Pasang Claude Code, Codex CLI, atau Cursor Agent, atau jalankan alat dari Konsol MCP.
+	Agent:	Agen:
+	Changes on the canvas:	Perubahan di kanvas:
+	Keep changes	Simpan perubahan
+	Undo changes	Urungkan perubahan
+	Describe what to do, e.g. Remove the background of this photo	Jelaskan yang harus dilakukan, mis. Hapus latar belakang foto ini
+	Send	Kirim
+	New chat	Obrolan baru
+	Chat history	Riwayat obrolan
+	No saved chats	Belum ada obrolan tersimpan
+	tools	alat
+	Arguments (JSON)	Argumen (JSON)
+	Execute	Jalankan
+	Refresh	Muat ulang
+	Test Connection	Uji koneksi
+	Copy Config	Salin konfigurasi
+	Live control of this window:	Kontrol langsung jendela ini:
+	Turn on	Aktifkan
+	Connected	Terhubung
+	Disconnected	Tidak terhubung
+	Unsupported	Tidak didukung
+	Logs	Log

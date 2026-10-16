@@ -3319,3 +3319,31 @@ curves	Smooth	매끄럽게
 	Sent to {printer}	{printer}(으)로 전송됨
 	set in Print Settings…	인쇄 설정에서 지정…
 	ICO is limited to 256 × 256 pixels	ICO는 256 × 256픽셀로 제한됩니다
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP 명령 센터
+	AI Chat	AI 채팅
+	MCP Console	MCP 콘솔
+	Connections	연결
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	이 컴퓨터에서 AI 에이전트를 찾을 수 없습니다. Claude Code, Codex CLI 또는 Cursor Agent를 설치하거나 MCP 콘솔에서 도구를 실행하세요.
+	Agent:	에이전트:
+	Changes on the canvas:	캔버스의 변경 사항:
+	Keep changes	변경 사항 유지
+	Undo changes	변경 사항 실행 취소
+	Describe what to do, e.g. Remove the background of this photo	할 일을 입력하세요 (예: 이 사진의 배경 제거)
+	Stop	중지
+	Send	보내기
+	New chat	새 채팅
+	Chat history	채팅 기록
+	No saved chats	저장된 채팅이 없습니다
+	tools	개 도구
+	Arguments (JSON)	인수 (JSON)
+	Execute	실행
+	Refresh	새로 고침
+	Test Connection	연결 테스트
+	Copy Config	구성 복사
+	Live control of this window:	이 창의 실시간 제어:
+	Turn on	켜기
+	Connected	연결됨
+	Disconnected	연결 안 됨
+	Unsupported	지원 안 됨
+	Logs	로그

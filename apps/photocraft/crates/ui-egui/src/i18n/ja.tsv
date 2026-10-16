@@ -3821,3 +3821,30 @@ curves	Smooth	スムーズ
 	Reset All Locked Settings	ロックされた設定をすべて初期化
 	Copy Texture to Other Tools	テクスチャを他のツールにコピー
 	ICO is limited to 256 × 256 pixels	ICO は 256 × 256 ピクセルまでです
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP コマンドセンター
+	AI Chat	AI チャット
+	MCP Console	MCP コンソール
+	Connections	接続
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	このコンピューターに AI エージェントが見つかりません。Claude Code、Codex CLI、Cursor Agent をインストールするか、MCP コンソールからツールを実行してください。
+	Agent:	エージェント:
+	Changes on the canvas:	キャンバス上の変更:
+	Keep changes	変更を保持
+	Undo changes	変更を取り消す
+	Describe what to do, e.g. Remove the background of this photo	やりたいことを入力（例: この写真の背景を削除）
+	Send	送信
+	New chat	新しいチャット
+	Chat history	チャット履歴
+	No saved chats	保存されたチャットはありません
+	tools	個のツール
+	Arguments (JSON)	引数 (JSON)
+	Execute	実行
+	Refresh	更新
+	Test Connection	接続をテスト
+	Copy Config	設定をコピー
+	Live control of this window:	このウィンドウのライブ制御:
+	Turn on	オンにする
+	Connected	接続済み
+	Disconnected	未接続
+	Unsupported	非対応
+	Logs	ログ

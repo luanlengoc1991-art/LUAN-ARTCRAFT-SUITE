@@ -3631,3 +3631,30 @@ curves	Smooth	Làm mượt
 	Sent to {printer}	Đã gửi tới {printer}
 	set in Print Settings…	đặt trong thiết lập in…
 	ICO is limited to 256 × 256 pixels	ICO giới hạn ở 256 × 256 pixel
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Trung tâm lệnh AI / MCP
+	AI Chat	Trò chuyện AI
+	MCP Console	Bảng điều khiển MCP
+	Connections	Kết nối
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Không tìm thấy AI agent trên máy này. Hãy cài Claude Code, Codex CLI hoặc Cursor Agent, hoặc chạy công cụ trong Bảng điều khiển MCP.
+	Agent:	Agent:
+	Changes on the canvas:	Thay đổi trên canvas:
+	Keep changes	Giữ thay đổi
+	Undo changes	Hoàn tác thay đổi
+	Describe what to do, e.g. Remove the background of this photo	Nhập việc cần làm, ví dụ: Tách nền ảnh này
+	Send	Gửi
+	New chat	Cuộc trò chuyện mới
+	Chat history	Lịch sử trò chuyện
+	No saved chats	Chưa có cuộc trò chuyện nào được lưu
+	tools	công cụ
+	Arguments (JSON)	Tham số (JSON)
+	Execute	Thực thi
+	Refresh	Làm mới
+	Test Connection	Kiểm tra kết nối
+	Copy Config	Sao chép cấu hình
+	Live control of this window:	Điều khiển trực tiếp cửa sổ này:
+	Turn on	Bật
+	Connected	Đã kết nối
+	Disconnected	Chưa kết nối
+	Unsupported	Không hỗ trợ
+	Logs	Nhật ký

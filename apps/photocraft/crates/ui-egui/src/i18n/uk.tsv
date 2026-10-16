@@ -3843,3 +3843,30 @@ curves	Smooth	Згладити
 	Sent to {printer}	Надіслано на {printer}
 	set in Print Settings…	задається в параметрах друку…
 	ICO is limited to 256 × 256 pixels	ICO обмежено розміром 256 × 256 пікселів
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	Командний центр ШІ / MCP
+	AI Chat	Чат зі ШІ
+	MCP Console	Консоль MCP
+	Connections	Підключення
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	На цьому комп’ютері не знайдено агента ШІ. Установіть Claude Code, Codex CLI або Cursor Agent чи запускайте інструменти з консолі MCP.
+	Agent:	Агент:
+	Changes on the canvas:	Зміни на полотні:
+	Keep changes	Залишити зміни
+	Undo changes	Скасувати зміни
+	Describe what to do, e.g. Remove the background of this photo	Опишіть завдання, наприклад: Видали тло цієї фотографії
+	Send	Надіслати
+	New chat	Новий чат
+	Chat history	Історія чатів
+	No saved chats	Немає збережених чатів
+	tools	інструментів
+	Arguments (JSON)	Аргументи (JSON)
+	Execute	Виконати
+	Refresh	Оновити
+	Test Connection	Перевірити підключення
+	Copy Config	Копіювати конфігурацію
+	Live control of this window:	Керування цим вікном:
+	Turn on	Увімкнути
+	Connected	Підключено
+	Disconnected	Не підключено
+	Unsupported	Не підтримується
+	Logs	Журнали

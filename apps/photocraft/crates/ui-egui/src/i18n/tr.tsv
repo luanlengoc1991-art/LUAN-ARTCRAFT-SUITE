@@ -3876,3 +3876,30 @@ cameraData	Lens	Lens
 	Ink Characteristics	Mürekkep Özellikleri
 	Solidity:	Doluluk:
 	Redrawing	Yeniden çiziliyor
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI / MCP Komuta Merkezi
+	AI Chat	AI Sohbet
+	MCP Console	MCP Konsolu
+	Connections	Bağlantılar
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Bu bilgisayarda AI aracısı bulunamadı. Claude Code, Codex CLI veya Cursor Agent yükleyin ya da araçları MCP Konsolundan çalıştırın.
+	Agent:	Aracı:
+	Changes on the canvas:	Tuvaldeki değişiklikler:
+	Keep changes	Değişiklikleri koru
+	Undo changes	Değişiklikleri geri al
+	Describe what to do, e.g. Remove the background of this photo	Ne yapılacağını yazın, ör. Bu fotoğrafın arka planını kaldır
+	Send	Gönder
+	New chat	Yeni sohbet
+	Chat history	Sohbet geçmişi
+	No saved chats	Kayıtlı sohbet yok
+	tools	araç
+	Arguments (JSON)	Bağımsız değişkenler (JSON)
+	Execute	Çalıştır
+	Refresh	Yenile
+	Test Connection	Bağlantıyı test et
+	Copy Config	Yapılandırmayı kopyala
+	Live control of this window:	Bu pencerenin canlı denetimi:
+	Turn on	Aç
+	Connected	Bağlı
+	Disconnected	Bağlı değil
+	Unsupported	Desteklenmiyor
+	Logs	Günlükler

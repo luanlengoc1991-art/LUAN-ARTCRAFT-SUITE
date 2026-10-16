@@ -3142,3 +3142,31 @@ curves	Smooth	Glätten
 	Sent to {printer}	An {printer} gesendet
 	set in Print Settings…	in den Druckeinstellungen festlegen…
 	ICO is limited to 256 × 256 pixels	ICO ist auf 256 × 256 Pixel begrenzt
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center
+	AI / MCP Command Center	AI-/MCP-Befehlszentrale
+	AI Chat	AI-Chat
+	MCP Console	MCP-Konsole
+	Connections	Verbindungen
+	No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.	Auf diesem Computer wurde kein KI-Agent gefunden. Installiere Claude Code, Codex CLI oder Cursor Agent, oder führe Werkzeuge in der MCP-Konsole aus.
+	Agent:	Agent:
+	Changes on the canvas:	Änderungen auf der Arbeitsfläche:
+	Keep changes	Änderungen behalten
+	Undo changes	Änderungen rückgängig machen
+	Describe what to do, e.g. Remove the background of this photo	Beschreibe, was zu tun ist, z. B. Entferne den Hintergrund dieses Fotos
+	Stop	Stopp
+	Send	Senden
+	New chat	Neuer Chat
+	Chat history	Chatverlauf
+	No saved chats	Keine gespeicherten Chats
+	tools	Werkzeuge
+	Arguments (JSON)	Argumente (JSON)
+	Execute	Ausführen
+	Refresh	Aktualisieren
+	Test Connection	Verbindung testen
+	Copy Config	Konfiguration kopieren
+	Live control of this window:	Live-Steuerung dieses Fensters:
+	Turn on	Einschalten
+	Connected	Verbunden
+	Disconnected	Nicht verbunden
+	Unsupported	Nicht unterstützt
+	Logs	Protokolle
