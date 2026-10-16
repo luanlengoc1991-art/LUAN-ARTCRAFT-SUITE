@@ -3991,3 +3991,5 @@ lighting	Light	光源
 	Not signed in to Claude	未登录 Claude
 	Sign in	登录
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	你的 Claude 套餐 AI 用量已达上限。应用可照常使用；额度重置后即可再次使用 AI。
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
+	Done directly, no AI used.	已直接完成，未使用 AI。

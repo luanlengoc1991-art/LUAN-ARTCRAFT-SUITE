@@ -497,7 +497,8 @@ mod desktop {
                     s.log("agent stopped");
                 }
             } else {
-                let can = s.agent.is_some() && !s.prompt.trim().is_empty();
+                // Without an agent, commands the app does itself still run.
+                let can = !s.prompt.trim().is_empty();
                 if ui.add_enabled(can, egui::Button::new(tl!("Send"))).clicked() {
                     send(app, s, ui.ctx());
                 }
@@ -613,9 +614,53 @@ mod desktop {
         s.log(format!("undid {undone} of {} steps", review.steps));
     }
 
+    /// Runs the request in the app when it names a command (no AI, no usage): see
+    /// [`local_command`]. False when it's one for the AI.
+    fn run_locally(app: &mut VectorcraftApp, s: &mut State, prompt: &str) -> bool {
+        let named = |id: &str, label: &str, menu: &[&str]| {
+            let mut names = vec![label.to_string(), crate::i18n::t_id(id, label).to_string()];
+            if let Some(last) = menu.last() {
+                names.push(format!("{last} {label}"));
+            }
+            names
+        };
+        let commands: Vec<(String, Vec<String>)> = app
+            .session
+            .commands()
+            .into_iter()
+            .filter(|c| c.enabled)
+            .map(|c| (c.id.to_string(), named(c.id, c.label, &c.menu)))
+            .chain(crate::menus::UI_COMMANDS.iter().map(|(id, label, _, _)| (id.to_string(), named(id, label, &[]))))
+            .collect();
+        let Some((id, params)) = local_command(prompt, &commands, "layer.new") else { return false };
+        s.transcript.push(Line::User(prompt.to_string()));
+        s.review = None;
+        match app.run(&id, params) {
+            Ok(_) => {
+                s.transcript.push(Line::Info(format!("⚡ {} ({id})", tl!("Done directly, no AI used."))));
+                s.log(format!("ran {id} without AI"));
+            }
+            Err(e) => s.transcript.push(Line::Error(format!("{id}: {e}"))),
+        }
+        save_current(s);
+        true
+    }
+
     fn send(app: &mut VectorcraftApp, s: &mut State, ctx: &egui::Context) {
         let prompt = s.prompt.trim().to_string();
-        let Some(agent) = s.agent else { return };
+        if run_locally(app, s, &prompt) {
+            s.prompt.clear();
+            return;
+        }
+        let Some(agent) = s.agent else {
+            s.transcript.push(Line::User(prompt));
+            // On one line: the translation tests read each translated literal as written.
+            #[rustfmt::skip]
+            let none = tl!("No AI agent found on this computer. Install Claude Code, Codex CLI or Cursor Agent, or run tools from the MCP Console.");
+            s.transcript.push(Line::Error(none.to_string()));
+            s.prompt.clear();
+            return;
+        };
         let Some(exe) = s.agents.as_ref().and_then(|v| v.iter().find(|(a, _)| *a == agent)).map(|(_, p)| p.clone()) else { return };
         s.transcript.push(Line::User(prompt.clone()));
         s.review = None;
@@ -834,6 +879,77 @@ mod desktop {
             }
             Agent::Cursor => vec![Line::Ai(raw.into())],
         }
+    }
+
+    // ------------------------------------------------------------------------- Without AI (free)
+
+    /// Everyday phrases (Vietnamese and English) for commands the app runs itself, by command id.
+    /// `NEW_LAYER` stands for the app's own New Layer command.
+    const ALIASES: &[(&str, &str)] = &[
+        ("hoàn tác", "edit.undo"),
+        ("undo", "edit.undo"),
+        ("làm lại", "edit.redo"),
+        ("redo", "edit.redo"),
+        ("tạo layer mới", "NEW_LAYER"),
+        ("thêm layer mới", "NEW_LAYER"),
+        ("thêm layer", "NEW_LAYER"),
+        ("layer mới", "NEW_LAYER"),
+        ("tạo lớp mới", "NEW_LAYER"),
+        ("new layer", "NEW_LAYER"),
+        ("chọn tất cả", "select.all"),
+        ("select all", "select.all"),
+        ("bỏ chọn", "select.deselect"),
+        ("deselect", "select.deselect"),
+        ("lưu", "file.save"),
+        ("lưu file", "file.save"),
+        ("save", "file.save"),
+        ("sao chép", "edit.copy"),
+        ("copy", "edit.copy"),
+        ("dán", "edit.paste"),
+        ("paste", "edit.paste"),
+    ];
+
+    /// Commands a name alone never runs: they close the window or the document.
+    const NOT_BY_NAME: &[&str] = &["file.exit", "app.quit", "file.close", "file.closeAll", "file.revert"];
+
+    /// Text as compared: lower case, single spaces, no polite lead-in, no trailing dots or marks.
+    pub(crate) fn normalize(s: &str) -> String {
+        let mut t = s.trim().to_lowercase();
+        for lead in ["hãy ", "vui lòng ", "làm ơn ", "please "] {
+            if let Some(rest) = t.strip_prefix(lead) {
+                t = rest.to_string();
+            }
+        }
+        let t = t.trim_end_matches(['.', '…', '!', '?', ' ']);
+        t.split_whitespace().collect::<Vec<_>>().join(" ")
+    }
+
+    /// A request the app does itself, without AI: `/command.id {json}`, an everyday phrase
+    /// ([`ALIASES`]) or a command's name as its menu shows it, in English or the UI's language.
+    /// `commands` holds the enabled commands with their names.
+    pub(crate) fn local_command(prompt: &str, commands: &[(String, Vec<String>)], new_layer: &str) -> Option<(String, Value)> {
+        let p = prompt.trim();
+        let known = |id: &str| commands.iter().any(|(c, _)| c == id);
+        if let Some(rest) = p.strip_prefix('/') {
+            let (id, json) = rest.split_once(char::is_whitespace).unwrap_or((rest, ""));
+            let params = if json.trim().is_empty() { json!({}) } else { serde_json::from_str(json.trim()).ok()? };
+            return known(id).then(|| (id.to_string(), params));
+        }
+        let n = normalize(p);
+        if n.is_empty() || n.split_whitespace().count() > 6 {
+            return None;
+        }
+        for (phrase, id) in ALIASES {
+            let id = if *id == "NEW_LAYER" { new_layer } else { id };
+            if n == *phrase && known(id) {
+                return Some((id.to_string(), json!({})));
+            }
+        }
+        commands
+            .iter()
+            .filter(|(id, _)| !NOT_BY_NAME.contains(&id.as_str()))
+            .find(|(_, names)| names.iter().any(|x| normalize(x) == n))
+            .map(|(id, _)| (id.clone(), json!({})))
     }
 
     // ------------------------------------------------------------------------------- MCP Console
@@ -1385,6 +1501,23 @@ mod desktop {
             let out = Account::parse(r#"{"loggedIn": false}"#).unwrap();
             assert!(!out.logged_in);
             assert!(Account::parse("not json").is_none());
+        }
+
+        #[test]
+        fn everyday_requests_run_without_ai() {
+            let cmds = vec![
+                ("edit.undo".to_string(), vec!["Undo".to_string(), "Hoàn tác".to_string()]),
+                ("layer.new".to_string(), vec!["New Layer…".to_string()]),
+                ("filter.blur.gaussianBlur".to_string(), vec!["Gaussian Blur…".to_string(), "Blur Gaussian Blur…".to_string()]),
+                ("file.exit".to_string(), vec!["Exit".to_string()]),
+            ];
+            assert_eq!(local_command("Hoàn tác", &cmds, "layer.new"), Some(("edit.undo".into(), json!({}))));
+            assert_eq!(local_command("hãy tạo layer mới!", &cmds, "layer.new").map(|c| c.0), Some("layer.new".into()));
+            assert_eq!(local_command("gaussian blur", &cmds, "layer.new").map(|c| c.0), Some("filter.blur.gaussianBlur".into()));
+            assert_eq!(local_command(r#"/layer.new {"name": "A"}"#, &cmds, "layer.new"), Some(("layer.new".into(), json!({"name": "A"}))));
+            assert_eq!(local_command("/nope", &cmds, "layer.new"), None);
+            assert_eq!(local_command("exit", &cmds, "layer.new"), None, "a name never closes the app");
+            assert_eq!(local_command("Tách nền ảnh này rồi làm mờ phần còn lại cho đẹp hơn nhé", &cmds, "layer.new"), None);
         }
 
         #[test]

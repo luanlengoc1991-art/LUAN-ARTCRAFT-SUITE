@@ -4842,3 +4842,5 @@ theme	Appearance	Apparence
 	Not signed in to Claude	Non connecté à Claude
 	Sign in	Se connecter
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	La limite d'utilisation IA de votre forfait Claude est atteinte. L'application continue de fonctionner ; les requêtes IA refonctionneront quand la limite sera réinitialisée.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
+	Done directly, no AI used.	Fait directement, sans IA.

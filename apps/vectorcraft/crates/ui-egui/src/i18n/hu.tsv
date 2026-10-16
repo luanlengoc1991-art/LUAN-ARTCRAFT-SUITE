@@ -4809,3 +4809,5 @@ imageTrace	Outline	Körvonal
 	Not signed in to Claude	Nincs bejelentkezve a Claude-ba
 	Sign in	Bejelentkezés
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Elfogyott a Claude-előfizetés AI-kerete. Az alkalmazás tovább működik; az AI-kérések a keret megújulása után ismét működnek.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
+	Done directly, no AI used.	Közvetlenül elvégezve, AI nélkül.
