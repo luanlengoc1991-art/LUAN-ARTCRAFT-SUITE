@@ -94,6 +94,23 @@ fn plural_polish(n: u64) -> usize {
 }
 
 /// The registry. English first: it is the fallback and the source language.
+/// LUAN-ARTCRAFT-SUITE: the owner's build offers English (the default) and Vietnamese only, once
+/// the desktop app calls [`offer_only_english_and_vietnamese`] at startup. The other catalogs stay
+/// registered (and tested: tests don't call it) so upstream syncs merge cleanly.
+pub const OFFERED: [&str; 2] = ["en", "vi"];
+
+static ONLY_OFFERED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// LUAN-ARTCRAFT-SUITE: from now on, pick from English and Vietnamese only, English by default.
+pub fn offer_only_english_and_vietnamese() {
+    ONLY_OFFERED.store(true, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Whether [`offer_only_english_and_vietnamese`] is in force.
+pub fn only_offered() -> bool {
+    ONLY_OFFERED.load(std::sync::atomic::Ordering::Relaxed)
+}
+
 pub static LANGUAGES: [LangInfo; 16] = [
     LangInfo { code: "en", name: "English", source: "", plural: plural_one_other, complete_menus: false, catalog: OnceLock::new() },
     // Japanese: the whole interface (every menu string and `tl!` literal) and the status and error
@@ -250,6 +267,27 @@ impl Lang {
     /// Every registered language.
     pub fn all() -> impl Iterator<Item = Lang> {
         LANGUAGES.iter().map(Lang)
+    }
+
+    /// LUAN-ARTCRAFT-SUITE: the languages to pick from: English and Vietnamese when
+    /// [`only_offered`], else every registered one.
+    pub fn offered() -> Box<dyn Iterator<Item = Lang>> {
+        if only_offered() { Box::new(OFFERED.iter().filter_map(|c| Lang::from_code(c))) } else { Box::new(Lang::all()) }
+    }
+
+    /// LUAN-ARTCRAFT-SUITE: the interface language for the `interfaceLanguage` preference. When
+    /// [`only_offered`]: an offered language as chosen, English otherwise (`auto`, unknown codes,
+    /// the other catalogs); else [`Lang::from_pref`].
+    pub fn interface(pref: &str) -> Lang {
+        Lang::resolve(pref, only_offered())
+    }
+
+    /// [`Lang::interface`] with the restriction given.
+    fn resolve(pref: &str, only: bool) -> Lang {
+        if !only {
+            return Lang::from_pref(pref);
+        }
+        Lang::from_code(pref).filter(|l| OFFERED.contains(&l.code())).unwrap_or(Lang::EN)
     }
 
     pub fn name(self) -> &'static str {
@@ -513,3 +551,19 @@ pub fn tn(n: u64, one: &str, other: &str) -> String {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod luan_tests {
+    use super::Lang;
+
+    #[test]
+    fn the_owners_build_shows_english_unless_vietnamese_is_chosen() {
+        assert_eq!(Lang::resolve("vi", true).code(), "vi");
+        assert_eq!(Lang::resolve("VI", true).code(), "vi");
+        for pref in ["auto", "en", "ja", "cs", "zh-hant", "", "xx"] {
+            assert_eq!(Lang::resolve(pref, true), Lang::EN, "{pref}");
+        }
+        // Without the restriction the upstream behaviour holds.
+        assert_eq!(Lang::resolve("ja", false).code(), "ja");
+    }
+}

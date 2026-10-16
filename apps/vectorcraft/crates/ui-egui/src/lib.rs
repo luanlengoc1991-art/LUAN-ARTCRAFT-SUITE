@@ -1065,11 +1065,12 @@ impl VectorcraftApp {
 /// called from the host's `eframe::App` impl.
 impl VectorcraftApp {
     /// The language the UI is drawn in: the Preferences dialog's choice while it is open (so a
-    /// change shows before OK), else the `interfaceLanguage` preference (`auto` = the system's).
+    /// change shows before OK), else the `interfaceLanguage` preference. LUAN-ARTCRAFT-SUITE:
+    /// English unless Vietnamese is chosen ([`i18n::Lang::interface`]).
     pub fn ui_language(&self) -> i18n::Lang {
         let editing =
             self.ui.dialog.as_ref().filter(|d| d.kind == "preferences").and_then(|d| d.fields.get("interfaceLanguage")).and_then(Value::as_str);
-        i18n::Lang::from_pref(editing.unwrap_or(&self.session.prefs.interface_language))
+        i18n::Lang::interface(editing.unwrap_or(&self.session.prefs.interface_language))
     }
 
     /// Per-frame logic before layout (control channel, shortcuts, inbox). A bug that panics costs

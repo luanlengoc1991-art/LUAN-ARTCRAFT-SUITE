@@ -364,8 +364,12 @@ pub fn mac_layout(app: &VectorcraftApp, bar: &MenuBar, lang: Lang) -> Layout {
 /// Language in the app menu, after Settings: Automatic, then every UI language in its own name,
 /// with the `interfaceLanguage` preference checked.
 fn language_node(app: &VectorcraftApp, lang: Lang) -> Node {
-    let mut children = vec![Node::Item(native_item(app, "Automatic", "app.language", json!({"lang": "auto"}))), Node::Separator];
-    children.extend(Lang::all().map(|l| Node::Item(native_item(app, l.name(), "app.language", json!({"lang": l.code()})))));
+    // LUAN-ARTCRAFT-SUITE: without Automatic, and English and Vietnamese only, in the owner's build.
+    let mut children = Vec::new();
+    if !crate::i18n::only_offered() {
+        children.extend([Node::Item(native_item(app, "Automatic", "app.language", json!({"lang": "auto"}))), Node::Separator]);
+    }
+    children.extend(Lang::offered().map(|l| Node::Item(native_item(app, l.name(), "app.language", json!({"lang": l.code()})))));
     Node::Submenu { label: tr(lang, "Language").into(), children }
 }
 

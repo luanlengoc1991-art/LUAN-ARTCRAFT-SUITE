@@ -1516,6 +1516,9 @@ pub fn checked(app: &VectorcraftApp, id: &str, p: &Value) -> Option<bool> {
         let pref = app.session.prefs.interface_language.as_str();
         return Some(if lang.eq_ignore_ascii_case("auto") {
             crate::i18n::Lang::from_code(pref).is_none()
+        } else if crate::i18n::only_offered() {
+            // LUAN-ARTCRAFT-SUITE: the language the UI shows (English unless Vietnamese is chosen).
+            crate::i18n::Lang::interface(pref).code().eq_ignore_ascii_case(lang)
         } else {
             crate::i18n::Lang::from_code(pref).is_some_and(|l| l.code().eq_ignore_ascii_case(lang))
         });

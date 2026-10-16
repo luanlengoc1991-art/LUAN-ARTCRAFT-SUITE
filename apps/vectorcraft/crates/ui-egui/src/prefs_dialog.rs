@@ -335,11 +335,16 @@ fn category_fields(ui: &mut egui::Ui, d: &mut Dialog, cat: &str) {
                 });
             }
             PrefKind::Text if sp.key == "interfaceLanguage" => {
-                // `auto` plus every registered language, by its own name.
+                // `auto` plus every registered language, by its own name. LUAN-ARTCRAFT-SUITE:
+                // the owner's build offers English and Vietnamese only, without `auto`, and
+                // anything else in the preference reads as English, as it shows.
                 labeled(ui, sp.label, |ui| {
-                    let cur = v.as_str().unwrap_or("auto");
-                    let codes: Vec<&str> = std::iter::once("auto").chain(crate::i18n::Lang::all().map(|l| l.code())).collect();
-                    let labels: Vec<&str> = std::iter::once(tl!("Auto")).chain(crate::i18n::Lang::all().map(|l| l.name())).collect();
+                    let only = crate::i18n::only_offered();
+                    let saved = v.as_str().unwrap_or("auto");
+                    let cur = if only { crate::i18n::Lang::interface(saved).code() } else { saved };
+                    let auto = (!only).then_some(("auto", tl!("Auto")));
+                    let codes: Vec<&str> = auto.iter().map(|a| a.0).chain(crate::i18n::Lang::offered().map(|l| l.code())).collect();
+                    let labels: Vec<&str> = auto.iter().map(|a| a.1).chain(crate::i18n::Lang::offered().map(|l| l.name())).collect();
                     let cur_label = codes.iter().position(|c| c.eq_ignore_ascii_case(cur)).and_then(|i| labels.get(i).copied()).unwrap_or(cur);
                     if let Some(i) = widgets::dropdown(ui, sp.key, cur_label, &labels, 260.0)
                         && let Some(code) = codes.get(i)

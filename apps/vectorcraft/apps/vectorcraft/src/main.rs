@@ -627,6 +627,8 @@ fn native_options(custom_titlebar: bool) -> eframe::NativeOptions {
 }
 
 fn main() -> std::process::ExitCode {
+    // LUAN-ARTCRAFT-SUITE: the owner's build speaks English (the default) and Vietnamese.
+    vectorcraft_ui_egui::i18n::offer_only_english_and_vietnamese();
     // Validate roots before logging, font scans, preferences or the window: a missing value
     // must not clear an environment root and start the control channel without confinement.
     let mut control = automation_args::ControlArg::default();
