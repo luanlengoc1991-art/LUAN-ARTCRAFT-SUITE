@@ -10,7 +10,10 @@ use std::sync::Arc;
 use egui::{CursorIcon, CustomCursorImage, Painter, Pos2, Stroke, Vec2, vec2};
 
 mod hand;
+mod pointer;
 mod zoom;
+
+pub(crate) use pointer::Pointer;
 
 /// The largest cursor bitmap (physical pixels; points on macOS, see [`native_scale`]); a larger tip
 /// paints its outline instead, with a small OS crosshair at the hotspot, and that outline trails
@@ -132,6 +135,32 @@ fn zoom_with(ctx: &egui::Context, out: bool, bitmap: bool) -> CursorIcon {
         return CursorIcon::None;
     }
     if out { CursorIcon::ZoomOut } else { CursorIcon::ZoomIn }
+}
+
+/// One of Photoshop's arrow pointers (`Pointer`): an OS cursor bitmap with its hotspot on the arrow's tip,
+/// or the nearest platform cursor where bitmaps can't be uploaded.
+pub(crate) fn pointer(ctx: &egui::Context, p: Pointer) -> CursorIcon {
+    if native(ctx) {
+        let scale = native_scale(ctx);
+        let id = egui::Id::new("photocraft-pointer-cursor");
+        let cached = ctx.data(|d| d.get_temp::<(Pointer, f32, CustomCursorImage)>(id)).filter(|(q, s, _)| *q == p && *s == scale).map(|(_, _, i)| i);
+        let image = cached.or_else(|| {
+            let image = pointer::rasterize(p, scale)?;
+            ctx.data_mut(|d| d.insert_temp(id, (p, scale, image.clone())));
+            Some(image)
+        });
+        if let Some(image) = image {
+            ctx.set_cursor_image(Some(image));
+            return CursorIcon::None;
+        }
+    }
+    pointer::fallback(p)
+}
+
+/// The bitmap [`pointer`] shows for `p` at `scale`.
+#[cfg(test)]
+pub(crate) fn pointer_image(p: Pointer, scale: f32) -> Option<CustomCursorImage> {
+    pointer::rasterize(p, scale)
 }
 
 fn show(painter: &Painter, at: Pos2, shape: Shape) -> CursorIcon {

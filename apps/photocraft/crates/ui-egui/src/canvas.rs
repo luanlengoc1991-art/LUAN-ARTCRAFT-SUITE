@@ -3745,7 +3745,7 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
             // pixels, a hollow arrowhead while they are dragged, a plain arrow over a floating
             // piece.
             let icon = match c {
-                SelCursor::Outline => egui::CursorIcon::Move,
+                SelCursor::Outline => crate::tool_cursor::pointer(ui.ctx(), crate::tool_cursor::Pointer::Marquee),
                 SelCursor::Dragging => {
                     // The tip of the arrowhead is at (4, 4) of its 24-unit box.
                     crate::icons::cursor(ui.ctx(), "mouse-pointer-2", p, vec2(4.0, 4.0) / 24.0, 18.0);
@@ -3885,7 +3885,15 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
                 {
                     egui::CursorIcon::Crosshair
                 }
-                Tool::Move => egui::CursorIcon::Move,
+                // Photoshop's arrow pointers: the Move tool's with its move cross, the selection tools'.
+                Tool::Move => crate::tool_cursor::pointer(ui.ctx(), crate::tool_cursor::Pointer::Move),
+                Tool::PathSelection | Tool::DirectSelection | Tool::ObjectSelection if precise_other_cursor(app) => egui::CursorIcon::Crosshair,
+                Tool::PathSelection => crate::tool_cursor::pointer(ui.ctx(), crate::tool_cursor::Pointer::Black),
+                Tool::DirectSelection => crate::tool_cursor::pointer(ui.ctx(), crate::tool_cursor::Pointer::White),
+                Tool::ObjectSelection => crate::tool_cursor::pointer(ui.ctx(), crate::tool_cursor::Pointer::Marquee),
+                // The lassos, the Magic Wand and the Slice tool: their own icon with its point on the
+                // pixel, or the crosshair for precise Other Cursors.
+                Tool::Lasso | Tool::PolygonLasso | Tool::MagicWand | Tool::Slice if !precise_other_cursor(app) => icon_cursor(ui.ctx(), tool, p),
                 // Dragging is handled with the pan itself, above.
                 Tool::Hand => crate::tool_cursor::hand(ui.ctx(), false),
                 Tool::RotateView => crate::rotate_view::cursor(response.dragged()),
@@ -4738,6 +4746,19 @@ pub(crate) fn pen_cursor(ctx: &egui::Context, tool: Tool, p: Pos2) -> egui::Curs
         _ => vec2(2.3, 2.3),
     };
     crate::icons::cursor(ctx, crate::icons::tool_icon(tool), p, hot / 24.0, 22.0);
+    egui::CursorIcon::None
+}
+
+/// The Lasso's, Polygonal Lasso's, Magic Wand's and Slice tool's standard cursor, as in Photoshop: the
+/// lasso with its rope's end on `p`, the wand with its tip there, the knife with its point there.
+/// Draws it at `p` and returns the OS cursor to set (hidden).
+fn icon_cursor(ctx: &egui::Context, tool: Tool, p: Pos2) -> egui::CursorIcon {
+    let (name, hot) = match tool {
+        Tool::MagicWand => ("wand-sparkles", vec2(21.2, 2.8)),
+        Tool::Slice => ("slice-knife", vec2(4.0, 20.0)),
+        _ => ("lasso", vec2(7.0, 22.0)),
+    };
+    crate::icons::cursor(ctx, name, p, hot / 24.0, 20.0);
     egui::CursorIcon::None
 }
 
