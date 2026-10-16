@@ -3903,3 +3903,9 @@ cameraData	Lens	Lens
 	Disconnected	Bağlı değil
 	Unsupported	Desteklenmiyor
 	Logs	Günlükler
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Claude planınızın kullanım hakkını kullanır, API anahtarı gerekmez.
+	Plan usage	Plan kullanımı
+	Not signed in to Claude	Claude'da oturum açılmadı
+	Sign in	Oturum aç
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Claude planınızın yapay zekâ kullanım sınırına ulaşıldı. Uygulama çalışmaya devam eder; sınır sıfırlanınca yapay zekâ istekleri yeniden çalışır.

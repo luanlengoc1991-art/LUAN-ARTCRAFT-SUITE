@@ -3869,3 +3869,9 @@ curves	Smooth	Εξομάλυνση
 	Disconnected	Αποσυνδέθηκε
 	Unsupported	Δεν υποστηρίζεται
 	Logs	Αρχεία καταγραφής
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Χρησιμοποιεί το όριο του προγράμματος Claude σας, χωρίς κλειδί API.
+	Plan usage	Χρήση προγράμματος
+	Not signed in to Claude	Δεν έχετε συνδεθεί στο Claude
+	Sign in	Σύνδεση
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Εξαντλήθηκε το όριο AI του προγράμματος Claude σας. Η εφαρμογή συνεχίζει να λειτουργεί· τα αιτήματα AI θα λειτουργήσουν ξανά όταν ανανεωθεί το όριο.

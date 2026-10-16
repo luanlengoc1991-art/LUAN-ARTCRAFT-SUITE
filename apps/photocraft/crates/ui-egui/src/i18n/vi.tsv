@@ -3658,3 +3658,9 @@ curves	Smooth	Làm mượt
 	Disconnected	Chưa kết nối
 	Unsupported	Không hỗ trợ
 	Logs	Nhật ký
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Dùng hạn mức gói Claude của bạn, không cần API key.
+	Plan usage	Hạn mức gói
+	Not signed in to Claude	Chưa đăng nhập Claude
+	Sign in	Đăng nhập
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Đã hết hạn mức AI của gói Claude. App vẫn dùng bình thường; AI sẽ dùng lại được khi hạn mức được làm mới.

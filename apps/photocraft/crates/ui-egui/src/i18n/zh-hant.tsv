@@ -2767,3 +2767,9 @@ curves	Smooth	平滑
 	Disconnected	未連線
 	Unsupported	不支援
 	Logs	記錄
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	使用你的 Claude 方案額度，不需 API 金鑰。
+	Plan usage	方案用量
+	Not signed in to Claude	尚未登入 Claude
+	Sign in	登入
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	你的 Claude 方案 AI 用量已達上限。應用程式可照常使用；額度重設後即可再次使用 AI。

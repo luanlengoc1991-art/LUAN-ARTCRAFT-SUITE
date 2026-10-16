@@ -3160,3 +3160,9 @@ curves	Smooth	Haluskan
 	Disconnected	Tidak terhubung
 	Unsupported	Tidak didukung
 	Logs	Log
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Memakai kuota paket Claude Anda, tanpa kunci API.
+	Plan usage	Pemakaian paket
+	Not signed in to Claude	Belum masuk ke Claude
+	Sign in	Masuk
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Batas pemakaian AI paket Claude Anda telah habis. Aplikasi tetap berjalan; permintaan AI berfungsi lagi saat batas diatur ulang.

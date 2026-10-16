@@ -3931,3 +3931,9 @@ curves	Smooth	Vloeiend maken
 	Disconnected	Niet verbonden
 	Unsupported	Niet ondersteund
 	Logs	Logboeken
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (Claude account)
+	Uses your Claude plan's usage, no API key.	Gebruikt het tegoed van je Claude-abonnement, geen API-sleutel.
+	Plan usage	Abonnementsgebruik
+	Not signed in to Claude	Niet aangemeld bij Claude
+	Sign in	Aanmelden
+	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	De AI-limiet van je Claude-abonnement is bereikt. De app blijft werken; AI-verzoeken werken weer zodra de limiet wordt vernieuwd.
