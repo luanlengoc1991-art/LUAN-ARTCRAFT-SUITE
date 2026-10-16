@@ -760,6 +760,8 @@ pub fn is_enabled(app: &PhotocraftApp, id: &str) -> bool {
             app.session.active().is_some() && app.services.export.is_some()
         }
         i if i.starts_with("window.toggle.") => true,
+        // LUAN-ARTCRAFT-SUITE: Window › AI / MCP Command Center opens with or without a document.
+        crate::ai_center::COMMAND => true,
         "window.togglePanels" => true,
         // With one document open the key stays quiet, as in Photoshop, rather than reporting why.
         "window.nextDocument" | "window.previousDocument" => app.session.active().is_some(),

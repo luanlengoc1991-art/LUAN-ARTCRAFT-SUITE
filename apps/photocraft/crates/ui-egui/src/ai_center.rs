@@ -1501,6 +1501,15 @@ mod desktop {
         }
 
         #[test]
+        fn the_window_menu_item_is_enabled_and_listed() {
+            let app = crate::PhotocraftApp::new(photocraft_engine::Session::new(), Default::default());
+            assert!(crate::menus::is_enabled(&app, COMMAND), "Window › AI / MCP Command Center must not be greyed out");
+            let item = crate::menus::menu_items(&app).into_iter().find(|m| m.id == COMMAND).expect("in the menus");
+            assert!(item.enabled);
+            assert_eq!(item.path.first().map(String::as_str), Some("Window"));
+        }
+
+        #[test]
         fn everyday_requests_run_without_ai() {
             let cmds = vec![
                 ("edit.undo".to_string(), vec!["Undo".to_string(), "Hoàn tác".to_string()]),
