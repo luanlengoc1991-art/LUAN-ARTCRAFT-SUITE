@@ -114,6 +114,10 @@ struct EnvelopeOut<'a> {
     format: &'static str,
     schema_version: u32,
     generator: String,
+    /// A small PNG of the project for file browsers, before the project so they find it by
+    /// reading the file's head. Outside the schema: readers ignore it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    preview: Option<PreviewOut>,
     project: &'a Project,
     #[serde(skip_serializing_if = "Option::is_none")]
     view: Option<&'a ProjectView>,
@@ -163,7 +167,19 @@ pub fn encode(project: &Project, pretty: bool) -> Vec<u8> {
 /// outside the schema's promises: builds that do not know it ignore it, and it is dropped rather
 /// than migrated when it cannot be read.
 pub fn encode_with_view(project: &Project, view: Option<&ProjectView>, pretty: bool) -> Vec<u8> {
-    let env = EnvelopeOut { format: FORMAT_ID, schema_version: SCHEMA_VERSION, generator: generator(), project, view };
+    encode_with_view_and_preview(project, view, None, pretty)
+}
+
+#[derive(Serialize)]
+struct PreviewOut {
+    mime: &'static str,
+    data: String,
+}
+
+/// [`encode_with_view`], with `preview` (PNG bytes) stored in the envelope for file browsers.
+pub fn encode_with_view_and_preview(project: &Project, view: Option<&ProjectView>, preview: Option<&[u8]>, pretty: bool) -> Vec<u8> {
+    let preview = preview.map(|png| PreviewOut { mime: "image/png", data: filmcraft_project::gtemplate::base64_encode(png) });
+    let env = EnvelopeOut { format: FORMAT_ID, schema_version: SCHEMA_VERSION, generator: generator(), preview, project, view };
     let r = if pretty { serde_json::to_vec_pretty(&env) } else { serde_json::to_vec(&env) };
     // Serializing plain data (string keys, finite numbers or null) cannot fail.
     r.unwrap_or_default()
@@ -420,6 +436,21 @@ mod tests {
             assert!(!l.migrated());
             assert_eq!(l.generator.as_deref(), Some(generator().as_str()));
         }
+    }
+
+    /// The preview for file browsers sits before the project (in the file's head) and is
+    /// ignored on open.
+    #[test]
+    fn the_preview_comes_before_the_project_and_is_ignored_on_open() {
+        let p = Project::new("Poster");
+        for pretty in [true, false] {
+            let bytes = encode_with_view_and_preview(&p, None, Some(b"\x89PNG"), pretty);
+            let text = String::from_utf8(bytes.clone()).unwrap();
+            let (pre, proj) = (text.find("\"preview\"").unwrap(), text.find("\"project\"").unwrap());
+            assert!(pre < proj && text.contains("\"iVBORw==\""), "{text}");
+            assert_eq!(decode(&bytes).unwrap().project, p);
+        }
+        assert!(!String::from_utf8(encode(&p, false)).unwrap().contains("\"preview\""));
     }
 
     /// What is open is stored beside the project. A file without it, or with one that cannot be

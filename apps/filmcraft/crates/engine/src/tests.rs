@@ -634,6 +634,11 @@ fn save_and_open_roundtrip() {
     assert_eq!(*t.project, *s.project);
     // media re-created from generator refs
     assert!(t.render_program(0.1).is_some());
+    // the file carries a frame for file browsers, at most 256 pixels on its longer side
+    let doc: serde_json::Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    let png = filmcraft_project::gtemplate::base64_decode(doc["preview"]["data"].as_str().unwrap()).unwrap();
+    let img = image::load_from_memory(&png).unwrap();
+    assert_eq!(img.width().max(img.height()), 256);
     std::fs::remove_dir_all(dir).ok();
 }
 

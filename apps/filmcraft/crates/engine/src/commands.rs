@@ -4321,7 +4321,8 @@ fn write_project(s: &mut Session, path: &str, adopt: bool) -> Result<Value> {
     }
     // what is open (sequence tabs, how each is shown) goes into the file beside the project
     let view = s.project_view();
-    let bytes = filmcraft_format::encode_with_view(&s.project, Some(&view), false);
+    let preview = project_preview(s);
+    let bytes = filmcraft_format::encode_with_view_and_preview(&s.project, Some(&view), preview.as_deref(), false);
     let mut backup = None;
     if adopt && s.path.as_deref() == Some(path) && s.loaded_schema < filmcraft_format::SCHEMA_VERSION {
         let b = schema_backup_path(path, s.loaded_schema);
@@ -4341,6 +4342,24 @@ fn write_project(s: &mut Session, path: &str, adopt: bool) -> Result<Value> {
         s.loaded_schema = filmcraft_format::SCHEMA_VERSION;
     }
     Ok(json!({"path": path, "bytes": bytes.len(), "ms": t0.elapsed().as_secs_f64() * 1000.0, "backup": backup}))
+}
+
+/// Most pixels on the longer side of the preview a project file carries.
+const PROJECT_PREVIEW_MAX: u32 = 256;
+
+/// The preview a saved project carries for file browsers: the active sequence's frame at the
+/// playhead, at most [`PROJECT_PREVIEW_MAX`] pixels on its longer side. `None` when nothing
+/// renders (no sequence, say); the project still saves.
+fn project_preview(s: &Session) -> Option<Vec<u8>> {
+    let (w, h) = s.active_sequence().map(|q| (q.settings.width, q.settings.height))?;
+    let longest = w.max(h);
+    if longest == 0 {
+        return None;
+    }
+    let scale = (PROJECT_PREVIEW_MAX as f32 / longest as f32).min(1.0);
+    let img = s.try_render_program_at(scale, s.playhead()).ok()?;
+    let (w, h) = (u32::try_from(img.w).ok()?, u32::try_from(img.h).ok()?);
+    filmcraft_export::encode_png(img.over_black_rgba8(), w, h).ok()
 }
 
 fn schema_backup_path(path: &str, schema: u32) -> String {
