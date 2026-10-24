@@ -367,12 +367,18 @@ mod native {
     /// Convert DXF bytes into a DWG file of the DXF's version, and at least AutoCAD 2004
     /// (AC1018).
     pub fn dxf_to_dwg(dxf: &[u8]) -> Result<Vec<u8>, String> {
-        convert(dxf, None)
+        convert(dxf, None, None)
     }
 
     /// Convert DXF bytes into a DWG file of `version`, a code from [`super::VERSIONS`] ("AC1032"),
     /// whatever version the DXF declares.
     pub fn dxf_to_dwg_as(dxf: &[u8], version: &str) -> Result<Vec<u8>, String> {
+        dxf_to_dwg_as_with_preview(dxf, version, None)
+    }
+
+    /// [`dxf_to_dwg_as`], with `preview` (a Windows DIB: `BITMAPINFOHEADER` and pixels) as the
+    /// thumbnail file browsers and Open dialogs show.
+    pub fn dxf_to_dwg_as_with_preview(dxf: &[u8], version: &str, preview: Option<&[u8]>) -> Result<Vec<u8>, String> {
         let v = match version.trim().to_ascii_uppercase().as_str() {
             "AC1015" => acadrust::DxfVersion::AC1015,
             "AC1018" => acadrust::DxfVersion::AC1018,
@@ -382,10 +388,10 @@ mod native {
             "AC1032" => acadrust::DxfVersion::AC1032,
             _ => return Err(super::unsupported(version)),
         };
-        convert(dxf, Some(v))
+        convert(dxf, Some(v), preview)
     }
 
-    fn convert(dxf: &[u8], version: Option<acadrust::DxfVersion>) -> Result<Vec<u8>, String> {
+    fn convert(dxf: &[u8], version: Option<acadrust::DxfVersion>, preview: Option<&[u8]>) -> Result<Vec<u8>, String> {
         let data = dxf.to_vec();
         let mut doc = std::panic::catch_unwind(move || acadrust::DxfReader::from_reader(Cursor::new(data)).and_then(|r| r.read()))
             .map_err(|_| "the DXF→DWG conversion failed".to_string())?
@@ -398,6 +404,9 @@ mod native {
             None if doc.version < MIN_DWG_VERSION => doc.version = MIN_DWG_VERSION,
             None => {}
         }
+        if let Some(dib) = preview.filter(|d| !d.is_empty()) {
+            doc.preview = Some(acadrust::Preview { format: acadrust::PreviewFormat::Bmp, data: dib.to_vec() });
+        }
         table_style_rows(&mut doc, true);
         drop_unwritable(&mut doc);
         std::panic::catch_unwind(AssertUnwindSafe(|| acadrust::DwgWriter::write_to_vec(&doc)))
@@ -407,7 +416,7 @@ mod native {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub use native::{dwg_to_dxf, dwg_to_dxf_noted, dwg_to_dxf_with, dxf_to_dwg, dxf_to_dwg_as};
+pub use native::{dwg_to_dxf, dwg_to_dxf_noted, dwg_to_dxf_with, dxf_to_dwg, dxf_to_dwg_as, dxf_to_dwg_as_with_preview};
 
 /// The error for a DWG version CADCraft can't write.
 #[cfg_attr(target_arch = "wasm32", allow(dead_code))]
@@ -434,6 +443,10 @@ pub fn dxf_to_dwg(_dxf: &[u8]) -> Result<Vec<u8>, String> {
 }
 #[cfg(target_arch = "wasm32")]
 pub fn dxf_to_dwg_as(_dxf: &[u8], _version: &str) -> Result<Vec<u8>, String> {
+    Err("DWG files can't be written in the web build yet; save as DXF".into())
+}
+#[cfg(target_arch = "wasm32")]
+pub fn dxf_to_dwg_as_with_preview(_dxf: &[u8], _version: &str, _preview: Option<&[u8]>) -> Result<Vec<u8>, String> {
     Err("DWG files can't be written in the web build yet; save as DXF".into())
 }
 

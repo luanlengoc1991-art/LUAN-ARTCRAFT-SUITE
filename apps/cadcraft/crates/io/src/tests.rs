@@ -2373,3 +2373,25 @@ fn foreign_table_reads_cell_text_height_and_keeps_style_scale() {
     assert_eq!(t2.cells[0][0].text_height, Some(150.0));
     assert_eq!(t2.cells[0][1].text_height, None);
 }
+
+/// DXF and DWG files carry a preview of model space for file browsers (DXF: a THUMBNAILIMAGE
+/// section; DWG: the preview container); both still read back the same, and an empty drawing
+/// has none.
+#[test]
+fn saved_drawings_carry_a_preview() {
+    let d = sample();
+    let dxf = String::from_utf8(write(&d, "t.dxf").unwrap()).unwrap();
+    let at = dxf.find("THUMBNAILIMAGE").unwrap();
+    assert!(at < dxf.rfind("EOF").unwrap());
+    assert!(dxf[at..].contains("\r\n310\r\n28000000"), "a DIB: BITMAPINFOHEADER size 40");
+    assert_eq!(read(dxf.as_bytes(), "t.dxf").unwrap().model.len(), d.model.len());
+    let dwg = write(&d, "t.dwg").unwrap();
+    // the DWG preview seeker (offset 0x0D) points at a container holding a BMP image (code 2)
+    let seeker = u32::from_le_bytes(dwg[0x0D..0x11].try_into().unwrap()) as usize;
+    let count = dwg[seeker + 20] as usize;
+    let codes: Vec<u8> = (0..count).map(|i| dwg[seeker + 21 + i * 9]).collect();
+    assert!(codes.contains(&2), "{codes:?}");
+    assert_eq!(read(&dwg, "t.dwg").unwrap().model.len(), d.model.len());
+    let empty = String::from_utf8(write(&Drawing::new_metric(), "e.dxf").unwrap()).unwrap();
+    assert!(!empty.contains("THUMBNAILIMAGE"));
+}

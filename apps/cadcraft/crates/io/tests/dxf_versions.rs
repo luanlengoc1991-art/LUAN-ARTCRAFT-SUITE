@@ -99,11 +99,15 @@ fn dxf_at_every_version_reads_back_the_same() {
     }
 }
 
-/// R2000 ASCII is exactly the R2000 DXF CADCraft always wrote.
+/// R2000 ASCII is exactly the R2000 DXF CADCraft always wrote, plus the preview section file
+/// browsers show.
 #[test]
 fn r2000_ascii_is_unchanged() {
     let d = sample();
-    assert_eq!(write_with(&d, "x.dxf", &opts(Version::R2000, false)).unwrap(), write_dxf(&d).into_bytes());
+    let file = String::from_utf8(write_with(&d, "x.dxf", &opts(Version::R2000, false)).unwrap()).unwrap();
+    let start = file.find("  0\r\nSECTION\r\n  2\r\nTHUMBNAILIMAGE\r\n").unwrap();
+    let end = start + file[start..].find("ENDSEC\r\n").unwrap() + "ENDSEC\r\n".len();
+    assert_eq!(format!("{}{}", &file[..start], &file[end..]), write_dxf(&d));
 }
 
 /// Without a version asked for: 2018 for a new drawing, otherwise the file's own version (the
