@@ -155,3 +155,14 @@ workspace; run `cargo test` there. Pushing a change to it publishes a release th
 `.github/workflows/artcraft-mcp.yml` (fixed link `.../releases/latest/download/ArtCraft-MCP.exe`);
 bump `version` in its Cargo.toml for a new release. `scripts/install-mcp.ps1` installs and
 registers it with Claude Code and Cursor.
+
+## Explorer thumbnails
+
+`tools/artcraft-thumbs` (owner-requested) is a Windows shell thumbnail provider DLL: Explorer
+shows the preview embedded in `.pcraft` / `.vectorcraft` files, badged with the installed app's
+icon (read from its exe at run time; no logo is copied). It only reads files and changes no app.
+Its own Cargo workspace; run `cargo test` there. Pushing a change publishes it through
+`.github/workflows/artcraft-thumbs.yml` to the rolling release `artcraft-thumbs` (never marked
+latest: that link belongs to ArtCraft MCP). `scripts/install-thumbs.ps1` installs and registers
+it per user (HKCU). Adding an app means teaching `src/formats.rs` its preview, and usually making
+the app embed one when it saves.

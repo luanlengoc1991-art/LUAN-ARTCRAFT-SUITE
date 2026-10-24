@@ -1,0 +1,63 @@
+# ArtCraft Thumbnails (tools/artcraft-thumbs): Explorer thumbnails for .pcraft / .vectorcraft.
+# Push to main that changes it -> test, build for Windows x64, publish:
+#   - artcraft-thumbs-v<version> (versioned, never marked latest: "latest" is ArtCraft MCP's link)
+#   - the rolling release `artcraft-thumbs`, whose asset ArtCraft-Thumbs.dll is replaced each time:
+#     https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/download/artcraft-thumbs/ArtCraft-Thumbs.dll
+# scripts/install-thumbs.ps1 downloads from that link.
+name: ArtCraft Thumbnails
+
+on:
+  push:
+    branches: [main]
+    paths: ['tools/artcraft-thumbs/**', '.github/workflows/artcraft-thumbs.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: artcraft-thumbs
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tools/artcraft-thumbs
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Test
+        run: cargo test --locked
+      - name: Build
+        run: cargo build --release --locked
+      - name: Publish release
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches[0].Groups[1].Value
+          $out = New-Item -ItemType Directory -Force dist
+          Copy-Item target/release/artcraft_thumbs.dll "$out/ArtCraft-Thumbs.dll"
+          Copy-Item target/release/artcraft_thumbs.dll "$out/artcraft-thumbs-$v-windows-x64.dll"
+          Push-Location $out
+          Get-ChildItem *.dll | ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $($_.Name)" } | Set-Content -Encoding ascii SHA256SUMS.txt
+          Pop-Location
+          $assets = Get-ChildItem $out -File | ForEach-Object FullName
+          $day = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'SE Asia Standard Time').ToString('dd/MM/yyyy')
+          $notes = "ArtCraft Thumbnails ${v}: Windows Explorer thumbnails for .pcraft (PhotoCraft) and .vectorcraft (VectorCraft) files, with the app's icon in the corner.`n`nInstall: run scripts/install-thumbs.ps1.`n`nBuilt from $env:GITHUB_SHA."
+          $tag = "artcraft-thumbs-v$v"
+          gh release view $tag 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) { gh release upload $tag @assets --clobber }
+          else { gh release create $tag @assets --title "ArtCraft Thumbnails $v ($day)" --notes $notes --latest=false --target $env:GITHUB_SHA }
+          if ($LASTEXITCODE -ne 0) { throw "publishing $tag failed" }
+          # The fixed download link.
+          gh release view artcraft-thumbs 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) { gh release upload artcraft-thumbs @assets --clobber }
+          else { gh release create artcraft-thumbs @assets --title "ArtCraft Thumbnails (newest)" --notes "Always the newest ArtCraft Thumbnails. $notes" --latest=false --target $env:GITHUB_SHA }
+          if ($LASTEXITCODE -ne 0) { throw "publishing artcraft-thumbs failed" }
