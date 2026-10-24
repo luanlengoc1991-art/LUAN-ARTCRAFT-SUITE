@@ -103,7 +103,8 @@ fn preview_is_at_most_256_pixels() {
     let png = vectorcraft_format::preview(&bytes).expect("a preview");
     let img = image::load_from_memory(&png).unwrap();
     assert_eq!((img.width(), img.height()), (256, 128), "the 400×200 artboard fitted into 256 px");
-    assert!(vectorcraft_format::preview(&saved(&mut s, json!({}))).is_none(), "off by default");
+    assert!(vectorcraft_format::preview(&saved(&mut s, json!({}))).is_some(), "on by default");
+    assert!(vectorcraft_format::preview(&saved(&mut s, json!({"preview": false}))).is_none(), "off when asked");
 }
 
 #[test]

@@ -32,8 +32,8 @@ pub const OPTIONS: &[FormatOption] = &[
     FormatOption {
         name: "preview",
         ty: "boolean",
-        default: "false",
-        description: "embed a PNG preview of the first artboard (at most 256 pixels on its longer side) for file browsers",
+        default: "true",
+        description: "embed a PNG preview of the first artboard (at most 256 pixels on its longer side) for file browsers (false: none)",
     },
     SEPARATE_ARTBOARDS,
     SEPARATE_RANGE,
@@ -106,7 +106,7 @@ pub const AI_OPTIONS: &[FormatOption] = &[
 struct NativeOptions {
     compress: Option<bool>,
     version: Option<u32>,
-    preview: bool,
+    preview: Option<bool>,
     include_linked: bool,
     embed_profiles: Option<bool>,
     pdf_compatible: bool,
@@ -130,7 +130,7 @@ pub(super) fn save_options(cmd: &str, f: &Format, doc: &Document, p: &Value) -> 
         so.profiles = embedded_profiles(doc);
     }
     so.check().map_err(|e| bad(cmd, e.to_string()))?;
-    Ok((so, Extras { preview: o.preview, pdf: o.pdf_compatible }))
+    Ok((so, Extras { preview: o.preview.unwrap_or(true), pdf: o.pdf_compatible }))
 }
 
 /// The `.vectorcraft` file of `doc` with the options in `p`.
