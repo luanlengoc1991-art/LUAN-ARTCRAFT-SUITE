@@ -1,4 +1,4 @@
-# ArtCraft Thumbnails (tools/artcraft-thumbs): Explorer thumbnails for .pcraft / .vectorcraft.
+# ArtCraft Thumbnails (tools/artcraft-thumbs): Explorer thumbnails for the eight ArtCraft apps' files.
 # Push to main that changes it -> test, build for Windows x64, publish:
 #   - artcraft-thumbs-v<version> (versioned, never marked latest: "latest" is ArtCraft MCP's link)
 #   - the rolling release `artcraft-thumbs`, whose asset ArtCraft-Thumbs.dll is replaced each time:
@@ -50,7 +50,7 @@ jobs:
           Pop-Location
           $assets = Get-ChildItem $out -File | ForEach-Object FullName
           $day = [TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'SE Asia Standard Time').ToString('dd/MM/yyyy')
-          $notes = "ArtCraft Thumbnails ${v}: Windows Explorer thumbnails for .pcraft (PhotoCraft) and .vectorcraft (VectorCraft) files, with the app's icon in the corner.`n`nInstall: run scripts/install-thumbs.ps1.`n`nBuilt from $env:GITHUB_SHA."
+          $notes = "ArtCraft Thumbnails ${v}: Windows Explorer thumbnails for the files of the eight ArtCraft apps, with the app's icon in the corner.`n`nInstall: run scripts/install-thumbs.ps1.`n`nBuilt from $env:GITHUB_SHA."
           $tag = "artcraft-thumbs-v$v"
           gh release view $tag 2>$null | Out-Null
           if ($LASTEXITCODE -eq 0) { gh release upload $tag @assets --clobber }

@@ -159,8 +159,11 @@ registers it with Claude Code and Cursor.
 ## Explorer thumbnails
 
 `tools/artcraft-thumbs` (owner-requested) is a Windows shell thumbnail provider DLL: Explorer
-shows the preview embedded in `.pcraft` / `.vectorcraft` files, badged with the installed app's
-icon (read from its exe at run time; no logo is copied). It only reads files and changes no app.
+shows what is inside the files of the eight built apps (table in its README), badged with the
+installed app's icon (read from its exe at run time; no logo is copied). It only reads files.
+The apps embed the previews it reads when they save (PhotoCraft, VectorCraft, FilmCraft,
+EffectCraft, WordCraft, CADCraft); PDFs it renders and workbooks it draws itself. Changing how an
+app writes that preview means changing the matching reader in `src/formats/`.
 Its own Cargo workspace; run `cargo test` there. Pushing a change publishes it through
 `.github/workflows/artcraft-thumbs.yml` to the rolling release `artcraft-thumbs` (never marked
 latest: that link belongs to ArtCraft MCP). `scripts/install-thumbs.ps1` installs and registers

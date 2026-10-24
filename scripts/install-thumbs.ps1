@@ -1,22 +1,29 @@
 <#
 .SYNOPSIS
-  Install ArtCraft Thumbnails: Windows Explorer shows what is inside .pcraft (PhotoCraft) and
-  .vectorcraft / .drawcraft (VectorCraft) files, with the app's icon in the corner.
+  Install ArtCraft Thumbnails: Windows Explorer shows what is inside the files of the eight
+  ArtCraft apps, with the app's icon in the corner.
 
 .DESCRIPTION
   Downloads artcraft-thumbs.dll from the fixed link
     https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/download/artcraft-thumbs/ArtCraft-Thumbs.dll
   to %LOCALAPPDATA%\Programs\ArtCraft Thumbnails\ and registers it for the current user (HKCU, no
-  admin) as the thumbnail handler of those file types. Run it again to update; -Uninstall removes
-  it. Standalone: works without a clone of the repo
+  admin) as the thumbnail handler of:
+    PhotoCraft  .pcraft                      VectorCraft .vectorcraft .drawcraft
+    FilmCraft   .fcproj                      EffectCraft .ecproj
+    PdfCraft    .pdf                         WordCraft   .docx .docm .dotx .dotm
+    GridCraft   .xlsx .xlsm .xltx .xltm      CADCraft    .dwg .dxf .dwt
+  on the extension and on the program the extension opens with (so it takes over from another
+  thumbnail handler, such as a PDF reader's, for this user only; -Uninstall gives it back).
+  Run it again to update, or after changing which program opens a type. Standalone:
     irm https://raw.githubusercontent.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/main/scripts/install-thumbs.ps1 | iex
 
-  The badge is the icon of the installed app (%ProgramFiles%\PhotoCraft\photocraft.exe, ...).
-  Apps installed elsewhere: pass their folder with -SearchDir. Without the app the thumbnail
-  shows without a badge.
+  The badge is the icon of the installed app (%ProgramFiles%\<App>\<id>.exe). Apps installed
+  elsewhere: pass their folder with -SearchDir. Without the app the thumbnail has no badge.
 
-  The thumbnail is the preview each app embeds when it saves. PhotoCraft always embeds one;
-  VectorCraft does from the version that turned it on by default (older files: open and save).
+  What a thumbnail shows: the preview the app embeds when it saves (PhotoCraft, VectorCraft,
+  FilmCraft, EffectCraft, WordCraft, CADCraft; files saved by older versions show one once
+  saved again), the first page of a PDF, and a workbook's package thumbnail or else its first
+  sheet's cells.
 
 .EXAMPLE
   scripts\install-thumbs.ps1
@@ -34,8 +41,18 @@ $url = 'https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE/releases/downl
 # Must match CLSID in tools/artcraft-thumbs/src/com.rs.
 $clsid = '{DBC0383E-886F-4B5F-B407-AFEA2F1DF2E0}'
 $thumbHandler = '{e357fccd-a995-4576-b01f-234630154e96}'  # IThumbnailProvider
-$extensions = '.pcraft', '.vectorcraft', '.drawcraft'
-$apps = @{ photocraft = 'PhotoCraft'; vectorcraft = 'VectorCraft' }
+# id -> install folder name, extensions (the DLL tells the app from the file's content).
+$apps = [ordered]@{
+  photocraft  = @('PhotoCraft', '.pcraft')
+  vectorcraft = @('VectorCraft', '.vectorcraft', '.drawcraft')
+  filmcraft   = @('FilmCraft', '.fcproj')
+  effectcraft = @('EffectCraft', '.ecproj')
+  pdfcraft    = @('PdfCraft', '.pdf')
+  wordcraft   = @('WordCraft', '.docx', '.docm', '.dotx', '.dotm')
+  gridcraft   = @('GridCraft', '.xlsx', '.xlsm', '.xltx', '.xltm')
+  cadcraft    = @('CADCraft', '.dwg', '.dxf', '.dwt')
+}
+$extensions = $apps.Values | ForEach-Object { $_ | Select-Object -Skip 1 }
 $classes = 'HKCU:\Software\Classes'
 $appsKey = 'HKCU:\Software\ArtCraft\Thumbnails'
 $approved = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved'
@@ -45,6 +62,18 @@ $target = Join-Path $dir 'artcraft-thumbs.dll'
 function Set-Default([string] $Key, [string] $Value) {
   New-Item -Path $Key -Force | Out-Null
   Set-ItemProperty -LiteralPath $Key -Name '(default)' -Value $Value
+}
+
+# The class keys (relative to Software\Classes) Explorer may look up a type's thumbnail handler
+# under: the extension, its program id and the one the user chose to open it with.
+function Get-ClassKeys([string] $Ext) {
+  $keys = @($Ext)
+  $progId = (Get-ItemProperty -LiteralPath "Registry::HKEY_CLASSES_ROOT\$Ext" -ErrorAction SilentlyContinue).'(default)'
+  if ($progId) { $keys += $progId }
+  $choice = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\$Ext\UserChoice"
+  $chosen = (Get-ItemProperty -LiteralPath $choice -ErrorAction SilentlyContinue).ProgId
+  if ($chosen -and $chosen -notmatch '^Applications\\') { $keys += $chosen }
+  return $keys | Select-Object -Unique
 }
 
 # Tell Explorer the handlers changed, so it asks for thumbnails again.
@@ -58,11 +87,18 @@ public static extern void SHChangeNotify(int eventId, uint flags, System.IntPtr 
   [ArtCraftThumbs.Shell]::SHChangeNotify(0x08000000, 0, [IntPtr]::Zero, [IntPtr]::Zero)
 }
 
-if ($Uninstall) {
+# Our handler entries (only ours: another program's stays where it is).
+function Remove-Handlers {
   foreach ($ext in $extensions) {
-    $k = "$classes\$ext\ShellEx\$thumbHandler"
-    if ((Test-Path $k) -and (Get-ItemProperty -LiteralPath $k).'(default)' -eq $clsid) { Remove-Item $k -Force }
+    foreach ($key in Get-ClassKeys $ext) {
+      $k = "$classes\$key\ShellEx\$thumbHandler"
+      if ((Test-Path -LiteralPath $k) -and (Get-ItemProperty -LiteralPath $k).'(default)' -eq $clsid) { Remove-Item -LiteralPath $k -Force }
+    }
   }
+}
+
+if ($Uninstall) {
+  Remove-Handlers
   if (Test-Path "$classes\CLSID\$clsid") { Remove-Item "$classes\CLSID\$clsid" -Recurse -Force }
   if (Test-Path $approved) { Remove-ItemProperty -LiteralPath $approved -Name $clsid -ErrorAction SilentlyContinue }
   if (Test-Path $appsKey) { Remove-Item $appsKey -Recurse -Force }
@@ -98,28 +134,31 @@ Set-Default "$classes\CLSID\$clsid\InprocServer32" $target
 Set-ItemProperty -LiteralPath "$classes\CLSID\$clsid\InprocServer32" -Name ThreadingModel -Value Apartment
 New-Item -Path $approved -Force | Out-Null
 Set-ItemProperty -LiteralPath $approved -Name $clsid -Value 'ArtCraft Thumbnails'
-foreach ($ext in $extensions) { Set-Default "$classes\$ext\ShellEx\$thumbHandler" $clsid }
+foreach ($ext in $extensions) {
+  foreach ($key in Get-ClassKeys $ext) { Set-Default "$classes\$key\ShellEx\$thumbHandler" $clsid }
+}
 
 # --- 3. Where the apps are (for the badge) ------------------------------------------------------
 New-Item -Path $appsKey -Force | Out-Null
 foreach ($id in $apps.Keys) {
+  $name = $apps[$id][0]
   $candidates = @(
-    (Join-Path $env:ProgramFiles "$($apps[$id])\$id.exe"),
-    (Join-Path $env:LOCALAPPDATA "Programs\$($apps[$id])\$id.exe")
+    (Join-Path $env:ProgramFiles "$name\$id.exe"),
+    (Join-Path $env:LOCALAPPDATA "Programs\$name\$id.exe")
   )
   foreach ($d in @($SearchDir)) {
-    if ($d) { $candidates += (Join-Path $d "$id.exe"), (Join-Path $d "$($apps[$id])\$id.exe") }
+    if ($d) { $candidates += (Join-Path $d "$id.exe"), (Join-Path $d "$name\$id.exe") }
   }
   $exe = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
   if ($exe) {
     Set-ItemProperty -LiteralPath $appsKey -Name $id -Value $exe
-    Write-Host "  $($apps[$id]): $exe"
+    Write-Host "  ${name}: $exe"
   } else {
     Remove-ItemProperty -LiteralPath $appsKey -Name $id -ErrorAction SilentlyContinue
-    Write-Host "  $($apps[$id]): not found (thumbnails show without its badge)"
+    Write-Host "  ${name}: not found (its thumbnails show without a badge)"
   }
 }
 
 Send-AssocChanged
-Write-Host "Registered for $($extensions -join ', '). Explorer shows the thumbnails in Medium icons or larger."
-Write-Host 'Old thumbnails cached by Explorer: Disk Cleanup > Thumbnails clears them.'
+Write-Host "Registered for $($extensions -join ' '). Explorer shows them in Medium icons or larger."
+Write-Host 'Pictures Explorer cached before: Disk Cleanup > Thumbnails clears them.'

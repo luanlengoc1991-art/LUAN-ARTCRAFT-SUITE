@@ -8,30 +8,25 @@ pub struct Rgba {
     pub pixels: Vec<u8>,
 }
 
-/// Longest side of a preview decoded (PhotoCraft writes 1024 at most).
+/// Longest side of a preview decoded (the apps write 1024 at most).
 const MAX_SIDE: u32 = 8192;
 
-/// A PNG as RGBA (any colour type and bit depth).
-pub fn decode_png(bytes: &[u8]) -> Option<Rgba> {
-    let mut d = png::Decoder::new(std::io::Cursor::new(bytes));
-    d.set_transformations(png::Transformations::EXPAND | png::Transformations::STRIP_16);
-    let mut r = d.read_info().ok()?;
-    let (w, h) = (r.info().width, r.info().height);
-    if w == 0 || h == 0 || w > MAX_SIDE || h > MAX_SIDE {
-        return None;
-    }
-    let mut buf = vec![0u8; r.output_buffer_size()?];
-    let frame = r.next_frame(&mut buf).ok()?;
-    let data = buf.get(..frame.buffer_size())?;
-    let n = (w * h) as usize;
-    let pixels: Vec<u8> = match frame.color_type {
-        png::ColorType::Rgba => data.get(..n * 4)?.to_vec(),
-        png::ColorType::Rgb => data.get(..n * 3)?.chunks_exact(3).flat_map(|p| [p[0], p[1], p[2], 255]).collect(),
-        png::ColorType::GrayscaleAlpha => data.get(..n * 2)?.chunks_exact(2).flat_map(|p| [p[0], p[0], p[0], p[1]]).collect(),
-        png::ColorType::Grayscale => data.get(..n)?.iter().flat_map(|&g| [g, g, g, 255]).collect(),
-        png::ColorType::Indexed => return None,
-    };
-    Some(Rgba { width: w, height: h, pixels })
+/// A PNG, JPEG or BMP file as RGBA.
+pub fn decode(bytes: &[u8]) -> Option<Rgba> {
+    let mut r = image::ImageReader::new(std::io::Cursor::new(bytes))
+        .with_guessed_format()
+        .ok()?;
+    let mut limits = image::Limits::default();
+    limits.max_image_width = Some(MAX_SIDE);
+    limits.max_image_height = Some(MAX_SIDE);
+    limits.max_alloc = Some(512 << 20);
+    r.limits(limits);
+    let img = r.decode().ok()?.to_rgba8();
+    Some(Rgba {
+        width: img.width(),
+        height: img.height(),
+        pixels: img.into_raw(),
+    })
 }
 
 /// `img` fitted into `size`×`size` (aspect kept; never enlarged), by area averaging in
@@ -44,7 +39,10 @@ pub fn fit(img: &Rgba, size: u32) -> Rgba {
     let scale = f64::from(size) / f64::from(longest);
     let w = ((f64::from(img.width) * scale).round() as u32).max(1);
     let h = ((f64::from(img.height) * scale).round() as u32).max(1);
-    let (sx, sy) = (f64::from(img.width) / f64::from(w), f64::from(img.height) / f64::from(h));
+    let (sx, sy) = (
+        f64::from(img.width) / f64::from(w),
+        f64::from(img.height) / f64::from(h),
+    );
     let mut out = vec![0u8; (w * h * 4) as usize];
     for y in 0..h {
         let (y0, y1) = (f64::from(y) * sy, f64::from(y + 1) * sy);
@@ -81,7 +79,11 @@ pub fn fit(img: &Rgba, size: u32) -> Rgba {
             }
         }
     }
-    Rgba { width: w, height: h, pixels: out }
+    Rgba {
+        width: w,
+        height: h,
+        pixels: out,
+    }
 }
 
 /// The badge's side for a thumbnail of `w`×`h`: about a fifth of the longer side, 16 to 64
@@ -94,12 +96,20 @@ pub fn badge_size(w: u32, h: u32) -> u32 {
 /// `badge` drawn over the bottom-right corner of `img` (source-over, straight alpha).
 pub fn badge(img: &mut Rgba, badge: &Rgba) {
     let margin = (img.width.max(img.height) / 64).max(1);
-    let (Some(bx), Some(by)) = (img.width.checked_sub(badge.width + margin), img.height.checked_sub(badge.height + margin)) else { return };
+    let (Some(bx), Some(by)) = (
+        img.width.checked_sub(badge.width + margin),
+        img.height.checked_sub(badge.height + margin),
+    ) else {
+        return;
+    };
     for y in 0..badge.height {
         for x in 0..badge.width {
             let s = ((y * badge.width + x) * 4) as usize;
             let d = (((by + y) * img.width + bx + x) * 4) as usize;
-            let (Some(sp), Some(dp)) = (badge.pixels.get(s..s + 4), img.pixels.get(d..d + 4)) else { continue };
+            let (Some(sp), Some(dp)) = (badge.pixels.get(s..s + 4), img.pixels.get(d..d + 4))
+            else {
+                continue;
+            };
             let sa = f32::from(sp[3]) / 255.0;
             if sa <= 0.0 {
                 continue;
@@ -122,7 +132,11 @@ mod tests {
     use super::*;
 
     fn solid(w: u32, h: u32, p: [u8; 4]) -> Rgba {
-        Rgba { width: w, height: h, pixels: p.repeat((w * h) as usize) }
+        Rgba {
+            width: w,
+            height: h,
+            pixels: p.repeat((w * h) as usize),
+        }
     }
 
     #[test]
@@ -137,7 +151,11 @@ mod tests {
     #[test]
     fn fit_averages_in_premultiplied_alpha() {
         // Red opaque next to transparent green: the colour stays red, half covered.
-        let img = Rgba { width: 2, height: 1, pixels: vec![255, 0, 0, 255, 0, 255, 0, 0] };
+        let img = Rgba {
+            width: 2,
+            height: 1,
+            pixels: vec![255, 0, 0, 255, 0, 255, 0, 0],
+        };
         let f = fit(&img, 1);
         assert_eq!(f.pixels, vec![255, 0, 0, 128]);
     }
@@ -153,16 +171,18 @@ mod tests {
     }
 
     #[test]
-    fn decodes_png() {
-        let mut bytes = Vec::new();
-        {
-            let mut e = png::Encoder::new(&mut bytes, 2, 1);
-            e.set_color(png::ColorType::Rgb);
-            e.set_depth(png::BitDepth::Eight);
-            e.write_header().unwrap().write_image_data(&[1, 2, 3, 4, 5, 6]).unwrap();
-        }
-        let img = decode_png(&bytes).unwrap();
+    fn decodes_png_and_jpeg() {
+        let src = image::RgbImage::from_raw(2, 1, vec![1, 2, 3, 4, 5, 6]).unwrap();
+        let mut png = std::io::Cursor::new(Vec::new());
+        src.write_to(&mut png, image::ImageFormat::Png).unwrap();
+        let img = decode(png.get_ref()).unwrap();
         assert_eq!(img.pixels, vec![1, 2, 3, 255, 4, 5, 6, 255]);
-        assert!(decode_png(b"\x89PNG nope").is_none());
+        let mut jpeg = std::io::Cursor::new(Vec::new());
+        image::RgbImage::from_pixel(8, 4, image::Rgb([200, 10, 10]))
+            .write_to(&mut jpeg, image::ImageFormat::Jpeg)
+            .unwrap();
+        let img = decode(jpeg.get_ref()).unwrap();
+        assert_eq!((img.width, img.height), (8, 4));
+        assert!(decode(b"\x89PNG nope").is_none());
     }
 }

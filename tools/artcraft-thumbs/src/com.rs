@@ -9,17 +9,33 @@ use std::ffi::c_void;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use windows::Win32::Foundation::{CLASS_E_CLASSNOTAVAILABLE, CLASS_E_NOAGGREGATION, E_FAIL, E_POINTER, ERROR_SUCCESS, S_FALSE, S_OK};
-use windows::Win32::Graphics::Gdi::{
-    BI_RGB, BITMAPINFO, BITMAPINFOHEADER, CreateDIBSection, DIB_RGB_COLORS, DeleteObject, GetDC, GetDIBits, HBITMAP, HGDIOBJ, ReleaseDC,
+use windows::Win32::Foundation::{
+    CLASS_E_CLASSNOTAVAILABLE, CLASS_E_NOAGGREGATION, COLORREF, E_FAIL, E_POINTER, ERROR_SUCCESS,
+    RECT, S_FALSE, S_OK,
 };
-use windows::Win32::System::Com::{IClassFactory, IClassFactory_Impl, IStream, STREAM_SEEK_END, STREAM_SEEK_SET};
+use windows::Win32::Graphics::Gdi::{
+    ANTIALIASED_QUALITY, BI_RGB, BITMAPINFO, BITMAPINFOHEADER, CLIP_DEFAULT_PRECIS,
+    CreateCompatibleDC, CreateDIBSection, CreateFontW, DEFAULT_CHARSET, DIB_RGB_COLORS,
+    DT_END_ELLIPSIS, DT_LEFT, DT_NOPREFIX, DT_RIGHT, DT_SINGLELINE, DT_VCENTER, DeleteDC,
+    DeleteObject, DrawTextW, FW_NORMAL, GdiFlush, GetDC, GetDIBits, HBITMAP, HGDIOBJ,
+    OUT_DEFAULT_PRECIS, ReleaseDC, SelectObject, SetBkMode, SetTextColor, TRANSPARENT,
+};
+use windows::Win32::System::Com::{
+    IClassFactory, IClassFactory_Impl, IStream, STREAM_SEEK_END, STREAM_SEEK_SET,
+};
 use windows::Win32::System::Registry::{HKEY_CURRENT_USER, RRF_RT_REG_SZ, RegGetValueW};
-use windows::Win32::UI::Shell::PropertiesSystem::{IInitializeWithStream, IInitializeWithStream_Impl};
-use windows::Win32::UI::Shell::{IThumbnailProvider, IThumbnailProvider_Impl, WTS_ALPHATYPE, WTSAT_ARGB};
-use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, GetIconInfo, HICON, ICONINFO, PrivateExtractIconsW};
+use windows::Win32::UI::Shell::PropertiesSystem::{
+    IInitializeWithStream, IInitializeWithStream_Impl,
+};
+use windows::Win32::UI::Shell::{
+    IThumbnailProvider, IThumbnailProvider_Impl, WTS_ALPHATYPE, WTSAT_ARGB,
+};
+use windows::Win32::UI::WindowsAndMessaging::{
+    DestroyIcon, GetIconInfo, HICON, ICONINFO, PrivateExtractIconsW,
+};
 use windows_core::{BOOL, GUID, HRESULT, IUnknown, Interface, PCWSTR, Ref, implement};
 
+use crate::formats::ooxml::Sheet;
 use crate::formats::{App, Source};
 use crate::image::Rgba;
 
@@ -45,7 +61,9 @@ struct Provider {
 impl Provider {
     fn new() -> Self {
         OBJECTS.fetch_add(1, Ordering::SeqCst);
-        Provider { stream: RefCell::new(None) }
+        Provider {
+            stream: RefCell::new(None),
+        }
     }
 }
 
@@ -58,22 +76,37 @@ impl Drop for Provider {
 impl IInitializeWithStream_Impl for Provider_Impl {
     fn Initialize(&self, pstream: Ref<IStream>, _grfmode: u32) -> windows_core::Result<()> {
         let stream = pstream.ok()?.clone();
-        *self.stream.try_borrow_mut().map_err(|_| windows_core::Error::from(E_FAIL))? = Some(stream);
+        *self
+            .stream
+            .try_borrow_mut()
+            .map_err(|_| windows_core::Error::from(E_FAIL))? = Some(stream);
         Ok(())
     }
 }
 
 impl IThumbnailProvider_Impl for Provider_Impl {
-    fn GetThumbnail(&self, cx: u32, phbmp: *mut HBITMAP, pdwalpha: *mut WTS_ALPHATYPE) -> windows_core::Result<()> {
+    fn GetThumbnail(
+        &self,
+        cx: u32,
+        phbmp: *mut HBITMAP,
+        pdwalpha: *mut WTS_ALPHATYPE,
+    ) -> windows_core::Result<()> {
         if phbmp.is_null() || pdwalpha.is_null() {
             return Err(E_POINTER.into());
         }
-        let stream = self.stream.try_borrow().ok().and_then(|s| s.clone()).ok_or(windows_core::Error::from(E_FAIL))?;
-        let size = cx.clamp(16, 2048);
-        let img = catch_unwind(AssertUnwindSafe(|| crate::thumbnail(&mut StreamSource(&stream), size, app_icon)))
+        let stream = self
+            .stream
+            .try_borrow()
             .ok()
-            .flatten()
+            .and_then(|s| s.clone())
             .ok_or(windows_core::Error::from(E_FAIL))?;
+        let size = cx.clamp(16, 2048);
+        let img = catch_unwind(AssertUnwindSafe(|| {
+            crate::thumbnail(&mut StreamSource(&stream), size, app_icon, paint_sheet)
+        }))
+        .ok()
+        .flatten()
+        .ok_or(windows_core::Error::from(E_FAIL))?;
         let bmp = to_hbitmap(&img).ok_or(windows_core::Error::from(E_FAIL))?;
         // SAFETY: both pointers were checked non-null; Explorer owns the bitmap from here.
         unsafe {
@@ -97,7 +130,11 @@ impl Source for StreamSource<'_> {
 
     fn read_at(&mut self, offset: u64, buf: &mut [u8]) -> Option<()> {
         // SAFETY: as above.
-        unsafe { self.0.Seek(i64::try_from(offset).ok()?, STREAM_SEEK_SET, None) }.ok()?;
+        unsafe {
+            self.0
+                .Seek(i64::try_from(offset).ok()?, STREAM_SEEK_SET, None)
+        }
+        .ok()?;
         let mut done = 0usize;
         while done < buf.len() {
             let rest = buf.get_mut(done..)?;
@@ -122,7 +159,15 @@ fn app_exe(app: App) -> Option<String> {
     let (key, value) = (wide(APPS_KEY), wide(app.id()));
     // SAFETY: NUL-terminated names, a buffer of `bytes` bytes.
     let r = unsafe {
-        RegGetValueW(HKEY_CURRENT_USER, PCWSTR(key.as_ptr()), PCWSTR(value.as_ptr()), RRF_RT_REG_SZ, None, Some(buf.as_mut_ptr().cast()), Some(&mut bytes))
+        RegGetValueW(
+            HKEY_CURRENT_USER,
+            PCWSTR(key.as_ptr()),
+            PCWSTR(value.as_ptr()),
+            RRF_RT_REG_SZ,
+            None,
+            Some(buf.as_mut_ptr().cast()),
+            Some(&mut bytes),
+        )
     };
     let mut candidates = Vec::new();
     if r == ERROR_SUCCESS {
@@ -138,7 +183,9 @@ fn app_exe(app: App) -> Option<String> {
     if let Some(d) = std::env::var_os("LOCALAPPDATA") {
         candidates.push(format!("{}\\Programs\\{exe}", d.to_string_lossy()));
     }
-    candidates.into_iter().find(|p| !p.is_empty() && std::path::Path::new(p).is_file())
+    candidates
+        .into_iter()
+        .find(|p| !p.is_empty() && std::path::Path::new(p).is_file())
 }
 
 /// The app's icon at `side`×`side`, from its exe.
@@ -188,11 +235,28 @@ fn icon_pixels(icon: HICON, side: u32) -> Option<Rgba> {
     unsafe {
         let dc = GetDC(None);
         let mut bi = header(side, side);
-        let c = !info.hbmColor.is_invalid() && GetDIBits(dc, info.hbmColor, 0, side, Some(bgra.as_mut_ptr().cast()), &mut bi, DIB_RGB_COLORS) == side as i32;
+        let c = !info.hbmColor.is_invalid()
+            && GetDIBits(
+                dc,
+                info.hbmColor,
+                0,
+                side,
+                Some(bgra.as_mut_ptr().cast()),
+                &mut bi,
+                DIB_RGB_COLORS,
+            ) == side as i32;
         if !info.hbmMask.is_invalid() {
             // A mask that can't be read stays zero: every pixel opaque.
             let mut bi = header(side, side);
-            GetDIBits(dc, info.hbmMask, 0, side, Some(mask.as_mut_ptr().cast()), &mut bi, DIB_RGB_COLORS);
+            GetDIBits(
+                dc,
+                info.hbmMask,
+                0,
+                side,
+                Some(mask.as_mut_ptr().cast()),
+                &mut bi,
+                DIB_RGB_COLORS,
+            );
         }
         ReleaseDC(None, dc);
         let _ = DeleteObject(HGDIOBJ(info.hbmColor.0)); // Freeing; nothing to do on failure.
@@ -205,11 +269,21 @@ fn icon_pixels(icon: HICON, side: u32) -> Option<Rgba> {
         .zip(mask.chunks_exact(4))
         .flat_map(|(p, m)| {
             // Icons without alpha: the AND mask says which pixels are transparent.
-            let a = if has_alpha { p[3] } else if mask_ok(m) { 0 } else { 255 };
+            let a = if has_alpha {
+                p[3]
+            } else if mask_ok(m) {
+                0
+            } else {
+                255
+            };
             [p[2], p[1], p[0], a]
         })
         .collect();
-    Some(Rgba { width: side, height: side, pixels })
+    Some(Rgba {
+        width: side,
+        height: side,
+        pixels,
+    })
 }
 
 fn mask_ok(m: &[u8]) -> bool {
@@ -235,11 +309,170 @@ fn to_hbitmap(img: &Rgba) -> Option<HBITMAP> {
     Some(bmp)
 }
 
+/// A spreadsheet's top-left cells drawn as a sheet looks: column letters, row numbers, grid
+/// lines and the values (numbers right-aligned), `size` pixels wide and 3/4 of that high.
+fn paint_sheet(sheet: &Sheet, size: u32) -> Option<Rgba> {
+    let (w, h) = (size.max(32), (size * 3 / 4).max(24));
+    let row_h = (size / 16).max(8) as i32;
+    let col_w = row_h * 16 / 5;
+    let head_w = row_h * 8 / 5;
+    let rows = ((h as i32 - row_h) / row_h + 1).max(1) as usize;
+    let cols = ((w as i32 - head_w) / col_w + 1).max(1) as usize;
+    let bi = header(w, h);
+    let mut bits: *mut c_void = std::ptr::null_mut();
+    // SAFETY: a valid header; `bits` receives the section's memory, freed with the bitmap below.
+    let bmp = unsafe { CreateDIBSection(None, &bi, DIB_RGB_COLORS, &mut bits, None, 0) }.ok()?;
+    let n = (w * h * 4) as usize;
+    let mut out = None;
+    if !bits.is_null() {
+        // SAFETY: the section holds w×h 32-bit pixels.
+        let px = unsafe { std::slice::from_raw_parts_mut(bits.cast::<u8>(), n) };
+        let fill = |px: &mut [u8], x0: i32, y0: i32, x1: i32, y1: i32, c: [u8; 3]| {
+            for y in y0.max(0)..y1.min(h as i32) {
+                for x in x0.max(0)..x1.min(w as i32) {
+                    let i = ((y as u32 * w + x as u32) * 4) as usize;
+                    if let Some(p) = px.get_mut(i..i + 4) {
+                        p.copy_from_slice(&[c[2], c[1], c[0], 255]);
+                    }
+                }
+            }
+        };
+        fill(px, 0, 0, w as i32, h as i32, [255, 255, 255]);
+        fill(px, 0, 0, w as i32, row_h, [243, 243, 243]);
+        fill(px, 0, 0, head_w, h as i32, [243, 243, 243]);
+        for c in 0..=cols as i32 {
+            let x = head_w + c * col_w - 1;
+            fill(px, x, 0, x + 1, h as i32, [218, 220, 224]);
+        }
+        for r in 0..=rows as i32 {
+            let y = row_h + r * row_h - 1;
+            fill(px, 0, y, w as i32, y + 1, [218, 220, 224]);
+        }
+        // SAFETY: a memory DC holding our section while the text is drawn, released below.
+        unsafe {
+            let dc = CreateCompatibleDC(None);
+            let old = SelectObject(dc, HGDIOBJ(bmp.0));
+            let face = wide("Segoe UI");
+            let font = CreateFontW(
+                -(row_h * 7 / 10).max(6),
+                0,
+                0,
+                0,
+                FW_NORMAL.0 as i32,
+                0,
+                0,
+                0,
+                DEFAULT_CHARSET,
+                OUT_DEFAULT_PRECIS,
+                CLIP_DEFAULT_PRECIS,
+                ANTIALIASED_QUALITY,
+                0,
+                PCWSTR(face.as_ptr()),
+            );
+            let old_font = SelectObject(dc, HGDIOBJ(font.0));
+            SetBkMode(dc, TRANSPARENT);
+            let text = |s: &str, rect: RECT, right: bool, color: u32| {
+                let mut t: Vec<u16> = s.encode_utf16().collect();
+                let mut r = rect;
+                SetTextColor(dc, COLORREF(color));
+                let align = if right { DT_RIGHT } else { DT_LEFT };
+                DrawTextW(
+                    dc,
+                    &mut t,
+                    &mut r,
+                    DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX | DT_END_ELLIPSIS | align,
+                );
+            };
+            let pad = (row_h / 5).max(1);
+            for c in 0..cols {
+                let x = head_w + c as i32 * col_w;
+                let mut r = RECT {
+                    left: x,
+                    top: 0,
+                    right: x + col_w - 1,
+                    bottom: row_h - 1,
+                };
+                r.left += (col_w - row_h) / 2;
+                text(&column_name(c), r, false, 0x0060_6060);
+            }
+            for row in 0..rows {
+                let y = row_h + row as i32 * row_h;
+                text(
+                    &(row + 1).to_string(),
+                    RECT {
+                        left: 0,
+                        top: y,
+                        right: head_w - pad - 1,
+                        bottom: y + row_h - 1,
+                    },
+                    true,
+                    0x0060_6060,
+                );
+                for c in 0..cols {
+                    let Some(v) = sheet
+                        .cells
+                        .get(row)
+                        .and_then(|r| r.get(c))
+                        .filter(|v| !v.is_empty())
+                    else {
+                        continue;
+                    };
+                    let x = head_w + c as i32 * col_w;
+                    let rect = RECT {
+                        left: x + pad,
+                        top: y,
+                        right: x + col_w - pad - 1,
+                        bottom: y + row_h - 1,
+                    };
+                    text(v, rect, v.parse::<f64>().is_ok(), 0x0020_2020);
+                }
+            }
+            let _ = GdiFlush(); // Drawing is done; nothing to do if it fails.
+            SelectObject(dc, old_font);
+            let _ = DeleteObject(HGDIOBJ(font.0));
+            SelectObject(dc, old);
+            let _ = DeleteDC(dc);
+        }
+        // GDI text leaves alpha untouched or zero: the sheet is opaque.
+        let pixels = px
+            .chunks_exact(4)
+            .flat_map(|p| [p[2], p[1], p[0], 255])
+            .collect();
+        out = Some(Rgba {
+            width: w,
+            height: h,
+            pixels,
+        });
+    }
+    // SAFETY: our bitmap, no longer selected anywhere.
+    let _ = unsafe { DeleteObject(HGDIOBJ(bmp.0)) };
+    out
+}
+
+/// `0` → `A`, `26` → `AA`.
+fn column_name(mut c: usize) -> String {
+    let mut s = Vec::new();
+    loop {
+        s.push(b'A' + (c % 26) as u8);
+        if c < 26 {
+            break;
+        }
+        c = c / 26 - 1;
+    }
+    s.reverse();
+    String::from_utf8_lossy(&s).into_owned()
+}
+
 #[implement(IClassFactory)]
 struct Factory;
 
 impl IClassFactory_Impl for Factory_Impl {
-    fn CreateInstance(&self, punkouter: Ref<IUnknown>, riid: *const GUID, ppvobject: *mut *mut c_void) -> windows_core::Result<()> {
+    fn CreateInstance(
+        &self,
+        punkouter: Ref<IUnknown>,
+        riid: *const GUID,
+        ppvobject: *mut *mut c_void,
+    ) -> windows_core::Result<()> {
         if ppvobject.is_null() || riid.is_null() {
             return Err(E_POINTER.into());
         }
@@ -268,7 +501,11 @@ impl IClassFactory_Impl for Factory_Impl {
 /// # Safety
 /// Called by COM with valid pointers.
 #[unsafe(no_mangle)]
-pub unsafe extern "system" fn DllGetClassObject(rclsid: *const GUID, riid: *const GUID, ppv: *mut *mut c_void) -> HRESULT {
+pub unsafe extern "system" fn DllGetClassObject(
+    rclsid: *const GUID,
+    riid: *const GUID,
+    ppv: *mut *mut c_void,
+) -> HRESULT {
     catch_unwind(|| {
         if rclsid.is_null() || riid.is_null() || ppv.is_null() {
             return E_POINTER;
@@ -289,5 +526,9 @@ pub unsafe extern "system" fn DllGetClassObject(rclsid: *const GUID, riid: *cons
 /// COM entry point: may the DLL be unloaded?
 #[unsafe(no_mangle)]
 pub extern "system" fn DllCanUnloadNow() -> HRESULT {
-    if OBJECTS.load(Ordering::SeqCst) == 0 { S_OK } else { S_FALSE }
+    if OBJECTS.load(Ordering::SeqCst) == 0 {
+        S_OK
+    } else {
+        S_FALSE
+    }
 }

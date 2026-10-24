@@ -1,9 +1,9 @@
 [package]
 name = "artcraft-thumbs"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.90"
-description = "Windows Explorer thumbnails for ArtCraft documents (.pcraft, .vectorcraft), badged with the app's icon."
+description = "Windows Explorer thumbnails for ArtCraft documents, badged with the app's icon."
 license = "MIT OR Apache-2.0"
 publish = false
 
@@ -11,12 +11,14 @@ publish = false
 [workspace]
 
 [lib]
-# cdylib: the shell extension Explorer loads; rlib: so tests and the example can use it.
+# cdylib: the shell extension Explorer loads; rlib: so tests can use it.
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 flate2 = "1"
-png = "0.18"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "bmp"] }
+# PDF pages, rendered by the same hayro PdfCraft uses (with its hardening patches, see below).
+hayro = "0.7.1"
 
 [target.'cfg(windows)'.dependencies]
 windows-core = "0.62"
@@ -29,6 +31,14 @@ windows = { version = "0.62", features = [
   "Win32_UI_Shell_PropertiesSystem",
   "Win32_UI_WindowsAndMessaging",
 ] }
+
+# PdfCraft's patched hayro (apps/pdfcraft/vendor/README.md): caps that keep hostile PDFs from
+# hanging or exhausting memory, which a thumbnail handler needs as much as the app.
+[patch.crates-io]
+hayro = { path = "../../apps/pdfcraft/vendor/hayro" }
+hayro-interpret = { path = "../../apps/pdfcraft/vendor/hayro-interpret" }
+hayro-syntax = { path = "../../apps/pdfcraft/vendor/hayro-syntax" }
+hayro-jbig2 = { path = "../../apps/pdfcraft/vendor/hayro-jbig2" }
 
 [profile.release]
 opt-level = 3
