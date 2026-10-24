@@ -5250,3 +5250,23 @@ fn exported_page_images_draw_headers_at_full_strength() {
     assert!(darkest < 60, "header drawn dimmed: darkest pixel {darkest}");
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// A saved Word package carries a thumbnail of its first page for file browsers; an encrypted
+/// one doesn't (it would show the content).
+#[test]
+fn saved_word_packages_carry_a_first_page_thumbnail() {
+    let dir = std::env::temp_dir().join(format!("wc-thumb-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let mut s = s();
+    run(&mut s, "text.insert", json!({"text": "Thumbnail"}));
+    let plain = dir.join("plain.docx");
+    run(&mut s, "file.save", json!({"path": plain.to_string_lossy()}));
+    let bytes = std::fs::read(&plain).unwrap();
+    let has = |b: &[u8]| b.windows(22).any(|w| w == b"docProps/thumbnail.png");
+    assert!(has(&bytes));
+    assert!(crate::io::open_path(&plain).is_ok());
+    let locked = dir.join("locked.docx");
+    run(&mut s, "file.save", json!({"path": locked.to_string_lossy(), "password": "synthetic-test-password"}));
+    assert!(!has(&std::fs::read(&locked).unwrap()));
+    std::fs::remove_dir_all(dir).ok();
+}

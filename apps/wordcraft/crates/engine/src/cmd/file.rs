@@ -245,13 +245,31 @@ fn save(s: &mut Session, v: &Value) -> CmdResult {
     }
     s.stamp_save();
     let password = s.password.as_ref().map(crate::io::Password::as_str);
-    crate::io::save_path_with(&path, &s.doc, password, &opts).map_err(CmdError::Failed)?;
+    let thumbnail = if password.is_none() && crate::io::is_word_package(&ext) { first_page_thumbnail(s) } else { None };
+    crate::io::save_path_with_thumbnail(&path, &s.doc, password, &opts, thumbnail.as_deref()).map_err(CmdError::Failed)?;
     let encrypted = password.is_some() && crate::io::can_encrypt(&path.to_string_lossy());
     if ["docx", "docm", "dotx", "dotm", "odt", "rtf", "json", "xml"].contains(&ext.as_str()) {
         s.path = Some(path.clone());
         s.dirty = false;
     }
     Ok(json!({"saved": true, "path": path.to_string_lossy(), "encrypted": encrypted}))
+}
+
+/// Most pixels on the longer side of the thumbnail a saved Word package carries.
+const THUMBNAIL_MAX: f32 = 256.0;
+
+/// The first printed page as a PNG of at most [`THUMBNAIL_MAX`] pixels on its longer side, for
+/// file browsers (`None` when there is no page to show).
+fn first_page_thumbnail(s: &Session) -> Option<Vec<u8>> {
+    let l = s.export_layout_with(false);
+    let pg = l.pages.first()?;
+    let longest = pg.w.max(pg.h.min(1e6));
+    if !(longest.is_finite() && longest > 0.0) {
+        return None;
+    }
+    let mut opts = wordcraft_render::RenderOptions::default();
+    opts.display.dim_header = false;
+    Some(wordcraft_render::render_page(&s.doc, pg, THUMBNAIL_MAX / longest, &opts).to_png())
 }
 
 /// Does `path` hold a Word 2003 XML Document already (so a plain save keeps that format)?

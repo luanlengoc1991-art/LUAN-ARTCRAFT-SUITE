@@ -440,6 +440,25 @@ pub fn save_path_with(path: &std::path::Path, _doc: &Document, _password: Option
     Err(format!("{}: files are saved through the browser on the web", path.display()))
 }
 
+/// [`save_path_with`], storing `thumbnail` (PNG) as the package thumbnail file browsers show
+/// when the file is an unencrypted Word package (an encrypted one must not show its content).
+pub fn save_path_with_thumbnail(
+    path: &std::path::Path,
+    doc: &Document,
+    password: Option<&str>,
+    opts: &ExportOptions,
+    thumbnail: Option<&[u8]>,
+) -> Result<(), String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    if let (Some(png), None, Some(flavor)) = (thumbnail, password, wordcraft_docx::Flavor::from_ext(&ext_of(&path.to_string_lossy()))) {
+        crate::file_access::check_write(&path.to_string_lossy())?;
+        let bytes = wordcraft_docx::write_as_with_thumbnail(doc, flavor, png).map_err(|e| e.to_string())?;
+        return safe_save::write(path, &bytes).map_err(|e| format!("{}: {e}", path.display()));
+    }
+    let _ = thumbnail; // Only Word packages carry one.
+    save_path_with(path, doc, password, opts)
+}
+
 /// Decode text bytes: UTF-8 (with or without BOM), UTF-16 LE/BE (BOM or sniffed), else
 /// Windows-1252 (see [`wordcraft_formats::txt::decode`]).
 pub fn decode_text(b: &[u8]) -> String {
