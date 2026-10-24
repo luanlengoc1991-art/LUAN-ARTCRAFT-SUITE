@@ -686,3 +686,27 @@ fn reopening_a_project_restores_its_active_comp() {
         o.insert("openComps".into(), open);
     }
 }
+
+/// A saved project starts with a preview of the active comp for file browsers; opening ignores
+/// it, and an XML copy has none.
+#[test]
+fn saved_project_starts_with_a_preview() {
+    let dir = std::env::temp_dir().join(format!("ec-preview-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let mut s = demo();
+    let path = dir.join("p.ecproj");
+    s.execute("file.saveAs", json!({"path": path.to_string_lossy()})).unwrap();
+    let text = std::fs::read_to_string(&path).unwrap();
+    assert!(text.starts_with("{\n  \"preview\": {\"mime\": \"image/png\", \"data\": \""), "{}", &text[..80]);
+    let v: serde_json::Value = serde_json::from_str(&text).unwrap();
+    let png = effectcraft_track::roto::rle::base64_decode(v["preview"]["data"].as_str().unwrap()).unwrap();
+    let img = image::load_from_memory(&png).unwrap();
+    assert_eq!(img.width().max(img.height()), 256);
+    let mut o = Session::default();
+    o.execute("file.open", json!({"path": path.to_string_lossy()})).unwrap();
+    assert_eq!(o.project, s.project);
+    let xml = dir.join("p.ecprojx");
+    s.execute("file.saveAs", json!({"path": xml.to_string_lossy()})).unwrap();
+    assert!(!std::fs::read_to_string(&xml).unwrap().contains("image/png"));
+    std::fs::remove_dir_all(dir).ok();
+}

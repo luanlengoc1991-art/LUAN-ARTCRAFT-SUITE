@@ -102,8 +102,27 @@ pub(crate) fn file_text(s: &Session, path: &str) -> Result<String> {
     if crate::xml_project::is_xml_path(path) { crate::xml_project::to_xml(&json).map_err(EngineError::Other) } else { Ok(json) }
 }
 
+/// Most pixels on the longer side of the preview a project file carries.
+const PROJECT_PREVIEW_MAX: u32 = 256;
+
+/// The `"preview"` member a saved `.ecproj` starts with, for file browsers: the active comp's
+/// frame at its current time, at most [`PROJECT_PREVIEW_MAX`] pixels on its longer side. `None`
+/// when nothing renders (no comp); the project still saves. Readers ignore the member.
+fn preview_member(s: &Session) -> Option<String> {
+    let comp = s.resolve_comp(None).ok()?;
+    let (w, h, rgba) = s.render_rgba8_alpha(comp, s.time(), PROJECT_PREVIEW_MAX, false).ok()?;
+    let png = super::comp_more::encode_png(&rgba, w, h).ok()?;
+    Some(format!("\n  \"preview\": {{\"mime\": \"image/png\", \"data\": \"{}\"}},", effectcraft_track::roto::rle::base64_encode(&png)))
+}
+
 fn save_to(s: &mut Session, path: &str) -> Result<Value> {
-    let json = file_text(s, path)?;
+    let mut json = file_text(s, path)?;
+    if !crate::xml_project::is_xml_path(path)
+        && json.starts_with('{')
+        && let Some(member) = preview_member(s)
+    {
+        json.insert_str(1, &member);
+    }
     s.services.write_file(path, json.as_bytes()).map_err(|e| EngineError::Other(format!("cannot write {path}: {e}")))?;
     s.path = Some(path.to_string());
     s.mark_saved();
