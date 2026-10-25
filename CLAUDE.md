@@ -101,6 +101,10 @@ builds/             local build output (git-ignored)
 10. **Publish every change.** The owner's GitHub is `origin` =
    https://github.com/luanlengoc1991-art/LUAN-ARTCRAFT-SUITE (public). After committing a change
    on `main` (tests/build checked), run `git push origin main`. Normal fast-forward pushes only.
+   This is mandatory and needs no confirmation: a change is done only when it is pushed, its
+   GitHub workflows (Release, artcraft-thumbs, artcraft-mcp) have finished, and the owner's
+   machine has the new versions (launcher auto-update; tools through their install scripts).
+   Then report the versions and any CI failure (say whether it was already failing before).
 11. **Build scope.** The owner builds 8 apps: photocraft, vectorcraft, filmcraft, pdfcraft,
    effectcraft, wordcraft, cadcraft, gridcraft. lightcraft, designcraft, figcraft, soundcraft and
    deckcraft stay in the repo (source kept, upstream-synced) but are not built unless asked.
