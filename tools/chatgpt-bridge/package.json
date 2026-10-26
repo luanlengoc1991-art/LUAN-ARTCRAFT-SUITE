@@ -1,0 +1,18 @@
+{
+  "name": "artcraft-chatgpt",
+  "productName": "ArtCraft ChatGPT",
+  "version": "0.1.0",
+  "description": "Signed-in chatgpt.com in a window, reachable from PhotoCraft on 127.0.0.1: requests use the ChatGPT plan, no API key.",
+  "main": "main.js",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/lib.test.js",
+    "package": "electron-packager . \"ArtCraft ChatGPT\" --platform=win32 --arch=x64 --out=out --overwrite --ignore=^/out --ignore=^/test"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "44.9.3"
+  }
+}

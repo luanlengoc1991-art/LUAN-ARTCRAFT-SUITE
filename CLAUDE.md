@@ -160,6 +160,18 @@ workspace; run `cargo test` there. Pushing a change to it publishes a release th
 bump `version` in its Cargo.toml for a new release. `scripts/install-mcp.ps1` installs and
 registers it with Claude Code and Cursor.
 
+## ChatGPT in PhotoCraft
+
+`tools/chatgpt-bridge` (owner-requested) is **ArtCraft ChatGPT**, a separate Electron app:
+chatgpt.com in its own window, signed in with the owner's ChatGPT account (plan usage, no API
+key), on 127.0.0.1 with a token (`%APPDATA%\ArtCraft\chatgpt-bridge.json`). PhotoCraft's AI / MCP
+Command Center has the agent "ChatGPT (ArtCraft ChatGPT)" (`crates/ui-egui/src/chatgpt_web.rs`):
+it sends the flattened document and the request, and places ChatGPT's image as a new layer.
+PhotoCraft stays native (it only starts the app and talks HTTP to it). The page is driven through
+its DOM (selectors at the top of the page section in `main.js`): when chatgpt.com changes, update
+them there. `npm test` there; `scripts/install-chatgpt-bridge.ps1` builds and installs it to
+`%LOCALAPPDATA%\Programs\ArtCraft ChatGPT\`.
+
 ## Explorer thumbnails
 
 `tools/artcraft-thumbs` (owner-requested) is a Windows shell thumbnail provider DLL: Explorer
