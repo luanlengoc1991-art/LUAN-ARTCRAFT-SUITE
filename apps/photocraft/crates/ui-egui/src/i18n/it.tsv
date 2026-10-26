@@ -4142,3 +4142,11 @@ navigator	Zoom	Zoom
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Il limite di utilizzo IA del tuo piano Claude è stato raggiunto. L'app continua a funzionare; le richieste IA funzioneranno di nuovo quando il limite si azzera.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Fatto direttamente, senza IA.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Usa il limite del tuo piano ChatGPT, senza chiave API.
+	Open ChatGPT window	Apri la finestra di ChatGPT
+	Sent to ChatGPT. Images take one to three minutes.	Inviato a ChatGPT. Le immagini richiedono da uno a tre minuti.
+	ChatGPT's image was added as a new layer.	L'immagine di ChatGPT è stata aggiunta come nuovo livello.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT non è installato. Esegui lo script install-chatgpt-bridge.ps1 di LUAN-ARTCRAFT-SUITE.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Accedi a ChatGPT nella finestra di ArtCraft ChatGPT, poi invia di nuovo.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Il limite del tuo piano ChatGPT è stato raggiunto per ora. L'app continua a funzionare; ChatGPT tornerà disponibile quando il limite si azzera.

@@ -3939,3 +3939,11 @@ curves	Smooth	Vloeiend maken
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	De AI-limiet van je Claude-abonnement is bereikt. De app blijft werken; AI-verzoeken werken weer zodra de limiet wordt vernieuwd.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Direct uitgevoerd, zonder AI.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Gebruikt het tegoed van je ChatGPT-abonnement, geen API-sleutel.
+	Open ChatGPT window	ChatGPT-venster openen
+	Sent to ChatGPT. Images take one to three minutes.	Naar ChatGPT gestuurd. Afbeeldingen duren één tot drie minuten.
+	ChatGPT's image was added as a new layer.	De afbeelding van ChatGPT is als nieuwe laag toegevoegd.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT is niet geïnstalleerd. Voer het script install-chatgpt-bridge.ps1 uit LUAN-ARTCRAFT-SUITE uit.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Meld je aan bij ChatGPT in het venster ArtCraft ChatGPT en verstuur opnieuw.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	De limiet van je ChatGPT-abonnement is voorlopig bereikt. De app blijft werken; ChatGPT werkt weer zodra de limiet wordt gereset.

@@ -3666,3 +3666,11 @@ curves	Smooth	Làm mượt
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Đã hết hạn mức AI của gói Claude. App vẫn dùng bình thường; AI sẽ dùng lại được khi hạn mức được làm mới.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Đã làm trực tiếp, không dùng AI.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Dùng hạn mức gói ChatGPT của bạn, không cần API key.
+	Open ChatGPT window	Mở cửa sổ ChatGPT
+	Sent to ChatGPT. Images take one to three minutes.	Đã gửi sang ChatGPT. Tạo ảnh mất khoảng một đến ba phút.
+	ChatGPT's image was added as a new layer.	Ảnh của ChatGPT đã được thêm thành layer mới.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	Chưa cài ArtCraft ChatGPT. Hãy chạy script install-chatgpt-bridge.ps1 trong LUAN-ARTCRAFT-SUITE.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Hãy đăng nhập ChatGPT trong cửa sổ ArtCraft ChatGPT rồi gửi lại.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Gói ChatGPT của bạn đã hết hạn mức tạm thời. App vẫn dùng bình thường; ChatGPT sẽ dùng lại được khi hạn mức được làm mới.

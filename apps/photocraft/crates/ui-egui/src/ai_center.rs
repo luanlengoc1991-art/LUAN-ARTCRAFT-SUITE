@@ -64,9 +64,13 @@ mod desktop {
         Claude,
         Codex,
         Cursor,
+        /// ChatGPT's website signed in with the user's account (ArtCraft ChatGPT, `chatgpt_web`):
+        /// the image goes there and ChatGPT's image comes back as a layer.
+        ChatGptWeb,
     }
 
     impl Agent {
+        /// The agents found by their command line on PATH.
         const ALL: [Agent; 3] = [Agent::Claude, Agent::Codex, Agent::Cursor];
 
         fn label(self) -> &'static str {
@@ -74,6 +78,7 @@ mod desktop {
                 Agent::Claude => "Claude Code",
                 Agent::Codex => "ChatGPT (Codex CLI)",
                 Agent::Cursor => "Cursor Agent",
+                Agent::ChatGptWeb => "ChatGPT (ArtCraft ChatGPT)",
             }
         }
 
@@ -82,6 +87,7 @@ mod desktop {
                 Agent::Claude => "claude",
                 Agent::Codex => "codex",
                 Agent::Cursor => "cursor-agent",
+                Agent::ChatGptWeb => "ArtCraft ChatGPT",
             }
         }
     }
@@ -183,6 +189,12 @@ mod desktop {
         base: Option<(usize, usize)>,
     }
 
+    /// A request waiting for ChatGPT (ArtCraft ChatGPT).
+    struct WebRun {
+        rx: Receiver<Result<crate::chatgpt_web::Reply, crate::chatgpt_web::Failure>>,
+        base: Option<(usize, usize)>,
+    }
+
     struct Review {
         index: usize,
         steps: usize,
@@ -226,6 +238,7 @@ mod desktop {
         prompt: String,
         transcript: Vec<Line>,
         run: Option<Run>,
+        web: Option<WebRun>,
         review: Option<Review>,
         session: Option<String>,
         chat_id: Option<u64>,
@@ -339,6 +352,13 @@ mod desktop {
             } else {
                 ctx.request_repaint_after(Duration::from_millis(200));
             }
+        }
+        if let Some(r) = s.web.as_ref().and_then(|w| w.rx.try_recv().ok()) {
+            let base = s.web.take().and_then(|w| w.base);
+            web_done(app, s, r, base);
+            save_current(s);
+        } else if s.web.is_some() {
+            ctx.request_repaint_after(Duration::from_millis(500));
         }
         if let Some(rx) = &s.tools_rx
             && let Ok(r) = rx.try_recv()
@@ -486,6 +506,17 @@ mod desktop {
             if s.agent == Some(Agent::Claude) {
                 account_row(s, ui);
             }
+            if s.agent == Some(Agent::ChatGptWeb) {
+                ui.horizontal_wrapped(|ui| {
+                    ui.label(RichText::new(tl!("Uses your ChatGPT plan's usage, no API key.")).small());
+                    if ui.small_button(tl!("Open ChatGPT window")).clicked() {
+                        match crate::chatgpt_web::open_window() {
+                            Ok(()) => s.log("opened ArtCraft ChatGPT"),
+                            Err(e) => s.log(format!("ArtCraft ChatGPT: {e:?}")),
+                        }
+                    }
+                });
+            }
         }
         chat_bar(s, ui);
         // A fixed-height transcript that scrolls, so the input below always stays in view.
@@ -510,7 +541,7 @@ mod desktop {
                 }
             });
         }
-        let running = s.run.is_some();
+        let running = s.run.is_some() || s.web.is_some();
         ui.add(
             egui::TextEdit::multiline(&mut s.prompt)
                 .hint_text(tl!("Describe what to do, e.g. Remove the background of this photo"))
@@ -520,11 +551,15 @@ mod desktop {
         ui.horizontal(|ui| {
             if running {
                 ui.spinner();
-                if ui.button(tl!("Stop")).clicked()
-                    && let Some(run) = s.run.as_mut()
-                {
-                    let _ = run.child.kill();
-                    s.log("agent stopped");
+                if ui.button(tl!("Stop")).clicked() {
+                    if let Some(run) = s.run.as_mut() {
+                        let _ = run.child.kill();
+                        s.log("agent stopped");
+                    }
+                    // ChatGPT's window finishes on its own; its answer is no longer awaited.
+                    if s.web.take().is_some() {
+                        s.log("stopped waiting for ChatGPT");
+                    }
                 }
             } else {
                 // Without an agent, commands the app does itself still run.
@@ -569,7 +604,7 @@ mod desktop {
     }
 
     fn chat_bar(s: &mut State, ui: &mut Ui) {
-        let running = s.run.is_some();
+        let running = s.run.is_some() || s.web.is_some();
         ui.horizontal(|ui| {
             if ui.add_enabled(!running, egui::Button::new(tl!("New chat"))).clicked() {
                 save_current(s);
@@ -701,6 +736,10 @@ mod desktop {
             s.prompt.clear();
             return;
         };
+        if agent == Agent::ChatGptWeb {
+            web_send(app, s, ctx, prompt);
+            return;
+        }
         let Some(exe) = s.agents.as_ref().and_then(|v| v.iter().find(|(a, _)| *a == agent)).map(|(_, p)| p.clone()) else { return };
         s.transcript.push(Line::User(prompt.clone()));
         s.review = None;
@@ -745,6 +784,70 @@ mod desktop {
         std::thread::spawn(move || read_agent(agent, stdout, stderr, &tx, &ctx));
         s.run = Some(Run { child, rx, base });
         s.prompt.clear();
+    }
+
+    /// ChatGPT (ArtCraft ChatGPT): the flattened document and the request go to the signed-in
+    /// ChatGPT window; its image comes back as a layer (see `poll`).
+    fn web_send(app: &mut PhotocraftApp, s: &mut State, ctx: &Context, prompt: String) {
+        s.transcript.push(Line::User(prompt.clone()));
+        s.review = None;
+        s.prompt.clear();
+        let png = match crate::chatgpt_web::snapshot(app) {
+            Ok(p) => p,
+            Err(e) => {
+                s.transcript.push(Line::Error(format!("Couldn't read the document: {e}")));
+                return;
+            }
+        };
+        s.transcript.push(Line::Info(tl!("Sent to ChatGPT. Images take one to three minutes.").to_string()));
+        s.log(format!("sent to ArtCraft ChatGPT: {prompt}"));
+        let base = app.session.active_index().zip(app.session.active().map(|d| d.history.past_len()));
+        s.web = Some(WebRun { rx: crate::chatgpt_web::start(prompt, png, ctx), base });
+    }
+
+    fn web_done(app: &mut PhotocraftApp, s: &mut State, result: Result<crate::chatgpt_web::Reply, crate::chatgpt_web::Failure>, base: Option<(usize, usize)>) {
+        use crate::chatgpt_web::Failure;
+        match result {
+            Ok(reply) => {
+                if !reply.text.is_empty() {
+                    s.transcript.push(Line::Ai(reply.text.clone()));
+                }
+                match crate::chatgpt_web::place(app, &reply) {
+                    Ok(()) => {
+                        s.transcript.push(Line::Info(format!("✓ {}", tl!("ChatGPT's image was added as a new layer."))));
+                        s.log("placed ChatGPT's image");
+                    }
+                    Err(e) => s.transcript.push(Line::Error(e)),
+                }
+            }
+            Err(Failure::NotInstalled) => {
+                // On one line: the translation tests read each translated literal as written.
+                #[rustfmt::skip]
+                let missing = tl!("ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.");
+                s.transcript.push(Line::Error(missing.to_string()));
+            }
+            Err(Failure::Login) => s.transcript.push(Line::Error(tl!("Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.").to_string())),
+            Err(Failure::Limit(t)) => {
+                // On one line: the translation tests read each translated literal as written.
+                #[rustfmt::skip]
+                let limit = tl!("Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.");
+                s.transcript.push(Line::Error(limit.to_string()));
+                s.transcript.push(Line::Info(t));
+            }
+            Err(Failure::Other(e)) => {
+                s.log(format!("ArtCraft ChatGPT failed: {e}"));
+                s.transcript.push(Line::Error(e));
+            }
+        }
+        if let Some((index, depth)) = base
+            && app.session.active_index() == Some(index)
+            && let Some(d) = app.session.active()
+        {
+            let steps = d.history.past_len().saturating_sub(depth);
+            if steps > 0 {
+                s.review = Some(Review { index, steps });
+            }
+        }
     }
 
     fn system_prompt(port: u16) -> String {
@@ -795,6 +898,8 @@ mod desktop {
                 format!("{sys}\n\n{prompt}"),
             ],
             Agent::Cursor => vec!["-p".into(), format!("{sys}\n\n{prompt}"), "--output-format".into(), "text".into()],
+            // Not a command line: `web_send` talks to ArtCraft ChatGPT.
+            Agent::ChatGptWeb => vec![],
         };
         (exe.to_path_buf(), args)
     }
@@ -908,7 +1013,7 @@ mod desktop {
                     vec![]
                 }
             }
-            Agent::Cursor => vec![Line::Ai(raw.into())],
+            Agent::Cursor | Agent::ChatGptWeb => vec![Line::Ai(raw.into())],
         }
     }
 
@@ -1354,7 +1459,7 @@ mod desktop {
     }
 
     fn find_agents() -> Vec<(Agent, PathBuf)> {
-        Agent::ALL.into_iter().filter_map(|a| find_program(a).map(|p| (a, p))).collect()
+        Agent::ALL.into_iter().filter_map(|a| find_program(a).map(|p| (a, p))).chain(crate::chatgpt_web::exe_path().map(|p| (Agent::ChatGptWeb, p))).collect()
     }
 
     fn registered(path: &Path) -> Option<bool> {

@@ -3168,3 +3168,11 @@ curves	Smooth	Haluskan
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Batas pemakaian AI paket Claude Anda telah habis. Aplikasi tetap berjalan; permintaan AI berfungsi lagi saat batas diatur ulang.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Langsung dikerjakan, tanpa AI.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Memakai kuota paket ChatGPT Anda, tanpa kunci API.
+	Open ChatGPT window	Buka jendela ChatGPT
+	Sent to ChatGPT. Images take one to three minutes.	Terkirim ke ChatGPT. Gambar butuh satu sampai tiga menit.
+	ChatGPT's image was added as a new layer.	Gambar dari ChatGPT ditambahkan sebagai layer baru.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT belum terpasang. Jalankan skrip install-chatgpt-bridge.ps1 dari LUAN-ARTCRAFT-SUITE.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Masuk ke ChatGPT di jendela ArtCraft ChatGPT, lalu kirim lagi.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Batas paket ChatGPT Anda sudah tercapai untuk saat ini. Aplikasi tetap berjalan; ChatGPT bisa dipakai lagi saat batas direset.

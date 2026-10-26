@@ -2790,3 +2790,11 @@ curves	Smooth	平滑
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	你的 Claude 套餐 AI 用量已达上限。应用可照常使用；额度重置后即可再次使用 AI。
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	已直接完成，未使用 AI。
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	使用你的 ChatGPT 套餐额度，无需 API 密钥。
+	Open ChatGPT window	打开 ChatGPT 窗口
+	Sent to ChatGPT. Images take one to three minutes.	已发送到 ChatGPT。生成图像需要一到三分钟。
+	ChatGPT's image was added as a new layer.	ChatGPT 的图像已作为新图层添加。
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	未安装 ArtCraft ChatGPT。请运行 LUAN-ARTCRAFT-SUITE 中的 install-chatgpt-bridge.ps1 脚本。
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	请在 ArtCraft ChatGPT 窗口中登录 ChatGPT，然后重新发送。
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	你的 ChatGPT 套餐额度暂时已用完。应用仍可正常使用；额度重置后即可再次使用 ChatGPT。

@@ -4100,3 +4100,11 @@ cameraRaw	Yellow	Sárga
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Elfogyott a Claude-előfizetés AI-kerete. Az alkalmazás tovább működik; az AI-kérések a keret megújulása után ismét működnek.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Közvetlenül elvégezve, AI nélkül.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	A ChatGPT-előfizetésed keretét használja, API-kulcs nélkül.
+	Open ChatGPT window	ChatGPT-ablak megnyitása
+	Sent to ChatGPT. Images take one to three minutes.	Elküldve a ChatGPT-nek. A képek egy–három percig tartanak.
+	ChatGPT's image was added as a new layer.	A ChatGPT képe új rétegként bekerült.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	Az ArtCraft ChatGPT nincs telepítve. Futtasd a LUAN-ARTCRAFT-SUITE install-chatgpt-bridge.ps1 szkriptjét.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Jelentkezz be a ChatGPT-be az ArtCraft ChatGPT ablakban, majd küldd el újra.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	A ChatGPT-előfizetésed kerete egyelőre elfogyott. Az alkalmazás tovább működik; a ChatGPT a keret megújulásakor újra működik.

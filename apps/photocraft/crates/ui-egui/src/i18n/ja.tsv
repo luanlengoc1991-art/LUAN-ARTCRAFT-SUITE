@@ -3856,3 +3856,11 @@ curves	Smooth	スムーズ
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Claude プランの AI 利用上限に達しました。アプリはそのまま使えます。上限がリセットされると AI のリクエストが再び使えます。
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	AI を使わずに直接実行しました。
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	ChatGPT プランの利用枠を使います。API キーは不要です。
+	Open ChatGPT window	ChatGPT ウィンドウを開く
+	Sent to ChatGPT. Images take one to three minutes.	ChatGPT に送信しました。画像の生成には 1〜3 分かかります。
+	ChatGPT's image was added as a new layer.	ChatGPT の画像を新しいレイヤーとして追加しました。
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT がインストールされていません。LUAN-ARTCRAFT-SUITE の install-chatgpt-bridge.ps1 スクリプトを実行してください。
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	ArtCraft ChatGPT ウィンドウで ChatGPT にサインインしてから、もう一度送信してください。
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	ChatGPT プランの利用上限に達しました。アプリはそのまま使えます。上限がリセットされると ChatGPT を再び使えます。

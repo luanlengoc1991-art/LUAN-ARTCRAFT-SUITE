@@ -53,6 +53,9 @@ pub mod cas_transform;
 pub mod channel_options_ui;
 pub mod channel_view;
 pub mod channels_panel;
+/// LUAN-ARTCRAFT-SUITE: ChatGPT (signed-in account) for the AI / MCP Command Center.
+#[cfg(not(target_arch = "wasm32"))]
+mod chatgpt_web;
 pub mod chrome_ui;
 pub mod cjk_fonts;
 pub mod clip_line_ui;

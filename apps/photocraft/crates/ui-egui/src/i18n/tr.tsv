@@ -3911,3 +3911,11 @@ cameraData	Lens	Lens
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Claude planınızın yapay zekâ kullanım sınırına ulaşıldı. Uygulama çalışmaya devam eder; sınır sıfırlanınca yapay zekâ istekleri yeniden çalışır.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Doğrudan yapıldı, yapay zekâ kullanılmadı.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	ChatGPT planınızın kullanım hakkını kullanır, API anahtarı gerekmez.
+	Open ChatGPT window	ChatGPT penceresini aç
+	Sent to ChatGPT. Images take one to three minutes.	ChatGPT'ye gönderildi. Görseller bir ila üç dakika sürer.
+	ChatGPT's image was added as a new layer.	ChatGPT'nin görseli yeni bir katman olarak eklendi.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT yüklü değil. LUAN-ARTCRAFT-SUITE içindeki install-chatgpt-bridge.ps1 betiğini çalıştırın.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	ArtCraft ChatGPT penceresinde ChatGPT'ye giriş yapın, sonra yeniden gönderin.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	ChatGPT planınızın sınırına şimdilik ulaşıldı. Uygulama çalışmaya devam eder; sınır sıfırlanınca ChatGPT yeniden çalışır.

@@ -4254,3 +4254,11 @@ shape	Appearance	Izgled
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Dostignuto je ograničenje AI potrošnje vašeg Claude plana. Aplikacija i dalje radi; AI zahtevi će ponovo raditi kada se ograničenje obnovi.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Urađeno direktno, bez AI.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Користи лимит вашег ChatGPT плана, без API кључа.
+	Open ChatGPT window	Отвори ChatGPT прозор
+	Sent to ChatGPT. Images take one to three minutes.	Послато у ChatGPT. Слике трају од једног до три минута.
+	ChatGPT's image was added as a new layer.	Слика из ChatGPT-а је додата као нови слој.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT није инсталиран. Покрените скрипту install-chatgpt-bridge.ps1 из LUAN-ARTCRAFT-SUITE.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Пријавите се у ChatGPT у прозору ArtCraft ChatGPT, па пошаљите поново.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Лимит вашег ChatGPT плана је за сада потрошен. Апликација ради и даље; ChatGPT ће поново радити када се лимит обнови.

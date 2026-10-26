@@ -3878,3 +3878,11 @@ curves	Smooth	Згладити
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Ліміт ШІ вашого тарифу Claude вичерпано. Застосунок працює далі; запити до ШІ знову працюватимуть після оновлення ліміту.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Виконано напряму, без ШІ.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Використовує ліміт вашого тарифу ChatGPT, без ключа API.
+	Open ChatGPT window	Відкрити вікно ChatGPT
+	Sent to ChatGPT. Images take one to three minutes.	Надіслано в ChatGPT. Зображення займають від однієї до трьох хвилин.
+	ChatGPT's image was added as a new layer.	Зображення ChatGPT додано новим шаром.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT не встановлено. Запустіть скрипт install-chatgpt-bridge.ps1 з LUAN-ARTCRAFT-SUITE.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Увійдіть у ChatGPT у вікні ArtCraft ChatGPT і надішліть знову.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Ліміт вашого тарифу ChatGPT поки вичерпано. Застосунок працює далі; ChatGPT знову працюватиме після скидання ліміту.

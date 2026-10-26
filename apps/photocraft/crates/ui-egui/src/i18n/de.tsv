@@ -3178,3 +3178,11 @@ curves	Smooth	Glätten
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Das KI-Kontingent deines Claude-Tarifs ist aufgebraucht. Die App funktioniert weiter; KI-Anfragen gehen wieder, sobald das Kontingent zurückgesetzt wird.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Direkt ausgeführt, ohne KI.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Nutzt das Kontingent deines ChatGPT-Tarifs, keinen API-Schlüssel.
+	Open ChatGPT window	ChatGPT-Fenster öffnen
+	Sent to ChatGPT. Images take one to three minutes.	An ChatGPT gesendet. Bilder dauern ein bis drei Minuten.
+	ChatGPT's image was added as a new layer.	Das Bild von ChatGPT wurde als neue Ebene hinzugefügt.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT ist nicht installiert. Führe das Skript install-chatgpt-bridge.ps1 aus LUAN-ARTCRAFT-SUITE aus.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Melde dich im Fenster ArtCraft ChatGPT bei ChatGPT an und sende erneut.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Das Kontingent deines ChatGPT-Tarifs ist vorerst aufgebraucht. Die App funktioniert weiter; ChatGPT geht wieder, sobald das Kontingent zurückgesetzt wird.

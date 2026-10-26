@@ -3181,3 +3181,11 @@ curves	Smooth	Lisser
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	La limite d'utilisation IA de votre forfait Claude est atteinte. L'application continue de fonctionner ; les requêtes IA refonctionneront quand la limite sera réinitialisée.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Fait directement, sans IA.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Utilise le quota de votre forfait ChatGPT, sans clé API.
+	Open ChatGPT window	Ouvrir la fenêtre ChatGPT
+	Sent to ChatGPT. Images take one to three minutes.	Envoyé à ChatGPT. Les images prennent une à trois minutes.
+	ChatGPT's image was added as a new layer.	L'image de ChatGPT a été ajoutée comme nouveau calque.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT n'est pas installé. Exécutez le script install-chatgpt-bridge.ps1 de LUAN-ARTCRAFT-SUITE.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Connectez-vous à ChatGPT dans la fenêtre ArtCraft ChatGPT, puis renvoyez.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Le quota de votre forfait ChatGPT est atteint pour l'instant. L'application continue de fonctionner ; ChatGPT refonctionnera quand le quota sera réinitialisé.

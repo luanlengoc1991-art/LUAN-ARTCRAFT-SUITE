@@ -3877,3 +3877,11 @@ curves	Smooth	Εξομάλυνση
 	Your Claude plan's AI usage limit is reached. The app keeps working; AI requests work again when the limit resets.	Εξαντλήθηκε το όριο AI του προγράμματος Claude σας. Η εφαρμογή συνεχίζει να λειτουργεί· τα αιτήματα AI θα λειτουργήσουν ξανά όταν ανανεωθεί το όριο.
 # LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (no AI)
 	Done directly, no AI used.	Έγινε απευθείας, χωρίς AI.
+# LUAN-ARTCRAFT-SUITE: AI / MCP Command Center (ChatGPT through ArtCraft ChatGPT)
+	Uses your ChatGPT plan's usage, no API key.	Χρησιμοποιεί το όριο του προγράμματος ChatGPT σας, χωρίς κλειδί API.
+	Open ChatGPT window	Άνοιγμα παραθύρου ChatGPT
+	Sent to ChatGPT. Images take one to three minutes.	Στάλθηκε στο ChatGPT. Οι εικόνες χρειάζονται ένα έως τρία λεπτά.
+	ChatGPT's image was added as a new layer.	Η εικόνα του ChatGPT προστέθηκε ως νέο επίπεδο.
+	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	Το ArtCraft ChatGPT δεν είναι εγκατεστημένο. Εκτελέστε το σενάριο install-chatgpt-bridge.ps1 από το LUAN-ARTCRAFT-SUITE.
+	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	Συνδεθείτε στο ChatGPT στο παράθυρο ArtCraft ChatGPT και στείλτε ξανά.
+	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	Το όριο του προγράμματος ChatGPT σας εξαντλήθηκε προς το παρόν. Η εφαρμογή συνεχίζει να λειτουργεί· το ChatGPT θα λειτουργήσει ξανά όταν μηδενιστεί το όριο.
