@@ -30,7 +30,8 @@ const SEND_READY = `(() => { const b = ${SEND}; return !!(b && !b.disabled && b.
 const USER = `[data-message-author-role="user"], [data-message-role="user"], [data-content-search-unit-key$=":user"]`;
 const ASSISTANT = `[data-message-author-role="assistant"], [data-message-role="assistant"], [data-content-search-unit-key$=":assistant"]`;
 
-const SENT = `document.querySelectorAll('${USER}').length > 0`;
+/** How many requests the conversation shows. */
+const USER_COUNT = `document.querySelectorAll('${USER}').length`;
 
 const LOGGED_IN = `fetch('/api/auth/session', {credentials: 'include'}).then(r => r.ok ? r.json() : {}).then(s => !!(s && s.user)).catch(() => false)`;
 
@@ -45,7 +46,11 @@ const STATE = `(() => {
   const theirs = (i) => { const t = i.closest('article, li, [data-testid^="conversation-turn"], [data-content-search-unit-key]'); return !i.closest('form') && !(t && (t.matches('${USER}') || t.querySelector('${USER}'))); };
   const attachment = (i) => /user attachment|uploaded image/i.test(i.alt || '');
   const generated = (i) => /generated image|ảnh được tạo|hình ảnh được tạo/i.test(i.alt || '');
-  const imgs = [...document.querySelectorAll('img')].filter(i => after(i) && theirs(i) && !attachment(i) && i.complete && i.naturalWidth >= 256 && i.naturalHeight >= 256);
+  const imgs = [...document.querySelectorAll('img')].filter(i => after(i) && theirs(i) && !attachment(i) && !i.closest('nav, aside, header') && i.complete && i.naturalWidth >= 256 && i.naturalHeight >= 256);
+  // Every image of the answer, in page order, once each (a gallery shows one twice).
+  const srcs = [...new Set(imgs.filter(i => generated(i) || i.naturalWidth >= 512).map(i => i.currentSrc || i.src))];
+  // Files the answer made (Python): a "Download file" button each.
+  const files = [...document.querySelectorAll('button')].filter(b => after(b) && !b.closest('nav, aside, header, form') && /^(download file|tải xuống tệp|tải tệp xuống|tải xuống)$/i.test((b.getAttribute('aria-label') || '').trim())).length;
   // ChatGPT's own images ("Generated image 1") last, then by size: the last one is the answer.
   imgs.sort((a, b) => (generated(a) - generated(b)) || (a.naturalWidth * a.naturalHeight - b.naturalWidth * b.naturalHeight));
   const answers = [...document.querySelectorAll('${ASSISTANT}')].filter(after);
@@ -62,10 +67,31 @@ const STATE = `(() => {
     || imgs.some(blurred);
   const best = imgs[imgs.length - 1];
   // An answer that is only an image has no assistant text block.
-  return { src: best ? best.currentSrc || best.src : '', count: imgs.length, working, answered: answers.length > 0 || imgs.some(generated), text };
+  return { src: best ? best.currentSrc || best.src : '', srcs, files, count: imgs.length, working, answered: answers.length > 0 || imgs.some(generated), text };
 })()`;
+
+/** The buttons of the last answer: "8 more" (shows the rest of its files) and "Download file". */
+const ANSWER_BUTTONS = `(() => {
+  const users = document.querySelectorAll('${USER}');
+  const last = users[users.length - 1];
+  return [...document.querySelectorAll('button')].filter(b => (!last || (last.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)) && !b.closest('nav, aside, header, form'));
+})()`;
+
+/** Shows every file of the answer ("8 more", "8 tệp khác"…); how many such buttons were pressed. */
+const EXPAND_FILES = `(() => { const bs = ${ANSWER_BUTTONS}.filter(b => /^\\s*(\\+\\s*)?\\d+\\s+(more|tệp khác|khác|nữa)\\s*$|^\\s*(xem thêm|thêm \\d+)/i.test(b.innerText || '')); bs.forEach(b => b.click()); return bs.length; })()`;
+
+const DOWNLOAD_BUTTONS = `${ANSWER_BUTTONS}.filter(b => /^(download file|tải xuống tệp|tải tệp xuống|tải xuống)$/i.test((b.getAttribute('aria-label') || '').trim()))`;
+
+/** How many "Download file" buttons the last answer has. */
+const DOWNLOAD_COUNT = `${DOWNLOAD_BUTTONS}.length`;
+
+/** Presses the n-th "Download file" button of the answer; false when there is none. */
+const clickDownload = (n) => `(() => { const b = ${DOWNLOAD_BUTTONS}[${Number(n)}]; if (!b) return false; b.scrollIntoView({block: 'center'}); b.click(); return true; })()`;
+
+/** The conversation's address, to continue it next time. */
+const CONVERSATION = `location.href.startsWith('https://chatgpt.com/c/') ? location.href.split('?')[0] : ''`;
 
 /** An image read inside the page (same-origin, signed-in), as a data: URL. */
 const readImage = (src) => `fetch(${JSON.stringify(src)}, {credentials: 'include'}).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); }).then(b => new Promise((ok, no) => { const f = new FileReader(); f.onload = () => ok(f.result); f.onerror = no; f.readAsDataURL(b); }))`;
 
-module.exports = { COMPOSER, FILE_INPUT, ATTACHED, FOCUS, SEND, SEND_READY, USER, ASSISTANT, SENT, LOGGED_IN, STATE, readImage };
+module.exports = { COMPOSER, FILE_INPUT, ATTACHED, FOCUS, SEND, SEND_READY, USER, ASSISTANT, USER_COUNT, LOGGED_IN, STATE, EXPAND_FILES, DOWNLOAD_COUNT, clickDownload, CONVERSATION, readImage };

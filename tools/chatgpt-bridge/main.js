@@ -24,6 +24,10 @@ const path = require('path');
 const lib = require('./lib');
 const chrome = require('./chrome');
 const page = require('./page');
+const answer = require('./answer');
+
+// Started by PhotoCraft: work out of sight; the window shows only to sign in.
+const background = process.argv.includes('--background');
 
 const VERSION = require('./package.json').version;
 
@@ -37,7 +41,7 @@ const state = { signedIn: null, activity: 'Sẵn sàng', error: '', browser: chr
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => showWindow());
+  app.on('second-instance', (_e, argv) => { if (!argv.includes('--background')) showWindow(); });
   app.whenReady().then(start);
 }
 
@@ -48,6 +52,7 @@ function start() {
     height: 420,
     title: 'ArtCraft ChatGPT',
     resizable: false,
+    show: !background,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, sandbox: true },
   });
   win.loadFile(path.join(__dirname, 'status.html'));
@@ -168,12 +173,14 @@ async function waitFor(tab, code, timeoutMs, what) {
   }
 }
 
-/** A fresh chatgpt.com page (a new chat), its composer ready. */
-async function navigateHome(tab) {
-  await tab.send('Page.navigate', { url: chrome.HOME });
+/** A chatgpt.com page (a new chat, or `url`'s conversation), its composer ready. */
+async function openChat(tab, url) {
+  await tab.send('Page.navigate', { url });
   await sleep(1500);
   await waitFor(tab, `!!${page.COMPOSER}`, 60000, 'the ChatGPT page');
 }
+
+const navigateHome = (tab) => openChat(tab, chrome.HOME);
 
 async function attach(tab, file) {
   const { result } = await tab.send('Runtime.evaluate', { expression: page.FILE_INPUT });
@@ -183,46 +190,23 @@ async function attach(tab, file) {
   await waitFor(tab, page.ATTACHED, 60000, 'the attached picture');
 }
 
-async function waitAnswer(tab) {
-  const end = Date.now() + 8 * 60 * 1000;
-  let lastKey = '';
-  let stableSince = Date.now();
-  for (;;) {
-    let s = null;
-    try { s = await tab.eval(page.STATE); } catch { /* navigating to the new chat's URL */ }
-    const key = s ? `${s.working}|${s.src}|${s.count}|${s.text.length}` : '';
-    if (key !== lastKey) { lastKey = key; stableSince = Date.now(); }
-    const quiet = Date.now() - stableSince;
-    // Done when nothing has changed for a while: soon after an image, longer without one
-    // (ChatGPT can stop talking before its image tool has started).
-    if (s && s.answered && !s.working && quiet > (s.src ? 5000 : 25000)) return s;
-    if (Date.now() > end) {
-      if (s && s.src) return s;
-      throw Object.assign(new Error('ChatGPT took more than 8 minutes'), { code: 'timeout' });
-    }
-    await sleep(1000);
-  }
-}
-
-async function download(tab, src) {
-  // Inside the page first: chatgpt.com's own image links need the signed-in cookies.
-  try {
-    const m = /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(await tab.eval(page.readImage(src)));
-    if (m) return { image: m[2] ? m[3] : Buffer.from(decodeURIComponent(m[3])).toString('base64'), mime: m[1] || 'image/png' };
-  } catch { /* cross-origin: fetched from here below (signed links) */ }
-  const r = await fetch(src);
-  if (!r.ok) throw new Error(`downloading the image: HTTP ${r.status}`);
-  return { image: Buffer.from(await r.arrayBuffer()).toString('base64'), mime: r.headers.get('content-type') || 'image/png' };
+/** The conversation PhotoCraft continues, when it is one of chatgpt.com's. */
+function conversationUrl(c) {
+  return typeof c === 'string' && /^https:\/\/chatgpt\.com\/c\/[\w-]+$/.test(c) ? c : null;
 }
 
 async function runJob(body) {
   busy = true;
   let file = null;
   let tab = null;
+  const dir = path.join(os.tmpdir(), `artcraft-chatgpt-${process.pid}-${Date.now()}`);
   try {
     update({ activity: 'Đang làm yêu cầu từ PhotoCraft…', error: '' });
-    tab = await chrome.Tab.open(await chrome.ensureAutomation());
-    await navigateHome(tab);
+    const port = await chrome.ensureAutomation();
+    tab = await chrome.Tab.open(port);
+    // A follow-up continues the same ChatGPT conversation, so it remembers the earlier steps.
+    const conversation = conversationUrl(body.conversation);
+    await openChat(tab, conversation || chrome.HOME);
     if (!(await tab.eval(page.LOGGED_IN))) {
       update({ signedIn: false });
       showWindow();
@@ -231,19 +215,22 @@ async function runJob(body) {
     update({ signedIn: true });
     const hasImage = typeof body.image === 'string' && body.image.length > 0;
     if (hasImage) {
-      file = path.join(os.tmpdir(), `artcraft-chatgpt-${process.pid}-${Date.now()}.png`);
+      fs.mkdirSync(dir, { recursive: true });
+      file = path.join(dir, 'photocraft-canvas.png');
       fs.writeFileSync(file, Buffer.from(body.image, 'base64'));
       await attach(tab, file);
     }
+    const size = Number(body.width) > 0 && Number(body.height) > 0 ? { width: Number(body.width), height: Number(body.height) } : null;
     await tab.eval(page.FOCUS);
-    await tab.send('Input.insertText', { text: lib.buildPrompt(body.prompt, hasImage) });
+    await tab.send('Input.insertText', { text: lib.buildPrompt(body.prompt, { hasImage, size, followUp: !!conversation }) });
     await waitFor(tab, page.SEND_READY, 180000, 'the Send button');
+    const before = await tab.eval(page.USER_COUNT);
     await sleep(300);
     await tab.eval(`${page.SEND}.click()`);
-    await waitFor(tab, page.SENT, 60000, 'the request to be sent');
-    const s = await waitAnswer(tab);
-    const got = s.src ? await download(tab, s.src) : {};
-    return lib.jobResult({ ...got, text: s.text });
+    await waitFor(tab, `${page.USER_COUNT} > ${before}`, 60000, 'the request to be sent');
+    const s = await answer.waitAnswer(tab);
+    const images = await answer.collect(port, tab, s, path.join(dir, 'files'));
+    return lib.jobResult({ images, text: s.text, conversation: await tab.eval(page.CONVERSATION) });
   } catch (e) {
     update({ error: e.message });
     throw e;
@@ -251,6 +238,6 @@ async function runJob(body) {
     busy = false;
     update({ activity: 'Sẵn sàng' });
     if (tab) tab.close();
-    if (file) fs.unlink(file, () => {});
+    fs.rm(dir, { recursive: true, force: true }, () => {});
   }
 }

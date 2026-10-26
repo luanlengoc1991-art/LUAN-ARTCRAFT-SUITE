@@ -1,7 +1,7 @@
 {
   "name": "artcraft-chatgpt",
   "productName": "ArtCraft ChatGPT",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Signed-in chatgpt.com in a window, reachable from PhotoCraft on 127.0.0.1: requests use the ChatGPT plan, no API key.",
   "main": "main.js",
   "private": true,

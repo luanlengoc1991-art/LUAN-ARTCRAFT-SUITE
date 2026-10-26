@@ -7,22 +7,29 @@ test('the info file lives under APPDATA', () => {
   assert.strictEqual(lib.infoPath({ APPDATA: 'C:/Users/a/AppData/Roaming' }).split(/[\\/]/).join('/'), 'C:/Users/a/AppData/Roaming/ArtCraft/chatgpt-bridge.json');
 });
 
-test('the user agent reads as Chrome, not Electron', () => {
-  const ua = lib.chromeUserAgent('140.0.7339.80', 'win32');
-  assert.match(ua, /Chrome\/140\.0\.0\.0/);
-  assert.doesNotMatch(ua, /Electron/);
+test('the request comes first, unchanged, then how layers come back', () => {
+  const p = lib.buildPrompt('Tách 9 đối tượng và 1 nền', { hasImage: true, size: { width: 941, height: 1672 } });
+  assert.match(p, /^Yêu cầu của tôi: Tách 9 đối tượng và 1 nền\n/);
+  assert.match(p, /941 × 1672 px/);
+  assert.match(p, /MỖI FILE THÀNH MỘT LAYER RIÊNG/);
+  assert.match(p, /KHÔNG gửi ZIP/);
+  assert.match(p, /```json/);
+  assert.match(lib.buildPrompt('một con mèo'), /tạo ảnh mới/);
+  const next = lib.buildPrompt('làm sáng cô dâu', { followUp: true });
+  assert.match(next, /^làm sáng cô dâu\n/);
+  assert.ok(next.length < 300);
 });
 
-test('an edit asks for the edited image and keeps the request', () => {
-  const p = lib.buildPrompt('Tách nền ảnh này', true);
-  assert.match(p, /attached image/);
-  assert.match(p, /transparent/);
-  assert.match(p, /Request: Tách nền ảnh này$/);
-  assert.match(lib.buildPrompt('một con mèo', false), /Create an image/);
+test('only image files come back, in their numbered order', () => {
+  assert.deepStrictEqual(lib.imageFiles(['10_hoa.png', 'layers.zip', '02_co_dau.PNG', '01_nen.png', 'note.txt', '03_x.webp', 'senturia_recombined.png']), ['01_nen.png', '02_co_dau.PNG', '03_x.webp', '10_hoa.png']);
 });
 
 test('a reply without an image tells a spent plan apart', () => {
-  assert.deepStrictEqual(lib.jobResult({ image: 'AAA', mime: 'image/webp', text: '' }), { ok: true, image: 'AAA', mime: 'image/webp', text: '' });
+  const ok = lib.jobResult({ images: [{ name: 'a.png', image: 'AAA', mime: 'image/png' }, { name: 'b.png', image: 'BBB', mime: 'image/png' }], text: 'x', conversation: 'https://chatgpt.com/c/1' });
+  assert.strictEqual(ok.ok, true);
+  assert.strictEqual(ok.images.length, 2);
+  assert.strictEqual(ok.image, 'AAA');
+  assert.strictEqual(ok.conversation, 'https://chatgpt.com/c/1');
   assert.strictEqual(lib.jobResult({ text: "You've hit the plan limit for image generation requests." }).code, 'limit');
   assert.strictEqual(lib.jobResult({ text: 'Bạn đã đạt giới hạn tạo ảnh.' }).code, 'limit');
   assert.strictEqual(lib.jobResult({ text: 'Here is a description.' }).code, 'noimage');

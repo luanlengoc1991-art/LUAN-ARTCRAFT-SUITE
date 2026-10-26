@@ -32,11 +32,18 @@ AI, as with every agent.
 - The app listens on `127.0.0.1` on a random port with a random token, written to
   `%APPDATA%\ArtCraft\chatgpt-bridge.json` (`{port, token, pid, version}`) while it runs.
 - `GET /v1/status` → `{ok, loggedIn, busy, version}`;
-  `POST /v1/image {prompt, image?: base64 PNG}` → `{ok, image, mime, text}` or
+  `POST /v1/image {prompt, image?: base64 PNG, width?, height?, conversation?}` →
+  `{ok, images: [{name, mime, image}], image, mime, text, conversation}` or
   `{ok: false, code: login|limit|noimage|timeout|…, error}`. Both need `Authorization: Bearer <token>`.
-- A request runs in that Chrome tab as a person would: a new chat, the picture attached, the
-  request typed and sent, then the image ChatGPT makes is downloaded and returned. One request at
-  a time.
+- A request runs in that Chrome tab as a person would: a new chat (or the conversation PhotoCraft
+  continues), the picture attached, the request typed and sent. The user's request goes first,
+  unchanged, followed by how PhotoCraft takes layers back (`lib.buildPrompt`: one PNG per layer,
+  canvas-sized, in place, bottom first, a JSON list of boxes). Every image of the answer is
+  returned in order: the files ChatGPT made (each "Download file", one at a time: a second click
+  cancels the first) or else the images it drew; previews of the recombined layers are left out.
+  One request at a time.
+- Started by PhotoCraft (`--background`) nothing shows: the status window stays hidden and Chrome
+  works off screen; the window shows only when ChatGPT needs signing in.
 - The page is driven through its DOM (`page.js`: `COMPOSER`, `SEND`, `USER`, `ASSISTANT`,
   `STATE`). When chatgpt.com changes its page these are what to update.
 

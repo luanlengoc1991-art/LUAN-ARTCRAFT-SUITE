@@ -51,6 +51,8 @@ function automationArgs(profile) {
     '--disable-renderer-backgrounding',
     '--disable-backgrounding-occluded-windows',
     '--window-size=1100,850',
+    // Works out of sight; the page still counts as visible, so nothing is paused.
+    '--window-position=-32000,-32000',
     HOME,
   ];
 }
@@ -123,9 +125,18 @@ class Tab {
     return tab;
   }
 
+  /** The browser itself (downloads), rather than a tab. */
+  static async browser(port) {
+    const v = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+    const b = new Tab(v.webSocketDebuggerUrl);
+    await b.ready;
+    return b;
+  }
+
   constructor(url) {
     this.id = 0;
     this.pending = new Map();
+    this.listeners = [];
     this.ws = new WebSocket(url);
     this.ready = new Promise((resolve, reject) => {
       this.ws.onopen = resolve;
@@ -133,6 +144,10 @@ class Tab {
     });
     this.ws.onmessage = (m) => {
       const d = JSON.parse(m.data);
+      if (d.method) {
+        for (const fn of this.listeners) fn(d.method, d.params || {});
+        return;
+      }
       const p = d.id && this.pending.get(d.id);
       if (!p) return;
       this.pending.delete(d.id);
