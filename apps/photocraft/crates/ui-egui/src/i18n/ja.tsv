@@ -3864,3 +3864,5 @@ curves	Smooth	スムーズ
 	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	ArtCraft ChatGPT がインストールされていません。LUAN-ARTCRAFT-SUITE の install-chatgpt-bridge.ps1 スクリプトを実行してください。
 	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	ArtCraft ChatGPT ウィンドウで ChatGPT にサインインしてから、もう一度送信してください。
 	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	ChatGPT プランの利用上限に達しました。アプリはそのまま使えます。上限がリセットされると ChatGPT を再び使えます。
+	Layers from ChatGPT added as Smart Objects:	ChatGPT のレイヤーをスマートオブジェクトとして追加しました:
+	Empty images from ChatGPT skipped:	ChatGPT の空の画像をスキップしました:

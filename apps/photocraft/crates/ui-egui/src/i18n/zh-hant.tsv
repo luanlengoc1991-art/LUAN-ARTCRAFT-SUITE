@@ -2783,3 +2783,5 @@ curves	Smooth	平滑
 	ArtCraft ChatGPT isn't installed. Run the install-chatgpt-bridge.ps1 script from LUAN-ARTCRAFT-SUITE.	尚未安裝 ArtCraft ChatGPT。請執行 LUAN-ARTCRAFT-SUITE 中的 install-chatgpt-bridge.ps1 指令碼。
 	Sign in to ChatGPT in the ArtCraft ChatGPT window, then send again.	請在 ArtCraft ChatGPT 視窗中登入 ChatGPT，然後重新傳送。
 	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	你的 ChatGPT 方案額度暫時已用完。應用程式仍可正常使用；額度重設後即可再次使用 ChatGPT。
+	Layers from ChatGPT added as Smart Objects:	已將 ChatGPT 的圖層新增為智慧型物件：
+	Empty images from ChatGPT skipped:	已略過 ChatGPT 的空白圖像：

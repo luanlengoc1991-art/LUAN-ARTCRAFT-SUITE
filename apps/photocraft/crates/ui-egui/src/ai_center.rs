@@ -787,12 +787,14 @@ mod desktop {
     }
 
     /// ChatGPT (ArtCraft ChatGPT): the flattened document and the request go to the signed-in
-    /// ChatGPT window; its image comes back as a layer (see `poll`).
+    /// ChatGPT window; its images come back as layers (see `poll`). A follow-up in the same chat
+    /// continues the same ChatGPT conversation.
     fn web_send(app: &mut PhotocraftApp, s: &mut State, ctx: &Context, prompt: String) {
         s.transcript.push(Line::User(prompt.clone()));
         s.review = None;
         s.prompt.clear();
-        let png = match crate::chatgpt_web::snapshot(app) {
+        let conversation = s.session.clone().filter(|c| c.starts_with("https://chatgpt.com/c/"));
+        let snap = match crate::chatgpt_web::snapshot(app) {
             Ok(p) => p,
             Err(e) => {
                 s.transcript.push(Line::Error(format!("Couldn't read the document: {e}")));
@@ -802,7 +804,7 @@ mod desktop {
         s.transcript.push(Line::Info(tl!("Sent to ChatGPT. Images take one to three minutes.").to_string()));
         s.log(format!("sent to ArtCraft ChatGPT: {prompt}"));
         let base = app.session.active_index().zip(app.session.active().map(|d| d.history.past_len()));
-        s.web = Some(WebRun { rx: crate::chatgpt_web::start(prompt, png, ctx), base });
+        s.web = Some(WebRun { rx: crate::chatgpt_web::start(prompt, snap, conversation, ctx), base });
     }
 
     fn web_done(app: &mut PhotocraftApp, s: &mut State, result: Result<crate::chatgpt_web::Reply, crate::chatgpt_web::Failure>, base: Option<(usize, usize)>) {
@@ -812,10 +814,23 @@ mod desktop {
                 if !reply.text.is_empty() {
                     s.transcript.push(Line::Ai(reply.text.clone()));
                 }
-                match crate::chatgpt_web::place(app, &reply) {
-                    Ok(()) => {
+                if reply.conversation.is_some() {
+                    s.session.clone_from(&reply.conversation);
+                }
+                let placed = crate::chatgpt_web::place(app, &reply);
+                if let Ok((_, skipped)) = placed
+                    && skipped > 0
+                {
+                    s.transcript.push(Line::Error(format!("{} {skipped}", tl!("Empty images from ChatGPT skipped:"))));
+                }
+                match placed.map(|(added, _)| added) {
+                    Ok(1) => {
                         s.transcript.push(Line::Info(format!("✓ {}", tl!("ChatGPT's image was added as a new layer."))));
                         s.log("placed ChatGPT's image");
+                    }
+                    Ok(n) => {
+                        s.transcript.push(Line::Info(format!("✓ {} {n}", tl!("Layers from ChatGPT added as Smart Objects:"))));
+                        s.log(format!("placed {n} layers from ChatGPT"));
                     }
                     Err(e) => s.transcript.push(Line::Error(e)),
                 }
