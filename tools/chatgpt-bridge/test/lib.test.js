@@ -28,6 +28,34 @@ test('a reply without an image tells a spent plan apart', () => {
   assert.strictEqual(lib.jobResult({ text: 'Here is a description.' }).code, 'noimage');
 });
 
+test('Chrome is found before Edge, and an override wins', () => {
+  const chrome = require('../chrome');
+  const env = { ProgramFiles: 'C:/PF', 'ProgramFiles(x86)': 'C:/PF86', LOCALAPPDATA: 'C:/L' };
+  const norm = (p) => p && p.split(/[\\/]/).join('/');
+  const has = (list) => (p) => list.includes(norm(p));
+  assert.strictEqual(norm(chrome.findBrowser(env, has(['C:/PF/Google/Chrome/Application/chrome.exe', 'C:/PF86/Microsoft/Edge/Application/msedge.exe']))), 'C:/PF/Google/Chrome/Application/chrome.exe');
+  assert.strictEqual(norm(chrome.findBrowser(env, has(['C:/PF86/Microsoft/Edge/Application/msedge.exe']))), 'C:/PF86/Microsoft/Edge/Application/msedge.exe');
+  assert.strictEqual(chrome.findBrowser({ ...env, ARTCRAFT_CHROME: 'D:/c.exe' }, () => true), 'D:/c.exe');
+  assert.strictEqual(chrome.findBrowser(env, () => false), null);
+});
+
+test('only the automated launch opens a DevTools port, on loopback, in its own profile', () => {
+  const chrome = require('../chrome');
+  const args = chrome.automationArgs('C:/p');
+  assert.ok(args.includes('--user-data-dir=C:/p'));
+  assert.ok(args.includes('--remote-debugging-address=127.0.0.1'));
+  assert.ok(!args.includes('--enable-automation'), 'Google refuses sign-in to automation-flagged browsers');
+});
+
+test('the page expressions are valid JavaScript', () => {
+  const page = require('../page');
+  for (const [name, expr] of Object.entries(page)) {
+    if (name === 'USER' || name === 'ASSISTANT') continue; // CSS selectors
+    const code = typeof expr === 'function' ? expr('https://x/y.png') : expr;
+    assert.doesNotThrow(() => new Function(`return (${code});`), name);
+  }
+});
+
 test('only the token opens the server', () => {
   assert.ok(lib.authorized({ authorization: 'Bearer abc' }, 'abc'));
   assert.ok(!lib.authorized({ authorization: 'Bearer abd' }, 'abc'));

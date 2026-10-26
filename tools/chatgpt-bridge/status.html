@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>ArtCraft ChatGPT</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f7f9; --card: #fff; --text: #1d2125; --muted: #5f6b76; --ok: #1e8e5a; --warn: #c27a12; --err: #c9372c; --accent: #10a37f; --line: #e3e6ea; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #17191c; --card: #202327; --text: #e8eaed; --muted: #9aa4ae; --line: #33373c; } }
+  body { margin: 0; font: 14px/1.5 "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  main { padding: 20px; display: grid; gap: 14px; }
+  h1 { font-size: 17px; margin: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+  .dot.ok { background: var(--ok); } .dot.no { background: var(--warn); }
+  .muted { color: var(--muted); font-size: 13px; }
+  .error { color: var(--err); font-size: 13px; white-space: pre-wrap; }
+  .buttons { display: flex; gap: 8px; }
+  button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .5; cursor: default; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ArtCraft ChatGPT</h1>
+  <div class="card">
+    <div class="row"><span id="dot" class="dot"></span><strong id="signed">Đang kiểm tra…</strong></div>
+    <div id="activity" class="muted"></div>
+    <div id="error" class="error"></div>
+  </div>
+  <div class="buttons">
+    <button id="signIn" class="primary">Đăng nhập bằng Chrome</button>
+    <button id="check">Kiểm tra</button>
+  </div>
+  <div class="muted">Đăng nhập ChatGPT một lần trong Chrome (Google, email, Microsoft, Apple đều được); các lần sau tự dùng lại. PhotoCraft gửi lệnh qua <b>Window › AI / MCP Command Center</b>, agent <b>ChatGPT (ArtCraft ChatGPT)</b>. Dùng hạn mức gói ChatGPT của bạn, không cần API key.</div>
+  <div id="browser" class="muted"></div>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  function show(s) {
+    $('dot').className = 'dot' + (s.signedIn === true ? ' ok' : s.signedIn === false ? ' no' : '');
+    $('signed').textContent = s.signedIn === true ? 'Đã đăng nhập ChatGPT' : s.signedIn === false ? 'Chưa đăng nhập ChatGPT' : 'Chưa rõ trạng thái đăng nhập';
+    $('activity').textContent = s.activity || '';
+    $('error').textContent = s.error || '';
+    $('browser').textContent = s.browser ? 'Trình duyệt: ' + s.browser : 'Không tìm thấy Chrome hoặc Edge.';
+  }
+  window.bridge.onState(show);
+  window.bridge.state().then(show);
+  $('signIn').onclick = () => window.bridge.signIn();
+  $('check').onclick = () => window.bridge.check();
+</script>
+</body>
+</html>
