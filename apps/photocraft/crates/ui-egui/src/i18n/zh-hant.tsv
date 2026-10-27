@@ -2785,3 +2785,6 @@ curves	Smooth	平滑
 	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	你的 ChatGPT 方案額度暫時已用完。應用程式仍可正常使用；額度重設後即可再次使用 ChatGPT。
 	Layers from ChatGPT added as Smart Objects:	已將 ChatGPT 的圖層新增為智慧型物件：
 	Empty images from ChatGPT skipped:	已略過 ChatGPT 的空白圖像：
+	Get last result	取得上次結果
+	Taking ChatGPT's last answer…	正在取得 ChatGPT 的上一個回答…
+	ArtCraft ChatGPT stopped before the answer came back. When ChatGPT has finished, press Get last result to take it.	ArtCraft ChatGPT 在收到回答前已停止。ChatGPT 完成後，請按「取得上次結果」。

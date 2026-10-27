@@ -4110,3 +4110,6 @@ cameraRaw	Yellow	Sárga
 	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	A ChatGPT-előfizetésed kerete egyelőre elfogyott. Az alkalmazás tovább működik; a ChatGPT a keret megújulásakor újra működik.
 	Layers from ChatGPT added as Smart Objects:	A ChatGPT rétegei intelligens objektumként hozzáadva:
 	Empty images from ChatGPT skipped:	A ChatGPT üres képei kihagyva:
+	Get last result	Utolsó eredmény lekérése
+	Taking ChatGPT's last answer…	A ChatGPT utolsó válaszának lekérése…
+	ArtCraft ChatGPT stopped before the answer came back. When ChatGPT has finished, press Get last result to take it.	Az ArtCraft ChatGPT leállt, mielőtt a válasz megjött. Ha a ChatGPT végzett, nyomd meg az Utolsó eredmény lekérése gombot.

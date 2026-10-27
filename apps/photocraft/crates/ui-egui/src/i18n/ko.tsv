@@ -3365,3 +3365,6 @@ curves	Smooth	매끄럽게
 	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	ChatGPT 요금제 한도에 도달했습니다. 앱은 계속 작동하며, 한도가 재설정되면 ChatGPT를 다시 사용할 수 있습니다.
 	Layers from ChatGPT added as Smart Objects:	ChatGPT 레이어를 고급 개체로 추가함:
 	Empty images from ChatGPT skipped:	ChatGPT의 빈 이미지를 건너뜀:
+	Get last result	마지막 결과 가져오기
+	Taking ChatGPT's last answer…	ChatGPT의 마지막 답변을 가져오는 중…
+	ArtCraft ChatGPT stopped before the answer came back. When ChatGPT has finished, press Get last result to take it.	답변이 오기 전에 ArtCraft ChatGPT가 멈췄습니다. ChatGPT가 끝나면 마지막 결과 가져오기를 누르세요.

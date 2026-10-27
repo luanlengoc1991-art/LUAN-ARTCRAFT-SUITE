@@ -3866,3 +3866,6 @@ curves	Smooth	スムーズ
 	Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.	ChatGPT プランの利用上限に達しました。アプリはそのまま使えます。上限がリセットされると ChatGPT を再び使えます。
 	Layers from ChatGPT added as Smart Objects:	ChatGPT のレイヤーをスマートオブジェクトとして追加しました:
 	Empty images from ChatGPT skipped:	ChatGPT の空の画像をスキップしました:
+	Get last result	最後の結果を取得
+	Taking ChatGPT's last answer…	ChatGPT の最後の回答を取得しています…
+	ArtCraft ChatGPT stopped before the answer came back. When ChatGPT has finished, press Get last result to take it.	回答が届く前に ArtCraft ChatGPT が停止しました。ChatGPT の処理が終わったら「最後の結果を取得」を押してください。

@@ -68,6 +68,8 @@ pub(crate) enum Failure {
     Login,
     /// The ChatGPT plan has no usage left for now (ChatGPT's own words).
     Limit(String),
+    /// ArtCraft ChatGPT stopped before answering; ChatGPT's answer can still be taken.
+    Closed,
     Other(String),
 }
 
@@ -192,10 +194,34 @@ fn request(prompt: &str, snap: Option<&Snapshot>, conversation: Option<&str>) ->
     });
     let body = serde_json::to_vec(&body).map_err(|e| Failure::Other(e.to_string()))?;
     // ChatGPT may think for several minutes and then make many files; the app gives up first.
-    let v = http(port, &token, "POST", "/v1/image", &body, Duration::from_secs(20 * 60)).map_err(Failure::Other)?;
+    let v = http(port, &token, "POST", "/v1/image", &body, Duration::from_secs(20 * 60)).map_err(closed_or)?;
     let mut r = reply(&v)?;
     r.sent = snap.map(|s| (s.width, s.height));
     Ok(r)
+}
+
+/// Takes the answer of the last request (or of `conversation`) without asking ChatGPT again: for
+/// when the wait was cut short but ChatGPT finished. No usage is spent.
+pub(crate) fn start_collect(conversation: Option<String>, ctx: &egui::Context) -> Receiver<Result<Reply, Failure>> {
+    let (tx, rx) = channel();
+    let ctx = ctx.clone();
+    std::thread::spawn(move || {
+        let r = connect().and_then(|(port, token)| {
+            let body = serde_json::to_vec(&json!({"conversation": conversation})).map_err(|e| Failure::Other(e.to_string()))?;
+            let v = http(port, &token, "POST", "/v1/collect", &body, Duration::from_secs(20 * 60)).map_err(closed_or)?;
+            reply(&v)
+        });
+        let _ = tx.send(r);
+        ctx.request_repaint();
+    });
+    rx
+}
+
+/// A connection the app dropped before answering (it was closed or stopped) is [`Failure::Closed`].
+fn closed_or(e: String) -> Failure {
+    let l = e.to_lowercase();
+    let dropped = ["incomplete answer", "connection reset", "forcibly closed", "connection aborted", "broken pipe", "os error 10054", "os error 10053"];
+    if dropped.iter().any(|d| l.contains(d)) { Failure::Closed } else { Failure::Other(e) }
 }
 
 fn ext_of(mime: &str, name: &str) -> &'static str {
@@ -374,6 +400,10 @@ mod tests {
         assert_eq!(ok, json!({"ok": true}));
         assert!(parse_response(b"HTTP/1.1 401 Unauthorized\r\n\r\n{}").unwrap_err().contains("token"));
         assert!(parse_response(b"HTTP/1.1 200 OK\r\n").is_err());
+        // An app that stopped mid-answer reads as such, so its answer can be taken later.
+        assert!(matches!(closed_or(parse_response(b"").unwrap_err()), Failure::Closed));
+        assert!(matches!(closed_or("An existing connection was forcibly closed by the remote host. (os error 10054)".into()), Failure::Closed));
+        assert!(matches!(closed_or("timed out".into()), Failure::Other(_)));
     }
 
     #[test]

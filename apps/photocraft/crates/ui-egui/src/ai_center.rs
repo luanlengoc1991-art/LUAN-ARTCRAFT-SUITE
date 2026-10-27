@@ -515,6 +515,11 @@ mod desktop {
                             Err(e) => s.log(format!("ArtCraft ChatGPT: {e:?}")),
                         }
                     }
+                    // ChatGPT's last answer, without asking again (when the wait was cut short).
+                    let idle = s.run.is_none() && s.web.is_none();
+                    if ui.add_enabled(idle, egui::Button::new(tl!("Get last result")).small()).clicked() {
+                        web_collect(app, s, ui.ctx());
+                    }
                 });
             }
         }
@@ -807,6 +812,17 @@ mod desktop {
         s.web = Some(WebRun { rx: crate::chatgpt_web::start(prompt, snap, conversation, ctx), base });
     }
 
+    /// Takes ChatGPT's last answer (this chat's conversation, else the last request's) into the
+    /// document, without a new request.
+    fn web_collect(app: &mut PhotocraftApp, s: &mut State, ctx: &Context) {
+        s.review = None;
+        let conversation = s.session.clone().filter(|c| c.starts_with("https://chatgpt.com/c/"));
+        s.transcript.push(Line::Info(tl!("Taking ChatGPT's last answer…").to_string()));
+        s.log("collecting ChatGPT's last answer");
+        let base = app.session.active_index().zip(app.session.active().map(|d| d.history.past_len()));
+        s.web = Some(WebRun { rx: crate::chatgpt_web::start_collect(conversation, ctx), base });
+    }
+
     fn web_done(app: &mut PhotocraftApp, s: &mut State, result: Result<crate::chatgpt_web::Reply, crate::chatgpt_web::Failure>, base: Option<(usize, usize)>) {
         use crate::chatgpt_web::Failure;
         match result {
@@ -848,6 +864,12 @@ mod desktop {
                 let limit = tl!("Your ChatGPT plan's limit is reached for now. The app keeps working; ChatGPT works again when the limit resets.");
                 s.transcript.push(Line::Error(limit.to_string()));
                 s.transcript.push(Line::Info(t));
+            }
+            Err(Failure::Closed) => {
+                // On one line: the translation tests read each translated literal as written.
+                #[rustfmt::skip]
+                let closed = tl!("ArtCraft ChatGPT stopped before the answer came back. When ChatGPT has finished, press Get last result to take it.");
+                s.transcript.push(Line::Error(closed.to_string()));
             }
             Err(Failure::Other(e)) => {
                 s.log(format!("ArtCraft ChatGPT failed: {e}"));
