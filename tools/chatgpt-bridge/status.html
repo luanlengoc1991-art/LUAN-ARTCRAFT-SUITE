@@ -33,7 +33,9 @@
   <div class="buttons">
     <button id="signIn" class="primary">Đăng nhập bằng Chrome</button>
     <button id="check">Kiểm tra</button>
+    <button id="quit">Thoát hẳn</button>
   </div>
+  <div class="muted">Đóng cửa sổ này chỉ ẩn nó đi; app vẫn chạy ngầm để PhotoCraft nhận kết quả.</div>
   <div class="muted">Đăng nhập ChatGPT một lần trong Chrome (Google, email, Microsoft, Apple đều được); các lần sau tự dùng lại. PhotoCraft gửi lệnh qua <b>Window › AI / MCP Command Center</b>, agent <b>ChatGPT (ArtCraft ChatGPT)</b>. Dùng hạn mức gói ChatGPT của bạn, không cần API key.</div>
   <div id="browser" class="muted"></div>
 </main>
@@ -50,6 +52,7 @@
   window.bridge.state().then(show);
   $('signIn').onclick = () => window.bridge.signIn();
   $('check').onclick = () => window.bridge.check();
+  $('quit').onclick = () => window.bridge.quit();
 </script>
 </body>
 </html>

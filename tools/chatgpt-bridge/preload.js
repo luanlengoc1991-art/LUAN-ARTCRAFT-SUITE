@@ -7,5 +7,6 @@ contextBridge.exposeInMainWorld('bridge', {
   state: () => ipcRenderer.invoke('state'),
   signIn: () => ipcRenderer.invoke('signIn'),
   check: () => ipcRenderer.invoke('check'),
+  quit: () => ipcRenderer.invoke('quit'),
   onState: (fn) => ipcRenderer.on('state', (_e, s) => fn(s)),
 });

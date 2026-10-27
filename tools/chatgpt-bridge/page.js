@@ -47,8 +47,14 @@ const STATE = `(() => {
   const attachment = (i) => /user attachment|uploaded image/i.test(i.alt || '');
   const generated = (i) => /generated image|ảnh được tạo|hình ảnh được tạo/i.test(i.alt || '');
   const imgs = [...document.querySelectorAll('img')].filter(i => after(i) && theirs(i) && !attachment(i) && !i.closest('nav, aside, header') && i.complete && i.naturalWidth >= 256 && i.naturalHeight >= 256);
-  // Every image of the answer, in page order, once each (a gallery shows one twice).
-  const srcs = [...new Set(imgs.filter(i => generated(i) || i.naturalWidth >= 512).map(i => i.currentSrc || i.src))];
+  // Several images come as a gallery: "Show generated image N" buttons whose thumbnails load only
+  // when scrolled to, so they count by their number, loaded or not.
+  const numbered = (b) => parseInt(((b.getAttribute('aria-label') || '').match(/(\\d+)\\s*$/) || [])[1] || '0', 10);
+  const gallery = [...document.querySelectorAll('button[aria-label^="Show generated image"] img, button[aria-label^="Hiển thị hình ảnh"] img, button[aria-label^="Xem hình ảnh"] img')]
+    .filter(i => after(i) && (i.currentSrc || i.src))
+    .sort((a, b) => numbered(a.closest('button')) - numbered(b.closest('button')));
+  // Every image of the answer, in order, once each (a gallery shows one twice).
+  const srcs = [...new Set((gallery.length ? gallery : imgs.filter(i => generated(i) || i.naturalWidth >= 512)).map(i => i.currentSrc || i.src))];
   // Files the answer made (Python): a "Download file" button each.
   const files = [...document.querySelectorAll('button')].filter(b => after(b) && !b.closest('nav, aside, header, form') && /^(download file|tải xuống tệp|tải tệp xuống|tải xuống)$/i.test((b.getAttribute('aria-label') || '').trim())).length;
   // ChatGPT's own images ("Generated image 1") last, then by size: the last one is the answer.

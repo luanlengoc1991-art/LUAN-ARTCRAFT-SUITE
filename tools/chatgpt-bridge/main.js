@@ -38,6 +38,23 @@ let busy = false;
 let queue = Promise.resolve();
 const state = { signedIn: null, activity: 'Sẵn sàng', error: '', browser: chrome.findBrowser() };
 
+let quitting = false;
+app.on('before-quit', () => { quitting = true; log('quit'); });
+// Hidden windows don't count: the app runs until "Thoát".
+app.on('window-all-closed', () => {});
+
+/** %LOCALAPPDATA%\ArtCraft ChatGPT\bridge.log: what happened, when a request goes wrong. */
+const LOG = path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'ArtCraft ChatGPT', 'bridge.log');
+function log(line) {
+  try {
+    fs.mkdirSync(path.dirname(LOG), { recursive: true });
+    if (fs.existsSync(LOG) && fs.statSync(LOG).size > 2 * 1024 * 1024) fs.renameSync(LOG, `${LOG}.old`);
+    fs.appendFileSync(LOG, `${new Date().toISOString()} ${line}\n`);
+  } catch { /* logging never stops a request */ }
+}
+process.on('uncaughtException', (e) => log(`uncaught: ${e && e.stack ? e.stack : e}`));
+process.on('unhandledRejection', (e) => log(`unhandled: ${e && e.stack ? e.stack : e}`));
+
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
@@ -49,17 +66,25 @@ function start() {
   Menu.setApplicationMenu(null);
   win = new BrowserWindow({
     width: 460,
-    height: 420,
+    height: 480,
     title: 'ArtCraft ChatGPT',
     resizable: false,
     show: !background,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, sandbox: true },
   });
   win.loadFile(path.join(__dirname, 'status.html'));
-  win.on('closed', () => { win = null; app.quit(); });
+  // Closing the window only hides it: PhotoCraft may be waiting for an answer. "Thoát" quits.
+  win.on('close', (e) => {
+    if (!quitting) {
+      e.preventDefault();
+      win.hide();
+    }
+  });
+  win.on('closed', () => { win = null; });
   ipcMain.handle('state', () => state);
   ipcMain.handle('signIn', () => signIn());
   ipcMain.handle('check', () => check());
+  ipcMain.handle('quit', () => app.quit());
   listen();
   check();
 }
@@ -110,6 +135,9 @@ async function check() {
 function listen() {
   token = crypto.randomBytes(32).toString('hex');
   server = http.createServer(handle);
+  // An answer can take many minutes: no server-side time limit on the connection.
+  server.requestTimeout = 0;
+  server.timeout = 0;
   server.listen(0, '127.0.0.1', () => {
     const { port } = server.address();
     const file = lib.infoPath();
@@ -138,7 +166,9 @@ function handle(req, res) {
   if (req.method === 'GET' && req.url === '/v1/status') {
     return reply(res, 200, { ok: true, loggedIn: state.signedIn, busy, version: VERSION });
   }
-  if (req.method === 'POST' && req.url === '/v1/image') {
+  if (req.method === 'POST' && (req.url === '/v1/image' || req.url === '/v1/collect')) {
+    const collectOnly = req.url === '/v1/collect';
+    log(`${req.url} received`);
     const chunks = [];
     let size = 0;
     req.on('data', (c) => {
@@ -149,11 +179,14 @@ function handle(req, res) {
     req.on('end', () => {
       let body;
       try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return reply(res, 400, { ok: false, code: 'json', error: 'invalid JSON' }); }
-      if (!body || typeof body.prompt !== 'string' || !body.prompt.trim()) return reply(res, 400, { ok: false, code: 'prompt', error: 'missing prompt' });
+      if (!body || (!collectOnly && (typeof body.prompt !== 'string' || !body.prompt.trim()))) return reply(res, 400, { ok: false, code: 'prompt', error: 'missing prompt' });
       // One job at a time: they share the one tab.
-      const job = queue.then(() => runJob(body));
+      const job = queue.then(() => (collectOnly ? collectJob(body) : runJob(body)));
       queue = job.catch(() => {});
-      job.then((r) => reply(res, 200, r), (e) => reply(res, 200, { ok: false, code: e.code || 'error', error: e.message || String(e) }));
+      job.then(
+        (r) => { log(`${req.url}: ok=${r.ok} images=${(r.images || []).length} ${r.code || ''}`); reply(res, 200, r); },
+        (e) => { log(`${req.url}: ${e.code || 'error'} ${e.message || e}`); reply(res, 200, { ok: false, code: e.code || 'error', error: e.message || String(e) }); },
+      );
     });
     return;
   }
@@ -188,6 +221,56 @@ async function attach(tab, file) {
   await tab.send('DOM.setFileInputFiles', { files: [file], objectId: result.objectId });
   // The picture shows in the composer before the upload ends; Send stays disabled until it ends.
   await waitFor(tab, page.ATTACHED, 60000, 'the attached picture');
+}
+
+/** The last request's conversation, kept on disk: its answer can be taken later (`collectJob`). */
+const LAST = path.join(process.env.LOCALAPPDATA || os.tmpdir(), 'ArtCraft ChatGPT', 'last-conversation.txt');
+
+/** Notes the conversation once chatgpt.com has given it an address (soon after sending). */
+async function rememberConversation(tab) {
+  for (let i = 0; i < 30; i++) {
+    const url = await tab.eval(page.CONVERSATION).catch(() => '');
+    if (url) {
+      try { fs.writeFileSync(LAST, url); } catch { /* best effort */ }
+      log(`conversation ${url}`);
+      return;
+    }
+    await sleep(1000);
+  }
+}
+
+/**
+ * Takes the answer of a conversation without sending anything: `body.conversation`, else the
+ * last request's. For when PhotoCraft stopped waiting but ChatGPT finished.
+ */
+async function collectJob(body) {
+  busy = true;
+  let tab = null;
+  const dir = path.join(os.tmpdir(), `artcraft-chatgpt-${process.pid}-${Date.now()}`);
+  try {
+    update({ activity: 'Đang lấy lại kết quả cho PhotoCraft…', error: '' });
+    const port = await chrome.ensureAutomation();
+    tab = await chrome.Tab.open(port);
+    let saved = '';
+    try { saved = fs.readFileSync(LAST, 'utf8').trim(); } catch { /* none yet */ }
+    const here = await tab.eval(page.CONVERSATION).catch(() => '');
+    // Else the conversation the tab shows (a request sent before this app noted them).
+    const url = conversationUrl(body.conversation) || conversationUrl(saved) || conversationUrl(here);
+    if (!url) throw Object.assign(new Error('No ChatGPT conversation to take an answer from.'), { code: 'noconversation' });
+    if (here !== url) await openChat(tab, url);
+    await sleep(2000);
+    const s = await answer.waitAnswer(tab);
+    const images = await answer.collect(port, tab, s, path.join(dir, 'files'));
+    return lib.jobResult({ images, text: s.text, conversation: url });
+  } catch (e) {
+    update({ error: e.message });
+    throw e;
+  } finally {
+    busy = false;
+    update({ activity: 'Sẵn sàng' });
+    if (tab) tab.close();
+    fs.rm(dir, { recursive: true, force: true }, () => {});
+  }
 }
 
 /** The conversation PhotoCraft continues, when it is one of chatgpt.com's. */
@@ -228,6 +311,7 @@ async function runJob(body) {
     await sleep(300);
     await tab.eval(`${page.SEND}.click()`);
     await waitFor(tab, `${page.USER_COUNT} > ${before}`, 60000, 'the request to be sent');
+    rememberConversation(tab);
     const s = await answer.waitAnswer(tab);
     const images = await answer.collect(port, tab, s, path.join(dir, 'files'));
     return lib.jobResult({ images, text: s.text, conversation: await tab.eval(page.CONVERSATION) });
